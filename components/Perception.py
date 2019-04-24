@@ -1,0 +1,2 @@
+class Perception:
+    pass
