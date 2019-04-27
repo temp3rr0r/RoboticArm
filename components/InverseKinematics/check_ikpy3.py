@@ -7,7 +7,7 @@ from ikpy import geometry_utils
 import requests
 import time
 
-send_requests = True
+send_requests = False
 # send_requests = False
 scale = 0.04  # For the plotting
 # scale = 1.0  # For the plotting
@@ -255,7 +255,6 @@ print("kinematic_angle_trajectory (steps: {}): {}".format(trajectory_steps, kine
 print("kinematic_angle_trajectory (steps: {}): {}".format(trajectory_steps, np.rad2deg(kinematic_angle_trajectory)))
 kinematic_servo_range_trajectory = radians_to_servo_range(kinematic_angle_trajectory)
 print("kinematic_servo_range_trajectory (steps: {}): {}".format(trajectory_steps, kinematic_servo_range_trajectory))
-
 
 
 # TODO: from to, to-from with MONOTONY

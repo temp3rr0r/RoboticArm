@@ -217,8 +217,11 @@ def pyhop(state, tasks, verbose=0, all_plans=False):
 
     if verbose > 0:
         if all_plans:
-            for i in range(len(results)):
-                print('** result {} = {}'.format(i, results[i]))
+            if isinstance(results, list):
+                for i in range(len(results)):
+                    print('** result {} = {}'.format(i, results[i]))
+            else:
+                print('** result = {}'.format(results))
         else:
             print('** result = {}'.format(results))
     return results
