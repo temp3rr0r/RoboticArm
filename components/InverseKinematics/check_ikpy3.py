@@ -4,6 +4,8 @@ import matplotlib.pyplot
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 from ikpy import geometry_utils
+import requests
+import time
 
 
 # Link lengths in centimeters
@@ -81,6 +83,7 @@ left_arm_chain = Chain(name='left_arm', active_links_mask=active_links_mask, lin
 ])
 
 show_init = True
+send_requests = False
 
 if show_init:
     init_position = [0, 0, 1]
@@ -96,10 +99,10 @@ if show_init:
         np.eye(3))), ax, target=target_position)
     matplotlib.pyplot.show()
 
-# target_position = [0.5, 0.5, 0.0]
+target_position = [0.5, 0.5, 0.0]
 # target_position = [.8, .8, .8]
 # target_position = [.5, .5, 1]
-target_position = [.8, .8, -.9]
+# target_position = [.8, .8, 1]
 print("Target angles (radians): ", left_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
     target_position,
     np.eye(3))))
@@ -111,50 +114,35 @@ left_arm_chain.plot(left_arm_chain.inverse_kinematics(geometry_utils.to_transfor
     target=target_position)
 matplotlib.pyplot.show()
 
-#
-# def get_kinematic_angle_trajectory(from_angle_randians, to_angle_radians, steps=10):
-#     assert 1 < steps < 5000
-#     x, y, z = from_angle_randians
-#     x2, y2, z2 = to_angle_radians
-#
-#     angle_trajectory = []
-#     step_size_x = (x2 - x) / float(steps)
-#     step_size_y = (y2 - y) / float(steps)
-#     step_size_z = (z2 - z) / float(steps)
-#
-#     x_new, y_new, z_new = x, y, z
-#     angle_trajectory.append((x_new, y_new, z_new))
-#     for step in steps - 1:
-#         x_new += step_size_x
-#         y_new += step_size_y
-#         z_new += step_size_z
-#         angle_trajectory.append(x_new, y_new, z_new)
-#
-#     return angle_trajectory
+
+def radians_to_servo_range(x, x_min=-np.pi, x_max=np.pi, scaled_min=500.0, scaled_max=2500.0):
+    x = np.array(x)
+    x_std = (x - x_min) / (x_max - x_min)
+    return (x_std * (scaled_max - scaled_min) + scaled_min).astype(int)
 
 
-def get_kinematic_angle_trajectory(from_angle_radians, to_angle_radians, steps=10):
+def get_kinematic_angle_trajectory(from_angle_radians, to_angle_radians, servo_monotony, steps=10):
     assert 1 < steps < 5000
 
     step_angle_radians = []
-    for i in range(len(target_angle_radians)):
-        step_angle_radians.append(
-            (from_angle_radians[i] - to_angle_radians[i]) / float(steps)
-        )
-
-    step_angle_radians = np.array(step_angle_radians)
+    for index in range(len(target_angle_radians)):
+        step_angle_radians.append((from_angle_radians[index] - to_angle_radians[index]) / float(steps))
 
     angle_trajectory = []
+    step_angle_radians = np.array(step_angle_radians)
     current_angles = np.array(from_angle_radians)
+    current_angles = np.multiply(current_angles, servo_monotony)
+    # angle_trajectory.append(current_angles)
 
     for _ in range(steps):
         current_angles = np.add(current_angles, step_angle_radians)
+        current_angles = np.multiply(current_angles, servo_monotony)
         angle_trajectory.append(current_angles)
 
     return angle_trajectory
 
 
-steps = 5
+trajectory_steps = 5
 init_angle_radians = left_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
         init_position,
         np.eye(3)))
@@ -162,5 +150,37 @@ target_angle_radians = left_arm_chain.inverse_kinematics(geometry_utils.to_trans
         target_position,
         np.eye(3)))
 
-print("Kinematic trajectory (steps: {}): {}".format(steps, get_kinematic_angle_trajectory(init_angle_radians,
-                                                                                          target_angle_radians, steps)))
+# TODO: servo mask
+servo_mask = [True, True, True, True, False, False]
+current_servo_monotony = [1.0, 1.0, -1.0, 1.0, 1.0, 1.0]
+
+kinematic_angle_trajectory = get_kinematic_angle_trajectory(init_angle_radians, target_angle_radians,
+                                                            current_servo_monotony, trajectory_steps)
+print("kinematic_angle_trajectory (steps: {}): {}".format(trajectory_steps, kinematic_angle_trajectory))
+
+print("kinematic_angle_trajectory (steps: {}): {}".format(trajectory_steps, np.rad2deg(kinematic_angle_trajectory)))
+
+kinematic_servo_range_trajectory = radians_to_servo_range(kinematic_angle_trajectory)
+print("kinematic_servo_range_trajectory (steps: {}): {}".format(trajectory_steps, kinematic_servo_range_trajectory))
+
+servo_count = 6
+
+if send_requests:
+    for step in kinematic_servo_range_trajectory:
+        for i in range(len(step)):
+            if servo_mask[i]:
+                servo_value = step[i]
+                if servo_value < 500 and servo_value > 2500:
+                    servo_value = 1550  # TODO: change
+                current_servo = servo_count - i
+                url = "http://ESP_02662E/set_servo{}?value={}".format(current_servo, servo_value)
+                print(url)
+                try:
+                    # response = requests.put(url, data="")
+                    if send_requests:
+                        requests.put(url, data="")
+                except Exception as e:
+                    print("Exception: {}".format(str(e)))
+                time.sleep(0.05)
+                time.sleep(2)
+        print("")
