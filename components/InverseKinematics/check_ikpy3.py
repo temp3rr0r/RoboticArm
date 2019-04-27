@@ -8,84 +8,100 @@ import requests
 import time
 
 
-# Link lengths in centimeters
-# link1 = np.array([0, 0, 8.0])
-# link2 = np.array([0, 0, 1.0])
-# link3 = np.array([0, 0, 12.0])
+scale = 0.04  # For the plotting
+#
+# # Link lengths in centimeters
+# link1 = np.array([0, 0, 7.0])
+# link2 = np.array([0, 0, 3.0])
+# link3 = np.array([0, 0, 10.5])
 # link4 = np.array([0, 0, 9.0])
-# link5 = np.array([0, 0, 6.0])
-# link6 = np.array([0, 0, 6.0])
-link1 = np.array([0, 0, 7.0])
-link2 = np.array([0, 0, 3.0])
-link3 = np.array([0, 0, 10.5])
-link4 = np.array([0, 0, 9.0])
-link5 = np.array([0, 0, 7.0])
-link6 = np.array([0, 0, 10.0])
+# link5 = np.array([0, 0, 7.0])
+# link6 = np.array([0, 0, 10.0])
+#
+# # Joint rotation axis
+# rotation1 = np.array([0, 0, 1])
+# rotation2 = np.array([0, 1, 0])
+# rotation3 = np.array([0, 1, 0])
+# rotation4 = np.array([0, 1, 0])
+# rotation5 = np.array([0, 0, 1])
+# rotation6 = np.array([0, 0, 1])
+#
+# # Link bounds (degrees)
+# bounds1 = np.radians(np.array([-60, 60]))  # TODO: increase the z angles?
+# bounds2 = np.radians(np.array([-60, 60]))
+# bounds3 = np.radians(np.array([-60, 60]))
+# bounds4 = np.radians(np.array([-60, 60]))
+# bounds5 = np.radians(np.array([-60, 60]))
+# bounds6 = np.radians(np.array([-60, 60]))
 
-scale = 0.04
+# Link lengths in centimeters
+link6 = np.array([0, 0, 7.0])
+link5 = np.array([0, 0, 3.0])
+link4 = np.array([0, 0, 10.5])
+link3 = np.array([0, 0, 9.0])
+link2 = np.array([0, 0, 7.0])
+link1 = np.array([0, 0, 10.0])
 
 # Joint rotation axis
-rotation1 = np.array([0, 0, 1])
-rotation2 = np.array([0, 1, 0])
-rotation3 = np.array([0, 1, 0])
-rotation4 = np.array([0, 1, 0])
-rotation5 = np.array([0, 0, 1])
 rotation6 = np.array([0, 0, 1])
+rotation5 = np.array([0, 1, 0])
+rotation4 = np.array([0, 1, 0])
+rotation3 = np.array([0, 1, 0])
+rotation2 = np.array([0, 0, 1])
+rotation1 = np.array([0, 0, 1])
 
 # Link bounds (degrees)
-bounds1 = np.radians(np.array([-60, 60]))  # TODO: increase the z angles?
-bounds2 = np.radians(np.array([-60, 60]))
-bounds3 = np.radians(np.array([-60, 60]))
-bounds4 = np.radians(np.array([-60, 60]))
+bounds6 = np.radians(np.array([-60, 60]))  # TODO: increase the z angles?
 bounds5 = np.radians(np.array([-60, 60]))
-bounds6 = np.radians(np.array([-60, 60]))
+bounds4 = np.radians(np.array([-60, 60]))
+bounds3 = np.radians(np.array([-60, 60]))
+bounds2 = np.radians(np.array([-60, 60]))
+bounds1 = np.radians(np.array([-60, 60]))
 
-# Enabled/disabled links
-active_links_mask = [True, True, True, True, False, False]
-
+active_links_mask = [True, True, True, True, False, False]  # Enabled/disabled links
 
 left_arm_chain = Chain(name='left_arm', active_links_mask=active_links_mask, links=[
     URDFLink(
-      name="shoulder",
-      translation_vector=link1 * scale,
+      name="link6",
+      translation_vector=link6 * scale,
       orientation=[0, 0, 0],
-      rotation=rotation1,
-      bounds=bounds1
+      rotation=rotation6,
+      bounds=bounds6
     ),
     URDFLink(
-      name="elbow",
-      translation_vector=link2 * scale,
-      orientation=[0, 0, 0],
-      rotation=rotation2,
-      bounds=bounds2
-    ),
-    URDFLink(
-      name="wrist",
-      translation_vector=link3 * scale,
-      orientation=[0, 0, 0],
-      rotation=rotation3,
-      bounds=bounds3
-    ),
-    URDFLink(
-      name="wrist",
-      translation_vector=link4 * scale,
-      orientation=[0, 0, 0],
-      rotation=rotation4,
-      bounds=bounds4
-    ),
-    URDFLink(
-      name="wrist",
+      name="link5",
       translation_vector=link5 * scale,
       orientation=[0, 0, 0],
       rotation=rotation5,
       bounds=bounds5
     ),
     URDFLink(
-      name="wrist2",
-      translation_vector=link6 * scale,
+      name="link4",
+      translation_vector=link4 * scale,
       orientation=[0, 0, 0],
-      rotation=rotation6,
-      bounds=bounds6
+      rotation=rotation4,
+      bounds=bounds4
+    ),
+    URDFLink(
+      name="link3",
+      translation_vector=link3 * scale,
+      orientation=[0, 0, 0],
+      rotation=rotation3,
+      bounds=bounds3
+    ),
+    URDFLink(
+      name="link2",
+      translation_vector=link2 * scale,
+      orientation=[0, 0, 0],
+      rotation=rotation2,
+      bounds=bounds2
+    ),
+    URDFLink(
+      name="link1",
+      translation_vector=link1 * scale,
+      orientation=[0, 0, 0],
+      rotation=rotation1,
+      bounds=bounds1
     )
 ])
 
