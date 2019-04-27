@@ -1,5 +1,5 @@
 import pyhop
-
+import time
 
 # Helper methods
 
@@ -188,13 +188,20 @@ print('')
 pyhop.print_methods()
 
 current_world_model = pyhop.State('current_world_model')
+current_world_model.iteration = 0
+current_world_model.timestamp = time.time()
 current_world_model.loc = {'ball': 'table'}
 current_world_model.grabbed = {'ball': True}
 current_world_model.initialized = {'arm': True}
 current_world_model.min_bounds = {'xyz': [-25, -25, -25]}
 current_world_model.max_bounds = {'xyz': [25, 25, 25]}
+current_world_model.plan = "None"
 
 htn_plan = pyhop.pyhop(current_world_model, [('transfer_ball_to_container', 'arm', 'ball', 'table', 'container')],
                        verbose=1, all_plans=True, sort_asc=True)
+
 if not htn_plan:
-    print("-- Failure_reason: {}".format(pyhop.failure_reason))
+    print("-- No valid plan. Failure_reason: {}".format(pyhop.failure_reason))
+else:
+    current_world_model.plan = htn_plan[0]
+    print("current_world_model.plan: ", current_world_model.plan)
