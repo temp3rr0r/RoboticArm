@@ -89,51 +89,6 @@ left_arm_chain = Chain(name='left_arm', active_links_mask=active_links_mask, lin
     )
 ])
 
-# left_arm_chain = Chain(name='left_arm', active_links_mask=active_links_mask, links=[
-#     URDFLink(
-#       name="shoulder",
-#       translation_vector=link1 * scale,
-#       orientation=[0, 0, 0],
-#       rotation=rotation1,
-#       bounds=bounds1
-#     ),
-#     URDFLink(
-#       name="elbow",
-#       translation_vector=link2 * scale,
-#       orientation=[0, 0, 0],
-#       rotation=rotation2,
-#       bounds=bounds2
-#     ),
-#     URDFLink(
-#       name="wrist",
-#       translation_vector=link3 * scale,
-#       orientation=[0, 0, 0],
-#       rotation=rotation3,
-#       bounds=bounds3
-#     ),
-#     URDFLink(
-#       name="wrist",
-#       translation_vector=link4 * scale,
-#       orientation=[0, 0, 0],
-#       rotation=rotation4,
-#       bounds=bounds4
-#     ),
-#     URDFLink(
-#       name="wrist",
-#       translation_vector=link5 * scale,
-#       orientation=[0, 0, 0],
-#       rotation=rotation5,
-#       bounds=bounds5
-#     ),
-#     URDFLink(
-#       name="wrist2",
-#       translation_vector=link6 * scale,
-#       orientation=[0, 0, 0],
-#       rotation=rotation6,
-#       bounds=bounds6
-#     )
-# ])
-
 show_init = True
 send_requests = False
 
@@ -170,7 +125,7 @@ matplotlib.pyplot.show()
 def radians_to_servo_range(x, x_min=(-np.pi / 2.0), x_max=(np.pi / 2.0), scaled_min=500.0, scaled_max=2500.0):
     x = np.array(x)
     x_std = (x - x_min) / (x_max - x_min)
-    return (x_std * (scaled_max - scaled_min) + scaled_min).astype(int)
+    return (np.round(x_std * (scaled_max - scaled_min) + scaled_min, 0)).astype(int)
 
 
 def get_kinematic_angle_trajectory(from_angle_radians_in, to_angle_radians_in, servo_monotony, steps=10):
