@@ -9,12 +9,18 @@ import time
 
 
 # Link lengths in centimeters
-link1 = np.array([0, 0, 8.0])
-link2 = np.array([0, 0, 1.0])
-link3 = np.array([0, 0, 12.0])
+# link1 = np.array([0, 0, 8.0])
+# link2 = np.array([0, 0, 1.0])
+# link3 = np.array([0, 0, 12.0])
+# link4 = np.array([0, 0, 9.0])
+# link5 = np.array([0, 0, 6.0])
+# link6 = np.array([0, 0, 6.0])
+link1 = np.array([0, 0, 7.0])
+link2 = np.array([0, 0, 3.0])
+link3 = np.array([0, 0, 10.5])
 link4 = np.array([0, 0, 9.0])
-link5 = np.array([0, 0, 6.0])
-link6 = np.array([0, 0, 6.0])
+link5 = np.array([0, 0, 7.0])
+link6 = np.array([0, 0, 10.0])
 
 scale = 0.04
 
@@ -145,8 +151,8 @@ if show_init:
         np.eye(3))), ax, target=target_position)
     matplotlib.pyplot.show()
 
-target_position = [0.5, 0.5, 0.0]
-# target_position = [.8, .8, .8]
+# target_position = [0.5, 0.5, 0.0]
+target_position = [.8, -.8, .8]
 # target_position = [.5, .5, 1]
 # target_position = [.8, .8, 1]
 print("Target angles (radians): ", left_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
@@ -200,7 +206,7 @@ target_angle_radians = left_arm_chain.inverse_kinematics(geometry_utils.to_trans
 # TODO: servo mask
 servo_mask = active_links_mask
 # current_servo_monotony = [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
-current_servo_monotony = [1.0, -1.0, 1.0, -1.0, -1.0, -1.0]
+current_servo_monotony = [-1.0, -1.0, 1.0, -1.0, -1.0, -1.0]
 
 kinematic_angle_trajectory = get_kinematic_angle_trajectory(init_angle_radians, target_angle_radians,
                                                             current_servo_monotony, trajectory_steps)
@@ -212,6 +218,8 @@ kinematic_servo_range_trajectory = radians_to_servo_range(kinematic_angle_trajec
 print("kinematic_servo_range_trajectory (steps: {}): {}".format(trajectory_steps, kinematic_servo_range_trajectory))
 
 servo_count = 6
+
+# TODO: AR ocv virtual grid on camera
 
 if send_requests:
     for step in kinematic_servo_range_trajectory:
@@ -230,5 +238,5 @@ if send_requests:
                 except Exception as e:
                     print("Exception: {}".format(str(e)))
                 time.sleep(0.05)
-                time.sleep(2)
+                time.sleep(1)
         print("")
