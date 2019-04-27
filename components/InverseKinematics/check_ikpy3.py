@@ -9,30 +9,7 @@ import time
 
 
 scale = 0.04  # For the plotting
-#
-# # Link lengths in centimeters
-# link1 = np.array([0, 0, 7.0])
-# link2 = np.array([0, 0, 3.0])
-# link3 = np.array([0, 0, 10.5])
-# link4 = np.array([0, 0, 9.0])
-# link5 = np.array([0, 0, 7.0])
-# link6 = np.array([0, 0, 10.0])
-#
-# # Joint rotation axis
-# rotation1 = np.array([0, 0, 1])
-# rotation2 = np.array([0, 1, 0])
-# rotation3 = np.array([0, 1, 0])
-# rotation4 = np.array([0, 1, 0])
-# rotation5 = np.array([0, 0, 1])
-# rotation6 = np.array([0, 0, 1])
-#
-# # Link bounds (degrees)
-# bounds1 = np.radians(np.array([-60, 60]))  # TODO: increase the z angles?
-# bounds2 = np.radians(np.array([-60, 60]))
-# bounds3 = np.radians(np.array([-60, 60]))
-# bounds4 = np.radians(np.array([-60, 60]))
-# bounds5 = np.radians(np.array([-60, 60]))
-# bounds6 = np.radians(np.array([-60, 60]))
+# scale = 1.0  # For the plotting
 
 # Link lengths in centimeters
 link6 = np.array([0, 0, 7.0])
@@ -51,14 +28,16 @@ rotation2 = np.array([0, 0, 1])
 rotation1 = np.array([0, 0, 1])
 
 # Link bounds (degrees)
-bounds6 = np.radians(np.array([-60, 60]))  # TODO: increase the z angles?
-bounds5 = np.radians(np.array([-60, 60]))
-bounds4 = np.radians(np.array([-60, 60]))
-bounds3 = np.radians(np.array([-60, 60]))
-bounds2 = np.radians(np.array([-60, 60]))
-bounds1 = np.radians(np.array([-60, 60]))
+angle_degree_limit = 75
+bounds6 = np.radians(np.array([-angle_degree_limit, angle_degree_limit]))  # TODO: increase the z angles?
+bounds5 = np.radians(np.array([-angle_degree_limit, angle_degree_limit]))
+bounds4 = np.radians(np.array([-angle_degree_limit, angle_degree_limit]))
+bounds3 = np.radians(np.array([-angle_degree_limit, angle_degree_limit]))
+bounds2 = np.radians(np.array([-angle_degree_limit, angle_degree_limit]))
+bounds1 = np.radians(np.array([-angle_degree_limit, angle_degree_limit]))
 
-active_links_mask = [True, True, True, True, False, False]  # Enabled/disabled links
+# active_links_mask = [True, True, True, True, False, False]  # Enabled/disabled links
+active_links_mask = [True, True, True, True, True, True]  # Enabled/disabled links
 
 left_arm_chain = Chain(name='left_arm', active_links_mask=active_links_mask, links=[
     URDFLink(
@@ -109,7 +88,7 @@ show_init = True
 send_requests = False
 
 if show_init:
-    init_position = [0, 0, 1]
+    init_position = np.array([0, 0, 1]) * scale
     target_position = init_position
     # target_position = [.08, .08, 4]
     print("Top position (radians): ", left_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
@@ -122,10 +101,20 @@ if show_init:
         np.eye(3))), ax, target=target_position)
     matplotlib.pyplot.show()
 
-# target_position = [0.5, -0.5, 0.0]
-# target_position = [.8, -.8, .8]
-# target_position = [.5, -.5, 1]
-target_position = [.8, -.8, 1]
+# target_position = np.array([0.5, -0.5, 0.0])
+# target_position = np.array([.8, -.8, .8])
+# target_position = np.array([.5, -.5, 1])
+# target_position = np.array([-.8, -.8, 1])
+# target_position = np.array([12.5, -12.5, 0]) * scale
+# target_position = np.array([20, -20.0, 20]) * scale
+# target_position = np.array([12.5, -12.5, 25]) * scale
+# target_position = np.array([-20, -20, 25]) * scale
+
+# target_position = np.array([12.5, -12.5, 2.0]) * scale
+# target_position = np.array([20, -20.0, 20]) * scale
+# target_position = np.array([12.5, -12.5, 25]) * scale
+target_position = np.array([-20, -20, 25]) * scale
+
 print("Target angles (radians): ", left_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
     target_position,
     np.eye(3))))
