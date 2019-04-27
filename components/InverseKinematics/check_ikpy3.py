@@ -23,7 +23,7 @@ rotation1 = np.array([0, 0, 1])
 rotation2 = np.array([0, 1, 0])
 rotation3 = np.array([0, 1, 0])
 rotation4 = np.array([0, 1, 0])
-rotation5 = np.array([0, 1, 0])
+rotation5 = np.array([0, 0, 1])
 rotation6 = np.array([0, 0, 1])
 
 # Link bounds (degrees)
@@ -35,7 +35,8 @@ bounds5 = np.radians(np.array([-60, 60]))
 bounds6 = np.radians(np.array([-60, 60]))
 
 # Enabled/disabled links
-active_links_mask = [True, True, True, True, True, True]
+active_links_mask = [True, True, True, True, False, False]
+
 
 left_arm_chain = Chain(name='left_arm', active_links_mask=active_links_mask, links=[
     URDFLink(
@@ -82,8 +83,53 @@ left_arm_chain = Chain(name='left_arm', active_links_mask=active_links_mask, lin
     )
 ])
 
+# left_arm_chain = Chain(name='left_arm', active_links_mask=active_links_mask, links=[
+#     URDFLink(
+#       name="shoulder",
+#       translation_vector=link1 * scale,
+#       orientation=[0, 0, 0],
+#       rotation=rotation1,
+#       bounds=bounds1
+#     ),
+#     URDFLink(
+#       name="elbow",
+#       translation_vector=link2 * scale,
+#       orientation=[0, 0, 0],
+#       rotation=rotation2,
+#       bounds=bounds2
+#     ),
+#     URDFLink(
+#       name="wrist",
+#       translation_vector=link3 * scale,
+#       orientation=[0, 0, 0],
+#       rotation=rotation3,
+#       bounds=bounds3
+#     ),
+#     URDFLink(
+#       name="wrist",
+#       translation_vector=link4 * scale,
+#       orientation=[0, 0, 0],
+#       rotation=rotation4,
+#       bounds=bounds4
+#     ),
+#     URDFLink(
+#       name="wrist",
+#       translation_vector=link5 * scale,
+#       orientation=[0, 0, 0],
+#       rotation=rotation5,
+#       bounds=bounds5
+#     ),
+#     URDFLink(
+#       name="wrist2",
+#       translation_vector=link6 * scale,
+#       orientation=[0, 0, 0],
+#       rotation=rotation6,
+#       bounds=bounds6
+#     )
+# ])
+
 show_init = True
-send_requests = False
+send_requests = True
 
 if show_init:
     init_position = [0, 0, 1]
@@ -115,14 +161,17 @@ left_arm_chain.plot(left_arm_chain.inverse_kinematics(geometry_utils.to_transfor
 matplotlib.pyplot.show()
 
 
-def radians_to_servo_range(x, x_min=-np.pi, x_max=np.pi, scaled_min=500.0, scaled_max=2500.0):
+def radians_to_servo_range(x, x_min=(-np.pi / 2.0), x_max=(np.pi / 2.0), scaled_min=500.0, scaled_max=2500.0):
     x = np.array(x)
     x_std = (x - x_min) / (x_max - x_min)
     return (x_std * (scaled_max - scaled_min) + scaled_min).astype(int)
 
 
-def get_kinematic_angle_trajectory(from_angle_radians, to_angle_radians, servo_monotony, steps=10):
+def get_kinematic_angle_trajectory(from_angle_radians_in, to_angle_radians_in, servo_monotony, steps=10):
     assert 1 < steps < 5000
+
+    from_angle_radians = np.multiply(from_angle_radians_in, servo_monotony)
+    to_angle_radians = np.multiply(to_angle_radians_in, servo_monotony)
 
     step_angle_radians = []
     for index in range(len(target_angle_radians)):
@@ -131,12 +180,10 @@ def get_kinematic_angle_trajectory(from_angle_radians, to_angle_radians, servo_m
     angle_trajectory = []
     step_angle_radians = np.array(step_angle_radians)
     current_angles = np.array(from_angle_radians)
-    current_angles = np.multiply(current_angles, servo_monotony)
     # angle_trajectory.append(current_angles)
 
     for _ in range(steps):
         current_angles = np.add(current_angles, step_angle_radians)
-        current_angles = np.multiply(current_angles, servo_monotony)
         angle_trajectory.append(current_angles)
 
     return angle_trajectory
@@ -151,8 +198,9 @@ target_angle_radians = left_arm_chain.inverse_kinematics(geometry_utils.to_trans
         np.eye(3)))
 
 # TODO: servo mask
-servo_mask = [True, True, True, True, False, False]
-current_servo_monotony = [1.0, 1.0, -1.0, 1.0, 1.0, 1.0]
+servo_mask = active_links_mask
+# current_servo_monotony = [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
+current_servo_monotony = [1.0, -1.0, 1.0, -1.0, -1.0, -1.0]
 
 kinematic_angle_trajectory = get_kinematic_angle_trajectory(init_angle_radians, target_angle_radians,
                                                             current_servo_monotony, trajectory_steps)
