@@ -7,30 +7,26 @@ from ikpy import geometry_utils
 import requests
 import time
 
-# send_requests = True
-send_requests = False
+send_requests = True
+# send_requests = False
 scale = 0.04  # For the plotting
 # scale = 1.0  # For the plotting
 servo_count = 6
 command_delay = 0.05  # seconds
-center_init = False
+center_init = True
+# center_init = False
 angle_degree_limit = 75  # degrees
-trajectory_steps = 5
+trajectory_steps = 10
 current_servo_monotony = [-1.0, -1.0, 1.0, -1.0, -1.0, -1.0]
 active_links_mask = [True, True, True, True, False, True]  # Enabled/disabled links
 gripper_servo = 2
 gripper_open = 600
 
-# target_position = np.array([0.5, -0.5, 0.0])
-# target_position = np.array([.8, -.8, .8])
-# target_position = np.array([.5, -.5, 1])
-# target_position = np.array([-.8, -.8, 1])
-
 # target_position = np.array([12.5, -12.5, 2.0]) * scale
 # target_position = np.array([20, -20.0, 20]) * scale
 # target_position = np.array([12.5, -12.5, 25]) * scale
-# target_position = np.array([-20, -20, 25]) * scale
-target_position = np.array([-5, -5, 40]) * scale
+target_position = np.array([-20, -20, 25]) * scale
+# target_position = np.array([-5, -5, 40]) * scale
 # target_position = np.array([-16, 0.0, 10]) * scale
 
 init_position = np.array([0, 0, 1]) * scale
@@ -118,6 +114,19 @@ def servo_range_to_xyz(servo_range, current_servo_monotony):
         ))[0][:3]
 
 
+def xyz_to_servo_range2(xyz, current_servo_monotony):
+    k = le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(xyz, np.eye(3)))
+    k = np.multiply(k, current_servo_monotony)
+    return radians_to_servo_range(k)
+
+
+def servo_range_to_xyz2(servo_range, current_servo_monotony):
+    return geometry_utils.from_transformation_matrix(
+        le_arm_chain.forward_kinematics(
+        np.multiply(servo_range_to_radians(servo_range), current_servo_monotony),
+        ))[0][:3]
+
+
 def servo_range_to_radians(x, x_min=500.0, x_max=2500.0, scaled_min=(-np.pi / 2.0), scaled_max=(np.pi / 2.0)):
     x_std = (np.array(x) - x_min) / (x_max - x_min)
     return x_std * (scaled_max - scaled_min) + scaled_min
@@ -149,19 +158,38 @@ def get_kinematic_angle_trajectory(from_angle_radians_in, to_angle_radians_in, s
 
     return angle_trajectory
 
-# TODO: init from request
-detect_last_position = True
 
+def get_kinematic_servo_trajectory(from_servo_values, to_servo_values, steps=10):
+    assert 1 < steps < 5000
+
+    print("from_servo_values: ", from_servo_values)
+    print("to_servo_values: ", to_servo_values)
+
+    step_servo_values = (from_servo_values - to_servo_values) / float(steps)
+
+    servo_values_trajectory = []
+    step_servo_values = np.array(step_servo_values)
+    current_angles = np.array(from_servo_values)
+
+    for _ in range(steps):
+        current_angles = np.add(current_angles, step_servo_values)
+        servo_values_trajectory.append(current_angles)
+
+    return (np.round(servo_values_trajectory, 0)).astype(int)
+
+
+# TODO: init from request
+detect_last_position = False
+init_servo_values = [1500, 1500, 1500, 1500, 1500, 1500]  # TODO: temp
 if detect_last_position:
     try:
-        # response = requests.put(url, data="")
-        if not send_requests:
+        if send_requests:
             url = "http://esp_02662e/"
             r = requests.put(url, data="")
-            print("r.status_code: ", r.status_code)
-            print("r.text: ", r.text)
+            # print("r.status_code: ", r.status_code)
+            # print("r.text: ", r.text)
             # print("r.encoding: ", r.encoding)
-            print("r.json(): ", r.json())
+            # print("r.json(): ", r.json())
             # print("r.headers['content-type']: ", r.headers['content-type'])
             # print("servo6: ", r.json()['variables']['servo6'])
             result = r.json()['variables']
@@ -178,9 +206,9 @@ if detect_last_position:
                 #                                          current_servo_monotony[::-1]))
                 #
                 # init_position2 = le_arm_chain.forward_kinematics(init_servo_radians)
-                predicted_init_position = np.round(servo_range_to_xyz(init_servo_values, current_servo_monotony), 2)
-                print("predicted_init_position: ", predicted_init_position)
-                print("proper init_position: ", target_position)
+                # init_position = np.round(servo_range_to_xyz2(init_servo_values, current_servo_monotony), 2)
+                # print("predicted_init_position: ", init_position)
+                # print("proper init_position: ", target_position)
 
     except Exception as e:
         print("Exception: {}".format(str(e)))
@@ -207,22 +235,28 @@ le_arm_chain.plot(le_arm_chain.inverse_kinematics(geometry_utils.to_transformati
     target=target_position)
 matplotlib.pyplot.show()
 
-init_angle_radians = le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
-        init_position,
-        np.eye(3)))
+
 target_angle_radians = le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
         target_position,
         np.eye(3)))
 
+# TODO: test 0
+# target_servo_range = radians_to_servo_range(np.multiply(target_angle_radians, current_servo_monotony))
+# kinematic_servo_range_trajectory = get_kinematic_servo_trajectory(init_servo_values, target_servo_range, trajectory_steps)
+# print("kinematic_servo_range_trajectory (steps: {}): {}".format(trajectory_steps, kinematic_servo_range_trajectory))
 
+# TODO: test 1
+init_angle_radians = le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
+        init_position,
+        np.eye(3)))
 kinematic_angle_trajectory = get_kinematic_angle_trajectory(init_angle_radians, target_angle_radians,
                                                             current_servo_monotony, trajectory_steps)
 print("kinematic_angle_trajectory (steps: {}): {}".format(trajectory_steps, kinematic_angle_trajectory))
-
 print("kinematic_angle_trajectory (steps: {}): {}".format(trajectory_steps, np.rad2deg(kinematic_angle_trajectory)))
-
 kinematic_servo_range_trajectory = radians_to_servo_range(kinematic_angle_trajectory)
 print("kinematic_servo_range_trajectory (steps: {}): {}".format(trajectory_steps, kinematic_servo_range_trajectory))
+
+
 
 # TODO: from to, to-from with MONOTONY
 servo_range1 = xyz_to_servo_range(target_position, current_servo_monotony)
