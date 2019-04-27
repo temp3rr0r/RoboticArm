@@ -15,7 +15,6 @@ def get_diameter(actee):
 
 
 def is_within_bounds(location1, min_bounds, max_bounds):
-    print(location1, max_bounds, min_bounds)
     for i in range(len(location1)):
         if location1[i] < min_bounds[i] or location1[i] > max_bounds[i]:
             return False
@@ -103,6 +102,7 @@ def initialize(state, actor):
         if arm_xyz == [0, 0, 1] and servo_values == [1500, 1500, 1500, 1500, 1500, 1500]:
             state.loc['arm_xyz'] = arm_xyz
             state.loc['servo_values'] = servo_values
+            state.initialized["arm"] = True
             return state
     pyhop.failure_reason = "{} can't initialize".format(actor)
     return False
@@ -110,6 +110,10 @@ def initialize(state, actor):
 
 def grab(state, actor, actee, from_):
     if actee == "ball":
+        if state.loc['ball'] != 'table':
+            pyhop.failure_reason = "{} can't locate {} from {}".format(actor, actee, from_)
+            return False
+
         arm_xyz, servo_values = get_xyz(actee)
         if arm_xyz != False:
             state.loc['arm_xyz'] = arm_xyz
@@ -121,6 +125,7 @@ def grab(state, actor, actee, from_):
                     if close_hand(actee_diameter):
                         state.loc['arm_xyz'] = arm_xyz
                         state.loc['servo_values'] = servo_values
+                        state.grabbed["ball"] = True
                         return state
     pyhop.failure_reason = "{} can't grab {} from {}".format(actor, actee, from_)
     return False
@@ -150,37 +155,46 @@ pyhop.print_operators()
 
 # Methods (compound tasks)
 
-# def transfer_to_container(state, a, x, y):
-#     if state.cash[a] >= taxi_rate(state.dist[x][y]):
-#         return [('initialize_arm', a, x), ('grab_ball', a, x, y), ('move_ball_to_container', a)]
-#     return False
+
+def put_grabbed(state, actor, actee, from_, to_):
+    if actor == "arm":
+        if state.grabbed["ball"]:
+            return [('put', actor, actee, to_)]
+
+    pyhop.failure_reason = "{} can't put_grabbed {} from {} to {}".format(actor, actee, from_, to_)
+    return False
+
+
+def intialize_transfer(state, actor, actee, from_, to_):
+    if actor == "arm":
+        return [('initialize', actor), ('grab', actor, actee, from_), ('put', actor, actee, to_)]
+
+    pyhop.failure_reason = "{} can't initialize and transfer {} from {} to {}".format(actor, actee, from_, to_)
+    return False
 
 
 def transfer(state, actor, actee, from_, to_):
     if actor == "arm":
-        return [('initialize', actor), ('grab', actor, actee, from_), ('put', actor, actee, to_)]
+        if state.initialized["arm"]:
+            return [('grab', actor, actee, from_), ('put', actor, actee, to_)]
 
-    pyhop.failure_reason = "Unknown actor: " + actor
+    pyhop.failure_reason = "{} can't transfer {} from {} to {}".format(actor, actee, from_, to_)
     return False
 
 
-pyhop.declare_methods('transfer_ball_to_container', transfer)
+pyhop.declare_methods('transfer_ball_to_container', intialize_transfer, put_grabbed, transfer)
 
 print('')
 pyhop.print_methods()
 
 current_world_model = pyhop.State('current_world_model')
-current_world_model.loc = {'ball': 'table'}  # TODO: check ball not on table -> False
-current_world_model.cash = {'ball': 20}
-current_world_model.max_bounds = {'xyz': [25, 25, 25]}
+current_world_model.loc = {'ball': 'table'}
+current_world_model.grabbed = {'ball': True}
+current_world_model.initialized = {'arm': True}
 current_world_model.min_bounds = {'xyz': [-25, -25, -25]}
-current_world_model.weather = {'raining': False}
-current_world_model.superhero = {'superman': True}
-current_world_model.owe = {'ball': 0}
-current_world_model.dist = {'table': {'container': 2}, 'container': {'table': 2}}
+current_world_model.max_bounds = {'xyz': [25, 25, 25]}
 
-htn_plan = pyhop.pyhop(current_world_model, [('transfer_ball_to_container', 'arm', 'ball', 'table', 'container')], verbose=1, all_plans=True)
-
-
+htn_plan = pyhop.pyhop(current_world_model, [('transfer_ball_to_container', 'arm', 'ball', 'table', 'container')],
+                       verbose=1, all_plans=True, sort_asc=True)
 if not htn_plan:
     print("-- Failure_reason: {}".format(pyhop.failure_reason))

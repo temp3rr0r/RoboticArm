@@ -206,7 +206,7 @@ def print_methods(mlist=methods):
 ############################################################
 # The actual planner
 
-def pyhop(state, tasks, verbose=0, all_plans=False):
+def pyhop(state, tasks, verbose=0, all_plans=False, sort_asc=True):
     """
     Try to find a plan that accomplishes tasks in state.
     If successful, return the plan. Otherwise return False.
@@ -218,6 +218,8 @@ def pyhop(state, tasks, verbose=0, all_plans=False):
     if verbose > 0:
         if all_plans:
             if isinstance(results, list):
+                if sort_asc:
+                    results.sort(key=len)
                 for i in range(len(results)):
                     print('** result {} = {}'.format(i, results[i]))
             else:
