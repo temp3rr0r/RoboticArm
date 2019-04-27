@@ -3,10 +3,6 @@ import pyhop
 
 # Helper methods
 
-def taxi_rate(dist):
-    return 1.5 + 0.5 * dist
-
-
 def center_servos(state):
     return move_arm(state, "center")
 
@@ -41,7 +37,7 @@ def get_xyz(actee):
         return arm_xyz, servo_values
 
     pyhop.failure_reason = "can't get xyz of {}".format(actee)
-    return False
+    return False, False
 
 
 def move_arm(state, to_):
@@ -50,24 +46,27 @@ def move_arm(state, to_):
     if to_ == "ball":
         arm_xyz, servo_values = get_xyz("ball")
         if not is_within_bounds(arm_xyz, arm_min_bounds, arm_max_bounds):
-            pyhop.failure_reason = "can't move arm to {}: {} outside of bounds: {} {}".format(to_, arm_xyz, arm_min_bounds, arm_max_bounds)
-            return False
+            pyhop.failure_reason = "can't move arm to {}: {} outside of bounds: {} {}"\
+                .format(to_, arm_xyz, arm_min_bounds, arm_max_bounds)
+            return False, False
         return arm_xyz, servo_values
     elif to_ == "container":
         arm_xyz, servo_values = get_xyz("container")
         if not is_within_bounds(arm_xyz, arm_min_bounds, arm_max_bounds):
-            pyhop.failure_reason = "can't move arm to {}: {} outside of bounds: {} {}".format(to_, arm_xyz, arm_min_bounds, arm_max_bounds)
-            return False
+            pyhop.failure_reason = "can't move arm to {}: {} outside of bounds: {} {}" \
+                .format(to_, arm_xyz, arm_min_bounds, arm_max_bounds)
+            return False, False
         return arm_xyz, servo_values
     elif to_ == "center":
         arm_xyz, servo_values = get_xyz("center")
         if not is_within_bounds(arm_xyz, arm_min_bounds, arm_max_bounds):
-            pyhop.failure_reason = "can't move arm to {}: {} outside of bounds: {} {}".format(to_, arm_xyz, arm_min_bounds, arm_max_bounds)
-            return False
+            pyhop.failure_reason = "can't move arm to {}: {} outside of bounds: {} {}" \
+                .format(to_, arm_xyz, arm_min_bounds, arm_max_bounds)
+            return False, False
         return arm_xyz, servo_values
     else:
         pyhop.failure_reason = "can't move arm to {}".format(to_)
-        return False
+        return False, False
 
 
 def close_hand(distance):
@@ -128,16 +127,23 @@ def grab(state, actor, actee, from_):
 
 
 def put(state, actor, actee, to_):
-    if True:
-        # Get xyz of container
-        # move arm over the container
+    if to_ == "container":
+        arm_xyz, servo_values = get_xyz(to_)
+        if arm_xyz != False:
+            state.loc['arm_xyz'] = arm_xyz
+            state.loc['servo_values'] = servo_values
+            arm_xyz, servo_values = move_arm(state, to_)
+            if arm_xyz != False:
+                actee_diameter = get_diameter(actee)
+                if open_hand(actee_diameter):
+                    state.loc['arm_xyz'] = arm_xyz
+                    state.loc['servo_values'] = servo_values
+                    return state
         # open hand
-        return state
-    pyhop.failure_reason = "TODO"
+    pyhop.failure_reason = "{} can't put {} to {}".format(actor, actee, to_)
     return False
 
 
-# pyhop.declare_operators(walk, initialize_arm, grab_ball, move_ball_to_container)
 pyhop.declare_operators(initialize, grab, put, move_arm, close_hand, open_hand)
 print('')
 pyhop.print_operators()
