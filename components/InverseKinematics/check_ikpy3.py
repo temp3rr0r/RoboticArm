@@ -7,9 +7,33 @@ from ikpy import geometry_utils
 import requests
 import time
 
-
+# send_requests = True
+send_requests = False
 scale = 0.04  # For the plotting
 # scale = 1.0  # For the plotting
+servo_count = 6
+command_delay = 0.05  # seconds
+center_init = False
+angle_degree_limit = 75  # degrees
+trajectory_steps = 5
+current_servo_monotony = [-1.0, -1.0, 1.0, -1.0, -1.0, -1.0]
+active_links_mask = [True, True, True, True, False, True]  # Enabled/disabled links
+gripper_servo = 2
+gripper_open = 600
+
+# target_position = np.array([0.5, -0.5, 0.0])
+# target_position = np.array([.8, -.8, .8])
+# target_position = np.array([.5, -.5, 1])
+# target_position = np.array([-.8, -.8, 1])
+
+target_position = np.array([12.5, -12.5, 2.0]) * scale
+# target_position = np.array([20, -20.0, 20]) * scale
+# target_position = np.array([12.5, -12.5, 25]) * scale
+# target_position = np.array([-20, -20, 25]) * scale
+# target_position = np.array([-5, -5, 40]) * scale
+# target_position = np.array([-16, 0.0, 10]) * scale
+
+init_position = np.array([0, 0, 1]) * scale
 
 # Link lengths in centimeters
 link6 = np.array([0, 0, 7.0])
@@ -28,18 +52,14 @@ rotation2 = np.array([0, 0, 1])
 rotation1 = np.array([0, 0, 1])
 
 # Link bounds (degrees)
-angle_degree_limit = 75
-bounds6 = np.radians(np.array([-angle_degree_limit, angle_degree_limit]))  # TODO: increase the z angles?
+bounds6 = np.radians(np.array([-angle_degree_limit, angle_degree_limit]))
 bounds5 = np.radians(np.array([-angle_degree_limit, angle_degree_limit]))
 bounds4 = np.radians(np.array([-angle_degree_limit, angle_degree_limit]))
 bounds3 = np.radians(np.array([-angle_degree_limit, angle_degree_limit]))
 bounds2 = np.radians(np.array([-angle_degree_limit, angle_degree_limit]))
 bounds1 = np.radians(np.array([-angle_degree_limit, angle_degree_limit]))
 
-# active_links_mask = [True, True, True, True, False, False]  # Enabled/disabled links
-active_links_mask = [True, True, True, True, True, True]  # Enabled/disabled links
-
-left_arm_chain = Chain(name='left_arm', active_links_mask=active_links_mask, links=[
+le_arm_chain = Chain(name='le_arm', active_links_mask=active_links_mask, links=[
     URDFLink(
       name="link6",
       translation_vector=link6 * scale,
@@ -84,47 +104,21 @@ left_arm_chain = Chain(name='left_arm', active_links_mask=active_links_mask, lin
     )
 ])
 
-show_init = True
-send_requests = False
 
-if show_init:
-    init_position = np.array([0, 0, 1]) * scale
-    target_position = init_position
-    # target_position = [.08, .08, 4]
-    print("Top position (radians): ", left_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
-        target_position,
-        np.eye(3))))
-    ax = matplotlib.pyplot.figure().add_subplot(111, projection='3d')
+def xyz_to_servo_range(xyz):
+    return radians_to_servo_range(
+        le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(xyz, np.eye(3))))
 
-    left_arm_chain.plot(left_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
-        target_position,
-        np.eye(3))), ax, target=target_position)
-    matplotlib.pyplot.show()
 
-# target_position = np.array([0.5, -0.5, 0.0])
-# target_position = np.array([.8, -.8, .8])
-# target_position = np.array([.5, -.5, 1])
-# target_position = np.array([-.8, -.8, 1])
-# target_position = np.array([12.5, -12.5, 0]) * scale
-# target_position = np.array([20, -20.0, 20]) * scale
-# target_position = np.array([12.5, -12.5, 25]) * scale
-# target_position = np.array([-20, -20, 25]) * scale
+def servo_range_to_xyz(servo_range):
+    return geometry_utils.from_transformation_matrix(le_arm_chain.forward_kinematics(
+        servo_range_to_radians(servo_range)))[0][:3]
 
-# target_position = np.array([12.5, -12.5, 2.0]) * scale
-# target_position = np.array([20, -20.0, 20]) * scale
-# target_position = np.array([12.5, -12.5, 25]) * scale
-target_position = np.array([-20, -20, 25]) * scale
 
-print("Target angles (radians): ", left_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
-    target_position,
-    np.eye(3))))
-ax = matplotlib.pyplot.figure().add_subplot(111, projection='3d')
-
-left_arm_chain.plot(left_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
-    target_position,
-    np.eye(3))), ax,
-    target=target_position)
-matplotlib.pyplot.show()
+def servo_range_to_radians(x, x_min=500.0, x_max=2500.0, scaled_min=(-np.pi / 2.0), scaled_max=(np.pi / 2.0)):
+    x = np.array(x)
+    x_std = (x - x_min) / (x_max - x_min)
+    return x_std * (scaled_max - scaled_min) + scaled_min
 
 
 def radians_to_servo_range(x, x_min=(-np.pi / 2.0), x_max=(np.pi / 2.0), scaled_min=500.0, scaled_max=2500.0):
@@ -154,18 +148,72 @@ def get_kinematic_angle_trajectory(from_angle_radians_in, to_angle_radians_in, s
 
     return angle_trajectory
 
+# TODO: init from request
+detect_last_position = False
 
-trajectory_steps = 5
-init_angle_radians = left_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
+if detect_last_position:
+    try:
+        # response = requests.put(url, data="")
+        if not send_requests:
+            url = "http://esp_02662e/"
+            r = requests.put(url, data="")
+            # print("r.status_code: ", r.status_code)
+            # print("r.text: ", r.text)
+            # print("r.encoding: ", r.encoding)
+            # print("r.json(): ", r.json())
+            # print("r.headers['content-type']: ", r.headers['content-type'])
+            # print("servo6: ", r.json()['variables']['servo6'])
+            result = r.json()['variables']
+            # print("servo6: ", result['servo6'], result['servo5'])
+            if r.status_code == 200:
+                result = r.json()["variables"]
+                init_servo_values = np.array([result["servo6"], result["servo5"], result["servo4"], result["servo3"],
+                                              result["servo2"], result["servo1"]])
+
+                init_servo_radians = np.multiply(servo_range_to_radians(init_servo_values), current_servo_monotony)
+                print("init_servo_radians: ", init_servo_radians)
+
+                print("init_servo_radians: ", np.multiply(servo_range_to_radians(init_servo_values),
+                                                         current_servo_monotony[::-1]))
+
+                init_position = le_arm_chain.forward_kinematics(init_servo_radians)
+            #     print("init_position: ", predicted_init_position)
+            #     print("init_position: ", predicted_init_position[:3, 3])
+                print("proper init_position: ", target_position)
+            #     init_position = predicted_init_position[:3, 3]
+
+    except Exception as e:
+        print("Exception: {}".format(str(e)))
+
+if center_init:
+    print("Top position (radians): ", le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
+        init_position,
+        np.eye(3))))
+    ax = matplotlib.pyplot.figure().add_subplot(111, projection='3d')
+
+    le_arm_chain.plot(le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
+        init_position,
+        np.eye(3))), ax, target=init_position)
+    matplotlib.pyplot.show()
+
+print("Target angles (radians): ", le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
+    target_position,
+    np.eye(3))))
+ax = matplotlib.pyplot.figure().add_subplot(111, projection='3d')
+
+le_arm_chain.plot(le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
+    target_position,
+    np.eye(3))), ax,
+    target=target_position)
+matplotlib.pyplot.show()
+
+init_angle_radians = le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
         init_position,
         np.eye(3)))
-target_angle_radians = left_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
+target_angle_radians = le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
         target_position,
         np.eye(3)))
 
-# TODO: servo mask
-servo_mask = active_links_mask
-current_servo_monotony = [-1.0, -1.0, 1.0, -1.0, -1.0, -1.0]
 
 kinematic_angle_trajectory = get_kinematic_angle_trajectory(init_angle_radians, target_angle_radians,
                                                             current_servo_monotony, trajectory_steps)
@@ -176,12 +224,54 @@ print("kinematic_angle_trajectory (steps: {}): {}".format(trajectory_steps, np.r
 kinematic_servo_range_trajectory = radians_to_servo_range(kinematic_angle_trajectory)
 print("kinematic_servo_range_trajectory (steps: {}): {}".format(trajectory_steps, kinematic_servo_range_trajectory))
 
-servo_count = 6
-command_delay = 0.01  # seconds
+# TODO: from to, to-from
+print("\n")
+tar1 = target_position
+xyz1 = geometry_utils.to_transformation_matrix(tar1, np.eye(3))
+from1 = le_arm_chain.inverse_kinematics(xyz1)
+to1 = radians_to_servo_range(from1)
+print("\n", tar1, " -> \n", xyz1, " -> \n",
+    le_arm_chain.inverse_kinematics(xyz1), " -> \n",
+    radians_to_servo_range(from1), " -> \n",
+    servo_range_to_radians(to1), " -> \n",
+    geometry_utils.from_transformation_matrix(le_arm_chain.forward_kinematics(from1))[0][:3], "\n")
+
+print("\n", tar1, " -> \n",
+    radians_to_servo_range(le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(tar1, np.eye(3)))), " -> \n",
+    geometry_utils.from_transformation_matrix(le_arm_chain.forward_kinematics(servo_range_to_radians(to1)))[0][:3], "\n")
+
+ak1 = xyz_to_servo_range(tar1)
+ak2 = np.round(servo_range_to_xyz(ak1), 2)
+print("\n", tar1, " -> \n",
+    ak1, " -> \n",
+    ak2, "\n")
+
+# print("tar1: {} xyz1: {} from1: {} to1: {}".format(tar1, xyz1, from1, to1))
+# to2 = to1
+# from2 = servo_range_to_radians(to2)
+# xyz2 = le_arm_chain.forward_kinematics(from2)
+# tar2 = geometry_utils.from_transformation_matrix(xyz2)
+#
+# print("tar2: {} xyz2: {} from2: {} to2: {}".format(tar2, xyz2, from2, to2))
+#
+# print("from1: {}".format(from1))
+# print("from2: {}".format(from2))
+#
+# print("xyz1: {}".format(xyz1))
+# print("xyz2: {}".format(xyz2))
+
+
+# TODO: https
 
 # TODO: AR ocv virtual grid on camera
+servo_mask = active_links_mask  # TODO: servo mask
 
 if send_requests:
+
+    url = "http://ESP_02662E/set_servo{}?value={}".format(gripper_servo, gripper_open)  # TODO: gripper horizontal orientation
+    requests.put(url, data="")
+    time.sleep(command_delay)
+
     for step in kinematic_servo_range_trajectory:
         for i in range(len(step)):
             if servo_mask[i]:
@@ -194,7 +284,9 @@ if send_requests:
                 try:
                     # response = requests.put(url, data="")
                     if send_requests:
-                        requests.put(url, data="")
+                        r = requests.put(url, data="")
+                        if r.status_code != 200:
+                            break  # TODO: abort
                 except Exception as e:
                     print("Exception: {}".format(str(e)))
                 time.sleep(command_delay)

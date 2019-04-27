@@ -20,6 +20,12 @@ def radians_to_servo_range(x, x_min=(-np.pi / 2.0), x_max=(np.pi / 2.0), scaled_
     x_std = (x - x_min) / (x_max - x_min)
     return np.round(x_std * (scaled_max - scaled_min) + scaled_min, 0).astype(int)
 
+
+def servo_range_to_radians(x, x_min=500.0, x_max=2500.0, scaled_min=(-np.pi / 2.0), scaled_max=(np.pi / 2.0)):
+    x = np.array(x)
+    x_std = (x - x_min) / (x_max - x_min)
+    return x_std * (scaled_max - scaled_min) + scaled_min
+
 values1 = np.array([1500.0, 500, 2500, 1300])
 # audio_scaled = minmax_scale(audio, feature_range=(-1,1))
 # shape = image.shape
@@ -38,5 +44,8 @@ print("angle: {} -> radians: {}".format(values3a, values3))
 
 print("radians: {} -> servo: {}".format(values3, radians_to_servo_range_unrounded(values3)))
 
-
 print("radians: {} -> servo(rounded): {}".format(values3, radians_to_servo_range(values3)))
+radians = values3
+servo_values = radians_to_servo_range(values3)
+
+print("servo(rounded): {} -> radians: {}".format(servo_values, servo_range_to_radians(servo_values)))
