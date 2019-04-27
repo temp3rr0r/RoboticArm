@@ -13,7 +13,7 @@ scale = 0.04  # For the plotting
 # scale = 1.0  # For the plotting
 servo_count = 6
 command_delay = 0.05  # seconds
-center_init = False
+center_init = True
 angle_degree_limit = 75  # degrees
 trajectory_steps = 5
 current_servo_monotony = [-1.0, -1.0, 1.0, -1.0, -1.0, -1.0]
@@ -26,9 +26,9 @@ gripper_open = 600
 # target_position = np.array([.5, -.5, 1])
 # target_position = np.array([-.8, -.8, 1])
 
-target_position = np.array([12.5, -12.5, 2.0]) * scale
+# target_position = np.array([12.5, -12.5, 2.0]) * scale
 # target_position = np.array([20, -20.0, 20]) * scale
-# target_position = np.array([12.5, -12.5, 25]) * scale
+target_position = np.array([12.5, -12.5, 25]) * scale
 # target_position = np.array([-20, -20, 25]) * scale
 # target_position = np.array([-5, -5, 40]) * scale
 # target_position = np.array([-16, 0.0, 10]) * scale
@@ -113,6 +113,19 @@ def xyz_to_servo_range(xyz):
 def servo_range_to_xyz(servo_range):
     return geometry_utils.from_transformation_matrix(le_arm_chain.forward_kinematics(
         servo_range_to_radians(servo_range)))[0][:3]
+
+#current_servo_monotony = [-1.0, -1.0, 1.0, -1.0, -1.0, -1.0]
+def xyz_to_servo_range2(xyz, current_servo_monotony):
+    k = le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(xyz, np.eye(3)))
+    k = np.multiply(k, np.negative(current_servo_monotony))
+    return radians_to_servo_range(k)
+
+
+def servo_range_to_xyz2(servo_range, current_servo_monotony):
+    return geometry_utils.from_transformation_matrix(
+        le_arm_chain.forward_kinematics(
+        np.multiply(servo_range_to_radians(servo_range), np.negative(current_servo_monotony)),
+        ))[0][:3]
 
 
 def servo_range_to_radians(x, x_min=500.0, x_max=2500.0, scaled_min=(-np.pi / 2.0), scaled_max=(np.pi / 2.0)):
@@ -225,41 +238,18 @@ kinematic_servo_range_trajectory = radians_to_servo_range(kinematic_angle_trajec
 print("kinematic_servo_range_trajectory (steps: {}): {}".format(trajectory_steps, kinematic_servo_range_trajectory))
 
 # TODO: from to, to-from
-print("\n")
-tar1 = target_position
-xyz1 = geometry_utils.to_transformation_matrix(tar1, np.eye(3))
-from1 = le_arm_chain.inverse_kinematics(xyz1)
-to1 = radians_to_servo_range(from1)
-print("\n", tar1, " -> \n", xyz1, " -> \n",
-    le_arm_chain.inverse_kinematics(xyz1), " -> \n",
-    radians_to_servo_range(from1), " -> \n",
-    servo_range_to_radians(to1), " -> \n",
-    geometry_utils.from_transformation_matrix(le_arm_chain.forward_kinematics(from1))[0][:3], "\n")
+servo_range1 = xyz_to_servo_range(target_position)
+target2 = np.round(servo_range_to_xyz(servo_range1), 2)
+print("\n", target_position, " -> \n",
+      servo_range1, " -> \n",
+      target2, "\n")
 
-print("\n", tar1, " -> \n",
-    radians_to_servo_range(le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(tar1, np.eye(3)))), " -> \n",
-    geometry_utils.from_transformation_matrix(le_arm_chain.forward_kinematics(servo_range_to_radians(to1)))[0][:3], "\n")
-
-ak1 = xyz_to_servo_range(tar1)
-ak2 = np.round(servo_range_to_xyz(ak1), 2)
-print("\n", tar1, " -> \n",
-    ak1, " -> \n",
-    ak2, "\n")
-
-# print("tar1: {} xyz1: {} from1: {} to1: {}".format(tar1, xyz1, from1, to1))
-# to2 = to1
-# from2 = servo_range_to_radians(to2)
-# xyz2 = le_arm_chain.forward_kinematics(from2)
-# tar2 = geometry_utils.from_transformation_matrix(xyz2)
-#
-# print("tar2: {} xyz2: {} from2: {} to2: {}".format(tar2, xyz2, from2, to2))
-#
-# print("from1: {}".format(from1))
-# print("from2: {}".format(from2))
-#
-# print("xyz1: {}".format(xyz1))
-# print("xyz2: {}".format(xyz2))
-
+# TODO: from to, to-from with MONOTONY
+servo_range1 = xyz_to_servo_range2(target_position, current_servo_monotony)
+target2 = np.round(servo_range_to_xyz2(servo_range1, current_servo_monotony), 2)
+print("\n", target_position, " -> \n",
+      servo_range1, " -> \n",
+      target2, "\n")
 
 # TODO: https
 
