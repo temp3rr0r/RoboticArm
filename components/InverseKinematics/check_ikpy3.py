@@ -135,7 +135,7 @@ left_arm_chain = Chain(name='left_arm', active_links_mask=active_links_mask, lin
 # ])
 
 show_init = True
-send_requests = True
+send_requests = False
 
 if show_init:
     init_position = [0, 0, 1]
@@ -151,10 +151,10 @@ if show_init:
         np.eye(3))), ax, target=target_position)
     matplotlib.pyplot.show()
 
-# target_position = [0.5, 0.5, 0.0]
-target_position = [.8, -.8, .8]
-# target_position = [.5, .5, 1]
-# target_position = [.8, .8, 1]
+# target_position = [0.5, -0.5, 0.0]
+# target_position = [.8, -.8, .8]
+# target_position = [.5, -.5, 1]
+target_position = [.8, -.8, 1]
 print("Target angles (radians): ", left_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
     target_position,
     np.eye(3))))
@@ -205,7 +205,6 @@ target_angle_radians = left_arm_chain.inverse_kinematics(geometry_utils.to_trans
 
 # TODO: servo mask
 servo_mask = active_links_mask
-# current_servo_monotony = [-1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
 current_servo_monotony = [-1.0, -1.0, 1.0, -1.0, -1.0, -1.0]
 
 kinematic_angle_trajectory = get_kinematic_angle_trajectory(init_angle_radians, target_angle_radians,
@@ -218,6 +217,7 @@ kinematic_servo_range_trajectory = radians_to_servo_range(kinematic_angle_trajec
 print("kinematic_servo_range_trajectory (steps: {}): {}".format(trajectory_steps, kinematic_servo_range_trajectory))
 
 servo_count = 6
+command_delay = 0.01  # seconds
 
 # TODO: AR ocv virtual grid on camera
 
@@ -226,9 +226,9 @@ if send_requests:
         for i in range(len(step)):
             if servo_mask[i]:
                 servo_value = step[i]
-                if servo_value < 500 and servo_value > 2500:
-                    servo_value = 1550  # TODO: change
                 current_servo = servo_count - i
+                if current_servo == 1 and servo_value < 1500:  # Gripper MUST be >= 1500
+                    servo_value = 1500
                 url = "http://ESP_02662E/set_servo{}?value={}".format(current_servo, servo_value)
                 print(url)
                 try:
@@ -237,6 +237,5 @@ if send_requests:
                         requests.put(url, data="")
                 except Exception as e:
                     print("Exception: {}".format(str(e)))
-                time.sleep(0.05)
-                time.sleep(1)
+                time.sleep(command_delay)
         print("")
