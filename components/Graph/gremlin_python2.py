@@ -10,7 +10,7 @@ current_work_directory = os.getcwd()
 g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin', 'g'))
 statics.load_statics(globals())
 
-load_graph = False
+load_graph = True
 if load_graph:
     g.io(current_work_directory + "/" + "world_model.xml").read().iterate()
 
@@ -49,6 +49,12 @@ if create_graph:
     # gripper_servo = 2
     # gripper_open = 600
     # target_position = [-20, -20, 25]
+    # init_position = [0, 0, 1]
+    # min_steps = 1
+    # max_steps = 5000
+    # detect_last_position = False
+    # init_servo_values = [1500, 1500, 1500, 1500, 1500, 1500]
+    # url = "http://ESP_02662E/"
     v_kinematic_model = g.addV("model").property(id, 6).property("name", "kinematic").property("scale", 0.04)\
         .property("servo_count", 6) \
         .property("send_requests", False) \
@@ -66,18 +72,11 @@ if create_graph:
         .property("url", "http://ESP_02662E/")\
         .next()
 
-    # init_position = [0, 0, 1]
-    # min_steps = 1
-    # max_steps = 5000
-    # detect_last_position = False
-    # init_servo_values = [1500, 1500, 1500, 1500, 1500, 1500]
-    # url = "http://ESP_02662E/"
+    # le_arm_chain = Chain(name='le_arm')
+    v_chain = g.addV("chain").property("name", "le_arm_chain").next()
+    l2 = g.V(Bindings.of('id', v_kinematic_model)).addE('simulates').to(v_chain).iterate()
 
-    # .property("init_position", [0, 0, 1]).property("min_steps", 1).property("max_steps", 5000) \
-    #     .property("detect_last_position", False).property("init_servo_values", [1500, 1500, 1500, 1500, 1500, 1500]) \
-    #     .property("url", "http://ESP_02662E/")
-
-    # # Link lengths in centimeters
+    # # Link lengths in centimeters  # TODO: add units of measurement
     # link6 = [0, 0, 7.0]
     # link5 = [0, 0, 3.0]
     # link4 = [0, 0, 10.5]
@@ -98,12 +97,6 @@ if create_graph:
     # bounds3 = [-75, 75]
     # bounds2 = [-75, 75]
     # bounds1 = [-75, 75]
-
-    # le_arm_chain = Chain(name='le_arm',
-    v_chain = g.addV("chain").property("name", "le_arm_chain").next()
-
-    l2 = g.V(Bindings.of('id', v_kinematic_model)).addE('simulates').to(v_chain).iterate()
-
     vlink6 = g.addV("link").property("name", "link6").property("type", "URDFLink")\
         .property("translation_vector", [0, 0, 7.0]).property("orientation", [0, 0, 0])\
         .property("rotation", [0, 0, 1]).property("bounds", [-75, 75]).next()
@@ -122,7 +115,6 @@ if create_graph:
     vlink1 = g.addV("link").property("name", "link1").property("type", "URDFLink")\
         .property("translation_vector", [0, 0, 10.0]).property("orientation", [0, 0, 0])\
         .property("rotation", [0, 0, 1]).property("bounds", [-75, 75]).next()
-
     l_tolink6 = g.V(Bindings.of('id', v_chain)).addE('connects_to').to(vlink6).iterate()
     l_tolink5 = g.V(Bindings.of('id', vlink6)).addE('connects_to').to(vlink5).iterate()
     l_tolink4 = g.V(Bindings.of('id', vlink5)).addE('connects_to').to(vlink4).iterate()
@@ -148,4 +140,8 @@ print("servo_speed: {}".format(servo_speed))
 servo_count = g.V().has("name", "kinematic").values("servo_count").next()  # Read data
 print("servo_count: {}".format(servo_count))
 
+servo_count = g.V().has("name", "kinematic").values("servo_count").next()  # Read data
+print("servo_count: {}".format(servo_count))
 
+print("url: {}".format(g.V().has("name", "kinematic").values("url").next()))
+print("link3 translation_vector: {}".format(g.V().has("name", "link3").values("translation_vector").next()))
