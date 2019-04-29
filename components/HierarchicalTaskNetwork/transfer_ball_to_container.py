@@ -3,6 +3,7 @@ import time
 
 # Helper methods
 
+
 def center_servos(state):
     return move_arm(state, "center")
 
@@ -144,7 +145,6 @@ def put(state, actor, actee, to_):
                     state.loc['arm_xyz'] = arm_xyz
                     state.loc['servo_values'] = servo_values
                     return state
-        # open hand
     pyhop.failure_reason = "{} can't put {} to {}".format(actor, actee, to_)
     return False
 
@@ -195,13 +195,13 @@ current_world_model.grabbed = {'ball': True}
 current_world_model.initialized = {'arm': True}
 current_world_model.min_bounds = {'xyz': [-25, -25, -25]}
 current_world_model.max_bounds = {'xyz': [25, 25, 25]}
-current_world_model.plan = "None"
+current_world_model.plans = "None"
 
-htn_plan = pyhop.pyhop(current_world_model, [('transfer_ball_to_container', 'arm', 'ball', 'table', 'container')],
+htn_plans = pyhop.pyhop(current_world_model, [('transfer_ball_to_container', 'arm', 'ball', 'table', 'container')],
                        verbose=1, all_plans=True, sort_asc=True)
 
-if not htn_plan:
+if not htn_plans:
     print("-- No valid plan. Failure_reason: {}".format(pyhop.failure_reason))
 else:
-    current_world_model.plan = htn_plan[0]
-    print("current_world_model.plan: ", current_world_model.plan)
+    current_world_model.plans = htn_plans
+    print("Best current_world_model.plan: ", current_world_model.plans[0])
