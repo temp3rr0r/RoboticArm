@@ -122,6 +122,77 @@ if create_graph:
     l_tolink2 = g.V(Bindings.of('id', vlink3)).addE('connects_to').to(vlink2).iterate()
     l_tolink1 = g.V(Bindings.of('id', vlink2)).addE('connects_to').to(vlink1).iterate()
 
+    # world model
+    # current_world_model = pyhop.State('current_world_model')
+    # current_world_model.iteration = 0
+    # current_world_model.timestamp = time.time()
+    # current_world_model.location = {'ball': 'table'}
+    # current_world_model.grabbed = {'ball': True}
+    # current_world_model.initialized = {'arm': True}
+    # current_world_model.min_bounds = {'xyz': [-25, -25, -25]}
+    # current_world_model.max_bounds = {'xyz': [25, 25, 25]}
+    # current_world_model.plans = "None"
+    v_world_model = g.addV("model").property(id, 9)\
+        .property("type", "world_model")\
+        .property("name", "current_world_model")\
+        .property("State", "current_world_model")\
+        .property("iteration", 0)\
+        .property("timestamp", 1556504401)\
+        .property("location", {"ball": "table"})\
+        .property("grabbed", {"ball": True}).property("initialized", {"arm": True})\
+        .property("min_bounds", {"xyz": [-25, -25, -25]})\
+        .property("max_bounds", {"xyz": [25, 25, 25]})\
+        .property("plans", "None").next()
+
+    # Planner
+    # pyhop.failure_reason = "can't get xyz of {}".format(actee)
+    # htn_plans = pyhop.pyhop(current_world_model, [('transfer_ball_to_container', 'arm', 'ball', 'table',
+    # 'container')], verbose=1, all_plans=True, sort_asc=True)
+    v_planner = g.addV("planner").property(id, 10) \
+        .property("type", "Hierarchical Task Network") \
+        .property("name", "pyhop") \
+        .property("failure_reason", "") \
+        .property("world_model", "current_world_model") \
+        .property("goal", [('transfer_ball_to_container', 'arm', 'ball', 'table', 'container')], ) \
+        .property("verbose", 1) \
+        .property("all_plans", True) \
+        .property("sort_asc", True) \
+        .next()
+    l_planner_world_model = g.V(Bindings.of('id', v_planner)).addE('uses').to(v_world_model).iterate()
+
+    # pyhop.declare_operators(initialize, grab, put, move_arm, close_hand, open_hand)
+    v_declared_operators = g.addV("declare").property("type", "operators")\
+        .property("operators", ["initialize", "grab", "put", "move_arm", "close_hand", "open_hand"])\
+        .next()
+    l_planner_v_declared_operators = g.V(Bindings.of('id', v_planner)).addE('declares').to(
+        v_declared_operators).iterate()
+
+    # pyhop.declare_methods('transfer_ball_to_container', initialize_transfer, put_grabbed, transfer)
+    v_declared_methods = g.addV("declare").property("type", "methods")\
+        .property("task", "transfer_ball_to_container")\
+        .property("methods", ["initialize_transfer", "put_grabbed", "transfer"])\
+        .next()
+    l_planner_v_declared_methods = g.V(Bindings.of('id', v_planner)).addE('declares').to(v_declared_methods).iterate()
+
+    # # TODO: tasks and stuff
+    # # helper_methods
+    # def get_xyz(actee):
+    # is_within_bounds(location1, min_bounds, max_bounds):
+    # get_diameter(actee):
+    # center_servos(state):
+    # # Operators (primitive tasks)
+    # def move_arm(state, to_):
+    # def close_hand(distance):
+    # def open_hand(distance):
+    # def initialize(state, actor):
+    # def grab(state, actor, actee, from_):
+    # def put(state, actor, actee, to_):
+    # # Methods (compound tasks)
+    # def put_grabbed(state, actor, actee, from_, to_):
+    # def intialize_transfer(state, actor, actee, from_, to_):
+    # def transfer(state, actor, actee, from_, to_):
+
+    # Store to disk
     g.io(current_work_directory + "/" + "world_model.xml").write().iterate()
     g.io(current_work_directory + "/" + "world_model.json").write().iterate()
 

@@ -40,6 +40,8 @@ def get_xyz(actee):
     return False, False
 
 
+# Operators (primitive tasks)
+
 def move_arm(state, to_):
     arm_min_bounds = state.min_bounds["xyz"]
     arm_max_bounds = state.max_bounds["xyz"]
@@ -95,14 +97,12 @@ def open_hand(distance):
     return False
 
 
-# Operators (primitive tasks)
-
 def initialize(state, actor):
     if actor == "arm":
         arm_xyz, servo_values = center_servos(state)
         if arm_xyz == [0, 0, 1] and servo_values == [1500, 1500, 1500, 1500, 1500, 1500]:
-            state.loc['arm_xyz'] = arm_xyz
-            state.loc['servo_values'] = servo_values
+            state.location['arm_xyz'] = arm_xyz
+            state.location['servo_values'] = servo_values
             state.initialized["arm"] = True
             return state
     pyhop.failure_reason = "{} can't initialize".format(actor)
@@ -111,21 +111,21 @@ def initialize(state, actor):
 
 def grab(state, actor, actee, from_):
     if actee == "ball":
-        if state.loc['ball'] != 'table':
+        if state.location['ball'] != 'table':
             pyhop.failure_reason = "{} can't locate {} from {}".format(actor, actee, from_)
             return False
 
         arm_xyz, servo_values = get_xyz(actee)
         if arm_xyz != False:
-            state.loc['arm_xyz'] = arm_xyz
-            state.loc['servo_values'] = servo_values
+            state.location['arm_xyz'] = arm_xyz
+            state.location['servo_values'] = servo_values
             actee_diameter = get_diameter(actee)
             if open_hand(actee_diameter):
                 arm_xyz, servo_values = move_arm(state, actee)
                 if arm_xyz != False:
                     if close_hand(actee_diameter):
-                        state.loc['arm_xyz'] = arm_xyz
-                        state.loc['servo_values'] = servo_values
+                        state.location['arm_xyz'] = arm_xyz
+                        state.location['servo_values'] = servo_values
                         state.grabbed["ball"] = True
                         return state
     pyhop.failure_reason = "{} can't grab {} from {}".format(actor, actee, from_)
@@ -136,14 +136,14 @@ def put(state, actor, actee, to_):
     if to_ == "container":
         arm_xyz, servo_values = get_xyz(to_)
         if arm_xyz != False:
-            state.loc['arm_xyz'] = arm_xyz
-            state.loc['servo_values'] = servo_values
+            state.location['arm_xyz'] = arm_xyz
+            state.location['servo_values'] = servo_values
             arm_xyz, servo_values = move_arm(state, to_)
             if arm_xyz != False:
                 actee_diameter = get_diameter(actee)
                 if open_hand(actee_diameter):
-                    state.loc['arm_xyz'] = arm_xyz
-                    state.loc['servo_values'] = servo_values
+                    state.location['arm_xyz'] = arm_xyz
+                    state.location['servo_values'] = servo_values
                     return state
     pyhop.failure_reason = "{} can't put {} to {}".format(actor, actee, to_)
     return False
@@ -165,7 +165,7 @@ def put_grabbed(state, actor, actee, from_, to_):
     return False
 
 
-def intialize_transfer(state, actor, actee, from_, to_):
+def initialize_transfer(state, actor, actee, from_, to_):
     if actor == "arm":
         return [('initialize', actor), ('grab', actor, actee, from_), ('put', actor, actee, to_)]
 
@@ -182,7 +182,7 @@ def transfer(state, actor, actee, from_, to_):
     return False
 
 
-pyhop.declare_methods('transfer_ball_to_container', intialize_transfer, put_grabbed, transfer)
+pyhop.declare_methods('transfer_ball_to_container', initialize_transfer, put_grabbed, transfer)
 
 print('')
 pyhop.print_methods()
@@ -190,7 +190,7 @@ pyhop.print_methods()
 current_world_model = pyhop.State('current_world_model')
 current_world_model.iteration = 0
 current_world_model.timestamp = time.time()
-current_world_model.loc = {'ball': 'table'}
+current_world_model.location = {'ball': 'table'}
 current_world_model.grabbed = {'ball': True}
 current_world_model.initialized = {'arm': True}
 current_world_model.min_bounds = {'xyz': [-25, -25, -25]}
