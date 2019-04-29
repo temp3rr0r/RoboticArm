@@ -19,6 +19,8 @@ angle_degree_limit = 75  # degrees
 trajectory_steps = 10
 current_servo_monotony = [-1.0, -1.0, 1.0, -1.0, -1.0, -1.0]
 active_links_mask = [True, True, True, True, False, True]  # Enabled/disabled links
+min_steps = 1
+max_steps = 5000
 gripper_servo = 2
 gripper_open = 600
 
@@ -47,7 +49,7 @@ rotation3 = np.array([0, 1, 0])
 rotation2 = np.array([0, 0, 1])
 rotation1 = np.array([0, 0, 1])
 
-# Link bounds (degrees)
+# Link bounds (degrees)  # TODO: per servo bounds
 bounds6 = np.radians(np.array([-angle_degree_limit, angle_degree_limit]))
 bounds5 = np.radians(np.array([-angle_degree_limit, angle_degree_limit]))
 bounds4 = np.radians(np.array([-angle_degree_limit, angle_degree_limit]))
@@ -138,7 +140,7 @@ def radians_to_servo_range(x, x_min=(-np.pi / 2.0), x_max=(np.pi / 2.0), scaled_
 
 
 def get_kinematic_angle_trajectory(from_angle_radians_in, to_angle_radians_in, servo_monotony, steps=10):
-    assert 1 < steps < 5000
+    assert min_steps < steps < max_steps
 
     from_angle_radians = np.multiply(from_angle_radians_in, servo_monotony)
     to_angle_radians = np.multiply(to_angle_radians_in, servo_monotony)
@@ -160,7 +162,7 @@ def get_kinematic_angle_trajectory(from_angle_radians_in, to_angle_radians_in, s
 
 
 def get_kinematic_servo_trajectory(from_servo_values, to_servo_values, steps=10):
-    assert 1 < steps < 5000
+    assert min_steps < steps < max_steps
 
     print("from_servo_values: ", from_servo_values)
     print("to_servo_values: ", to_servo_values)
