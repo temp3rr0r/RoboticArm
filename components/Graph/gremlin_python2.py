@@ -2,21 +2,18 @@ from gremlin_python import statics
 import os
 from gremlin_python.process.anonymous_traversal import traversal
 from gremlin_python.driver.driver_remote_connection import DriverRemoteConnection
-from gremlin_python.process.traversal import Order
-from gremlin_python.process.traversal import P
 from gremlin_python.process.traversal import Bindings
 
 current_work_directory = os.getcwd()
 g = traversal().withRemote(DriverRemoteConnection('ws://localhost:8182/gremlin', 'g'))
 statics.load_statics(globals())
 
-load_graph = True
+load_graph = False
 if load_graph:
     g.io(current_work_directory + "/" + "world_model.xml").read().iterate()
 
 create_graph = False
 if create_graph:
-
     # {
     #     "variables": {
     #         "servo1": 1500,
@@ -216,3 +213,8 @@ print("servo_count: {}".format(servo_count))
 
 print("url: {}".format(g.V().has("name", "kinematic").values("url").next()))
 print("link3 translation_vector: {}".format(g.V().has("name", "link3").values("translation_vector").next()))
+
+print("world_model min_bounds: {}".format(g.V().has("name", "current_world_model").values("min_bounds").next()))
+print("pyhop goal: {}".format(g.V().has("name", "pyhop").values("goal").next()))
+print("task transfer_ball_to_container: {}".format(g.V().has(
+    "type", "methods").has("task", "transfer_ball_to_container").values("methods").next()))
