@@ -219,7 +219,8 @@ def pyhop(state, tasks, verbose=0, all_plans=False, sort_asc=True):
         if all_plans:
             if isinstance(results, list):
                 if sort_asc:
-                    results.sort(key=len)
+                    # results.sort(key=len)
+                    results = sorted(results)
                 for i in range(len(results)):
                     print('** result {} = {}'.format(i, results[i]))
             else:
