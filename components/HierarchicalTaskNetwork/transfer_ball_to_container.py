@@ -188,7 +188,7 @@ print('')
 pyhop.print_methods()
 
 current_world_model = pyhop.State('current_world_model')
-current_world_model.iteration = 0
+current_world_model.tick = 0
 current_world_model.timestamp = time.time()
 current_world_model.location = {'ball': 'table'}
 current_world_model.grabbed = {'ball': True}

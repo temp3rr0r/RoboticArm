@@ -5,8 +5,8 @@ class RoboticArm:
 
     def __init__(self):
 
-        self.heartbeat = 1  # seconds
-        self.steps = 100 # seconds
+        self.tick = 1  # seconds  # TODO: tick vs heartbeat?
+        self.steps = 100  # seconds
         self.control = Control
         self.plan = Plan
         self.monitoring = Monitoring
