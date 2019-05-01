@@ -35,15 +35,17 @@ class WorldModel:
         :param percept: Dictionary.
         :return: The updated world model, instance of pyhop State class.
         """
-        self.world_model_history.append(copy.deepcopy(self.current_world_model))  # Store the current world model
 
-        for key in percept.keys():
-            if key == "grabbed":
-                self.current_world_model.grabbed = percept["grabbed"]
-            elif key == "location":
-                self.current_world_model.location = percept["location"]
-            elif key == "initialized":
-                self.current_world_model.initialized = percept["initialized"]
+        if percept is not "":  # TODO: check the not
+            self.world_model_history.append(copy.deepcopy(self.current_world_model))  # Store the current world model
+
+            for key in percept.keys():
+                if key == "grabbed":
+                    self.current_world_model.grabbed = percept["grabbed"]
+                elif key == "location":
+                    self.current_world_model.location = percept["location"]
+                elif key == "initialized":
+                    self.current_world_model.initialized = percept["initialized"]
 
         return self
 

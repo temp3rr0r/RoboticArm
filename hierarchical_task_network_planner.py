@@ -173,4 +173,8 @@ class HierarchicalTaskNetworkPlanner:
         pyhop.declare_methods('transfer_ball_to_container', initialize_transfer, put_grabbed, transfer)
 
     def get_plans(self, world_model, goal):
-        return pyhop.pyhop(world_model, goal, verbose=0, all_plans=True, sort_asc=True)
+
+        if goal is not "":
+            return pyhop.pyhop(world_model, goal, verbose=0, all_plans=True, sort_asc=True)
+        else:
+            return ""
