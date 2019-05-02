@@ -2,7 +2,6 @@ from __future__ import print_function
 import cv2
 import numpy as np
 import sys
-# from getCosmosDbData import getLastDbDocument
 
 MAX_FEATURES = 900
 MIN_MATCHES = 30 # 15
@@ -10,93 +9,94 @@ GOOD_MATCH_PERCENT = 0.3
 FLASH_EVERY_FRAMES = 40.0
 MIN_DESCRIPTOR_DISTANCE_SUM = 10000
 
-def plotGraph( vals, yRange):
 
-    rangeIterations = range(min(vals), max(vals))
-    scale = 1.0 / np.ceil(rangeIterations[1] - rangeIterations[0])
-    bias = rangeIterations[0]
-    rows = yRange[1] - yRange[0] + 1
-    image = np.zeros((rows, len(vals)), dtype=int)
-    for i in range(0, len(vals) - 1):
-        cv2.line(image, (i, int(rows - 1 - (vals[i] - bias) * scale * yRange[1])), (i + 1, int(rows - 1 - (vals[i + 1] - bias) * scale * yRange[1])), (255, 0, 0), 5, cv2.LINE_AA)
+def plot_graph(values, y_range):
+
+    range_iterations = range(min(values), max(values))
+    scale = 1.0 / np.ceil(range_iterations[1] - range_iterations[0])
+    bias = range_iterations[0]
+    rows = y_range[1] - y_range[0] + 1
+    image = np.zeros((rows, len(values)), dtype=int)
+    for i in range(0, len(values) - 1):
+        cv2.line(image, (i, int(rows - 1 - (values[i] - bias) * scale * y_range[1])), (i + 1, int(rows - 1 - (values[i + 1] - bias) * scale * y_range[1])), (255, 0, 0), 5, cv2.LINE_AA)
     return image
 
 
-def alignImages(videoFrame, modelReference, lastDocumentDbData, flashFrame):
-    flashLogoWeightRatio = flashFrame / float(FLASH_EVERY_FRAMES)
+def align_images(video_frame, model_reference_in, last_data, flash_frame):
+    flash_logo_weight_ratio = flash_frame / float(FLASH_EVERY_FRAMES)
 
-    videoFrameGray = cv2.cvtColor(videoFrame, cv2.COLOR_BGR2GRAY)  # Convert images to gray-scale
-    videoFrameGray = cv2.medianBlur(videoFrameGray, 3)
+    video_frame_gray = cv2.cvtColor(video_frame, cv2.COLOR_BGR2GRAY)  # Convert images to gray-scale
+    video_frame_gray = cv2.medianBlur(video_frame_gray, 3)
 
-    orbFeatures = cv2.ORB_create(MAX_FEATURES)  # Detect ORB features and compute descriptors.
-    keypoints1, descriptors1 = orbFeatures.detectAndCompute(videoFrameGray, None)
-    descriptorMatcher = cv2.DescriptorMatcher_create(cv2.DESCRIPTOR_MATCHER_BRUTEFORCE_HAMMING)  # Match features
+    orb_features = cv2.ORB_create(MAX_FEATURES)  # Detect ORB features and compute descriptors.
+    keypoints1, descriptors1 = orb_features.detectAndCompute(video_frame_gray, None)
+    descriptor_matcher = cv2.DescriptorMatcher_create(cv2.DESCRIPTOR_MATCHER_BRUTEFORCE_HAMMING)  # Match features
 
-    modelReferences = ["picsQr/model0.png","picsQr/model1.png", "picsQr/model2.png",
+    model_references = ["picsQr/model0.png","picsQr/model1.png", "picsQr/model2.png",
                        "picsQr/model3.png", "picsQr/model4.png", "picsQr/model5.png"]
 
-    mintotalDescriptorDistance = sys.maxsize
-    detectedModel = -1
+    min_total_descriptor_distance = sys.maxsize
+    detected_model = -1
 
-    for i in range(len(modelReferences)):
-        current_modelReference = cv2.imread(modelReferences[i], cv2.IMREAD_COLOR)  # Reference Image
-        modelReferenceGray = cv2.cvtColor(current_modelReference, cv2.COLOR_BGR2GRAY)
-        modelReferenceGray = cv2.medianBlur(modelReferenceGray, 3)
+    for i in range(len(model_references)):
+        current_model_reference = cv2.imread(model_references[i], cv2.IMREAD_COLOR)  # Reference Image
+        model_reference_gray = cv2.cvtColor(current_model_reference, cv2.COLOR_BGR2GRAY)
+        model_reference_gray = cv2.medianBlur(model_reference_gray, 3)
 
-        current_keypoints2, descriptors2 = orbFeatures.detectAndCompute(modelReferenceGray, None)
-        current_descriptorMatches = descriptorMatcher.match(descriptors1, descriptors2, None)
-        current_descriptorMatches.sort(key=lambda x: x.distance, reverse=False)  # Sort matches by score
-        numGoodMatches = int(len(current_descriptorMatches) * GOOD_MATCH_PERCENT)  # Remove mediocre matches
-        current_descriptorMatches = current_descriptorMatches[:numGoodMatches]
-        totalDescriptorDistance = 0
-        for x in current_descriptorMatches:
-            totalDescriptorDistance += x.distance
-        if totalDescriptorDistance < mintotalDescriptorDistance:
-            mintotalDescriptorDistance = totalDescriptorDistance
-            keypoints2 = current_keypoints2
-            modelReference = current_modelReference
-            descriptorMatches = current_descriptorMatches
-            detectedModel = i
+        current_key_points_2, descriptors2 = orb_features.detectAndCompute(model_reference_gray, None)
+        current_descriptor_matches = descriptor_matcher.match(descriptors1, descriptors2, None)
+        current_descriptor_matches.sort(key=lambda x: x.distance, reverse=False)  # Sort matches by score
+        num_good_matches = int(len(current_descriptor_matches) * GOOD_MATCH_PERCENT)  # Remove mediocre matches
+        current_descriptor_matches = current_descriptor_matches[:num_good_matches]
+        total_descriptor_distance = 0
+        for x in current_descriptor_matches:
+            total_descriptor_distance += x.distance
+        if total_descriptor_distance < min_total_descriptor_distance:
+            min_total_descriptor_distance = total_descriptor_distance
+            keypoints_2 = current_key_points_2
+            model_reference_in = current_model_reference
+            descriptor_matches = current_descriptor_matches
+            detected_model = i
 
-    if len(descriptorMatches) < MIN_MATCHES or mintotalDescriptorDistance < MIN_DESCRIPTOR_DISTANCE_SUM:
-        return videoFrame  # Not good detection
+    if len(descriptor_matches) < MIN_MATCHES or min_total_descriptor_distance < MIN_DESCRIPTOR_DISTANCE_SUM:
+        return video_frame  # Not good detection
     else:
-        matchedPoints1 = np.zeros((len(descriptorMatches), 2), dtype=np.float32) # Extract location of good matches
-        matchedPoints2 = np.zeros((len(descriptorMatches), 2), dtype=np.float32)
+        matched_points1 = np.zeros((len(descriptor_matches), 2), dtype=np.float32)  # Extract location of good matches
+        matched_points2 = np.zeros((len(descriptor_matches), 2), dtype=np.float32)
 
-        for i, match in enumerate(descriptorMatches):
-            matchedPoints1[i, :] = keypoints1[match.queryIdx].pt
-            matchedPoints2[i, :] = keypoints2[match.trainIdx].pt
+        for i, match in enumerate(descriptor_matches):
+            matched_points1[i, :] = keypoints1[match.queryIdx].pt
+            matched_points2[i, :] = keypoints_2[match.trainIdx].pt
 
-        height, width, _ = modelReference.shape
-        homography, _ = cv2.findHomography(matchedPoints2, matchedPoints1, cv2.RANSAC)  # Find homography
-        rectanglePoints = np.float32([[0, 0], [0, height - 1], [width - 1, height - 1], [width - 1, 0]]).reshape(-1, 1, 2)
-        transformedRectanglePoints = cv2.perspectiveTransform(rectanglePoints, homography)  # Use homography
+        height, width, _ = model_reference_in.shape
+        homography, _ = cv2.findHomography(matched_points2, matched_points1, cv2.RANSAC)  # Find homography
+        rectangle_points = np.float32([[0, 0], [0, height - 1], [width - 1, height - 1], [width - 1, 0]]).reshape(-1, 1, 2)
+        transformed_rectangle_points = cv2.perspectiveTransform(rectangle_points, homography)  # Use homography
 
         # Draw rectangle only if within a specific ROI %
-        transformedRectanglePoints2 = np.int32(transformedRectanglePoints)
-        minX = sys.maxsize
-        maxX = 0
-        minY = sys.maxsize
-        maxY = 0
-        for point in transformedRectanglePoints2:
-            if minX > point[0][0]:
-                minX = point[0][0]
-            if maxX < point[0][0]:
-                maxX = point[0][0]
-            if minY > point[0][1]:
-                minY = point[0][1]
-            if maxY < point[0][1]:
-                maxY = point[0][1]
-        roiPercentMax = 0.1  # 0.25
-        roiPercentMin = 0.05  # 0.1
-        sideRatioMin = 0.6
-        sideRatioMax = 1.2
-        if maxX < (1 - roiPercentMax) * videoFrameGray.shape[1] and minX > roiPercentMax * videoFrameGray.shape[1] and maxY < (1 - roiPercentMax) * videoFrameGray.shape[0] and minY > roiPercentMax * videoFrameGray.shape[0]:
+        transformed_rectangle_points2 = np.int32(transformed_rectangle_points)
+        min_x = sys.maxsize
+        max_x = 0
+        min_y = sys.maxsize
+        max_y = 0
+        for point in transformed_rectangle_points2:
+            if min_x > point[0][0]:
+                min_x = point[0][0]
+            if max_x < point[0][0]:
+                max_x = point[0][0]
+            if min_y > point[0][1]:
+                min_y = point[0][1]
+            if max_y < point[0][1]:
+                max_y = point[0][1]
+        roi_percent_max = 0.1  # 0.25
+        roi_percent_min = 0.05  # 0.1
+        side_ratio_min = 0.6
+        side_ratio_max = 1.2
+        if max_x < (1 - roi_percent_max) * video_frame_gray.shape[1] and min_x > roi_percent_max * video_frame_gray.shape[1] and max_y < (1 - roi_percent_max) * video_frame_gray.shape[0] and min_y > roi_percent_max * video_frame_gray.shape[0]:
             # Do not draw if rectangle sides too small
-            if abs(maxX - minX) > roiPercentMin * videoFrameGray.shape[1] and abs(maxY - minY) > roiPercentMin * videoFrameGray.shape[0]:
-                if sideRatioMin <= (abs(maxX - minX) / float(abs(maxY - minY))) <= sideRatioMax: # TODO: do not draw if one side is > 2x the other sides
-                    transformedRectangle = cv2.polylines(videoFrame, [np.int32(transformedRectanglePoints)], True,(0, 0, 255), 3,cv2.LINE_AA)  # Draw a rectangle that marks the found model in the frame
+            if abs(max_x - min_x) > roi_percent_min * video_frame_gray.shape[1] and abs(max_y - min_y) > roi_percent_min * video_frame_gray.shape[0]:
+                if side_ratio_min <= (abs(max_x - min_x) / float(abs(max_y - min_y))) <= side_ratio_max: # TODO: do not draw if one side is > 2x the other sides
+                    transformedRectangle = cv2.polylines(video_frame, [np.int32(transformed_rectangle_points)], True, (0, 0, 255), 3, cv2.LINE_AA)  # Draw a rectangle that marks the found model in the frame
 
         # Blend with Canny
         # sigma = 0.33
@@ -109,130 +109,128 @@ def alignImages(videoFrame, modelReference, lastDocumentDbData, flashFrame):
 
         text1 = ""
         text2 = ""
-        if detectedModel == 0:
-            text1 = 'Waterings: {} ({}mL)'.format(lastDocumentDbData['waterings'], lastDocumentDbData['totalWater'])
-            text2 = 'Tank: {}mL'.format(4000 - lastDocumentDbData['totalWater'])
-            classLogo = cv2.imread("picsQr/logo0.png", cv2.IMREAD_COLOR)
-            textWarp1 = '{} times'.format(lastDocumentDbData['waterings'])  # Attach text on warped img
-            textWarp2 = '{}mL'.format(lastDocumentDbData['totalWater'])
-        if detectedModel == 1:
-            text1 = 'Min Moisture: {}%'.format(round(lastDocumentDbData['minMoisture'], 2))
-            text2 = 'Max Moisture: {}%'.format(round(lastDocumentDbData['maxMoisture'], 2))
-            classLogo = cv2.imread("picsQr/logo1.png", cv2.IMREAD_COLOR)
-            textWarp1 = '{}%-'.format(round(lastDocumentDbData['minMoisture'], 1))  # Attach text on warped img
-            textWarp2 = '{}%'.format(round(lastDocumentDbData['maxMoisture'], 1))
-        if detectedModel == 2:
+        if detected_model == 0:
+            text1 = 'Waterings: {} ({}mL)'.format(last_data['waterings'], last_data['totalWater'])
+            text2 = 'Tank: {}mL'.format(4000 - last_data['totalWater'])
+            class_logo = cv2.imread("picsQr/logo0.png", cv2.IMREAD_COLOR)
+            text_warp1 = '{} times'.format(last_data['waterings'])  # Attach text on warped img
+            text_warp2 = '{}mL'.format(last_data['totalWater'])
+        if detected_model == 1:
+            text1 = 'Min Moisture: {}%'.format(round(last_data['minMoisture'], 2))
+            text2 = 'Max Moisture: {}%'.format(round(last_data['maxMoisture'], 2))
+            class_logo = cv2.imread("picsQr/logo1.png", cv2.IMREAD_COLOR)
+            text_warp1 = '{}%-'.format(round(last_data['minMoisture'], 1))  # Attach text on warped img
+            text_warp2 = '{}%'.format(round(last_data['maxMoisture'], 1))
+        if detected_model == 2:
             text1 = 'ESP32 LoRa'
             text2 = 'Solar Bank'
-            classLogo = cv2.imread("picsQr/logo2.png", cv2.IMREAD_COLOR)
-            textWarp1 = 'Solar'
-            textWarp2 = 'Bank'
-        if detectedModel == 3:
-            text1 = 'Waterings: {} ({}mL)'.format(lastDocumentDbData['waterings'], lastDocumentDbData['totalWater'])
-            text2 = 'Tank: {}mL'.format(4000 - lastDocumentDbData['totalWater'])
-            classLogo = cv2.imread("picsQr/logo3.png", cv2.IMREAD_COLOR)
-            textWarp1 = '{} times'.format(lastDocumentDbData['waterings'])  # Attach text on warped img
-            textWarp2 = '{}mL'.format(round(lastDocumentDbData['totalWater'], 1))
-        if detectedModel == 4:
+            class_logo = cv2.imread("picsQr/logo2.png", cv2.IMREAD_COLOR)
+            text_warp1 = 'Solar'
+            text_warp2 = 'Bank'
+        if detected_model == 3:
+            text1 = 'Waterings: {} ({}mL)'.format(last_data['waterings'], last_data['totalWater'])
+            text2 = 'Tank: {}mL'.format(4000 - last_data['totalWater'])
+            class_logo = cv2.imread("picsQr/logo3.png", cv2.IMREAD_COLOR)
+            text_warp1 = '{} times'.format(last_data['waterings'])  # Attach text on warped img
+            text_warp2 = '{}mL'.format(round(last_data['totalWater'], 1))
+        if detected_model == 4:
             text1 = 'PID Controller:'
-            text2 = 'P={} I={} D={}'.format(lastDocumentDbData['proportional'], lastDocumentDbData['integral'], lastDocumentDbData['derivative'])
-            classLogo = cv2.imread("picsQr/logo4.png", cv2.IMREAD_COLOR)
-            textWarp1 = 'PID P={} '.format(lastDocumentDbData['proportional'])
-            textWarp2 = 'I={} D={}'.format(lastDocumentDbData['integral'], lastDocumentDbData['derivative'])
-        if detectedModel == 5:
-            text1 = 'PID setpoint min: {}%'.format(round(lastDocumentDbData['setPointMin'], 2))
-            text2 = 'PID setpoint max: {}%'.format(round(lastDocumentDbData['setPointMax'], 2))
-            classLogo = cv2.imread("picsQr/logo5.png", cv2.IMREAD_COLOR)
-            textWarp1 = '{}%-'.format(round(lastDocumentDbData['setPointMin'], 1))  # Attach text on warped img
-            textWarp2 = '{}%'.format(round(lastDocumentDbData['setPointMax'], 1))
+            text2 = 'P={} I={} D={}'.format(last_data['proportional'], last_data['integral'], last_data['derivative'])
+            class_logo = cv2.imread("picsQr/logo4.png", cv2.IMREAD_COLOR)
+            text_warp1 = 'PID P={} '.format(last_data['proportional'])
+            text_warp2 = 'I={} D={}'.format(last_data['integral'], last_data['derivative'])
+        if detected_model == 5:
+            text1 = 'PID setpoint min: {}%'.format(round(last_data['setPointMin'], 2))
+            text2 = 'PID setpoint max: {}%'.format(round(last_data['setPointMax'], 2))
+            class_logo = cv2.imread("picsQr/logo5.png", cv2.IMREAD_COLOR)
+            text_warp1 = '{}%-'.format(round(last_data['setPointMin'], 1))  # Attach text on warped img
+            text_warp2 = '{}%'.format(round(last_data['setPointMax'], 1))
 
-        if maxX < (1 - roiPercentMax) * videoFrameGray.shape[1] and minX > roiPercentMax * videoFrameGray.shape[1] \
-                and maxY < (1 - roiPercentMax) * videoFrameGray.shape[0] and minY > roiPercentMax * videoFrameGray.shape[0]:
+        if max_x < (1 - roi_percent_max) * video_frame_gray.shape[1] and min_x > roi_percent_max * video_frame_gray.shape[1] \
+                and max_y < (1 - roi_percent_max) * video_frame_gray.shape[0] and min_y > roi_percent_max * video_frame_gray.shape[0]:
             # Do not draw if rectangle sides too small
-            if abs(maxX - minX) > roiPercentMin * videoFrameGray.shape[1] and abs(maxY - minY) > roiPercentMin *videoFrameGray.shape[0]:
-                if sideRatioMin <= (abs(maxX - minX) / float(abs(maxY - minY))) <= sideRatioMax:  # TODO: do not draw if one side is > 2x the other sides
+            if abs(max_x - min_x) > roi_percent_min * video_frame_gray.shape[1] and abs(max_y - min_y) > roi_percent_min *video_frame_gray.shape[0]:
+                if side_ratio_min <= (abs(max_x - min_x) / float(abs(max_y - min_y))) <= side_ratio_max:  # TODO: do not draw if one side is > 2x the other sides
                     # Warp class logo perspective & flash alpha blend
 
-                    cv2.putText(classLogo, textWarp1, (20, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)  # Put text
-                    cv2.putText(classLogo, textWarp2, (20, 120), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+                    cv2.putText(class_logo, text_warp1, (20, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)  # Put text
+                    cv2.putText(class_logo, text_warp2, (20, 120), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
 
-                    emptyClassLogo = np.zeros((classLogo.shape[0],classLogo.shape[1],3), np.uint8)  # Create white shape logo
-                    emptyClassLogo[:] = (255, 255, 255)
+                    empty_class_logo = np.zeros((class_logo.shape[0],class_logo.shape[1],3), np.uint8)  # Create white shape logo
+                    empty_class_logo[:] = (255, 255, 255)
 
-                    emptyClassLogoWarped = cv2.warpPerspective(emptyClassLogo, homography,(videoFrame.shape[1], videoFrame.shape[0]))  # Warp
-                    classLogoWarped = cv2.warpPerspective(classLogo, homography, (videoFrame.shape[1], videoFrame.shape[0]))
-                    emptyClassLogoGray = cv2.cvtColor(emptyClassLogoWarped, cv2.COLOR_BGR2GRAY)
+                    empty_class_logo_warped = cv2.warpPerspective(empty_class_logo, homography, (video_frame.shape[1], video_frame.shape[0]))  # Warp
+                    class_logo_warped = cv2.warpPerspective(class_logo, homography, (video_frame.shape[1], video_frame.shape[0]))
+                    empty_class_logo_gray = cv2.cvtColor(empty_class_logo_warped, cv2.COLOR_BGR2GRAY)
 
-                    ret, mask = cv2.threshold(emptyClassLogoGray, 10, 255, cv2.THRESH_BINARY)  # Create masks
+                    ret, mask = cv2.threshold(empty_class_logo_gray, 10, 255, cv2.THRESH_BINARY)  # Create masks
                     mask_inv = cv2.bitwise_not(mask)
-                    videoFrameBackground = cv2.bitwise_and(videoFrame, videoFrame, mask=mask_inv)
-                    videoFrameForeground = cv2.bitwise_and(videoFrame, videoFrame, mask=mask)
+                    video_frame_background = cv2.bitwise_and(video_frame, video_frame, mask=mask_inv)
+                    video_frame_foreground = cv2.bitwise_and(video_frame, video_frame, mask=mask)
 
-                    classLogoWarped = cv2.addWeighted(classLogoWarped, 1 - flashLogoWeightRatio, videoFrameForeground, flashLogoWeightRatio, 0)  # Blend & flash
-                    videoFrame = cv2.add(classLogoWarped, videoFrameBackground)
-
+                    class_logo_warped = cv2.addWeighted(class_logo_warped, 1 - flash_logo_weight_ratio, video_frame_foreground, flash_logo_weight_ratio, 0)  # Blend & flash
+                    video_frame = cv2.add(class_logo_warped, video_frame_background)
 
         # Put text on top left corner
-        cv2.putText(videoFrame, text1, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 2, cv2.LINE_AA)
-        cv2.putText(videoFrame, text2, (50, 120), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 255), 2, cv2.LINE_AA)
-        text4 = "Feature matches (ORB): {}".format(len(descriptorMatches))
-        cv2.putText(videoFrame, text4, (50, 210), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
-        text3 = "Hamming distance (sum): {}".format(int(mintotalDescriptorDistance))
-        cv2.putText(videoFrame, text3, (50, 170), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
-        text4 = "Class: {}".format(detectedModel)
-        cv2.putText(videoFrame, text4, (50, 260), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 255), 2, cv2.LINE_AA)
+        cv2.putText(video_frame, text1, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 2, cv2.LINE_AA)
+        cv2.putText(video_frame, text2, (50, 120), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 255), 2, cv2.LINE_AA)
+        text4 = "Feature matches (ORB): {}".format(len(descriptor_matches))
+        cv2.putText(video_frame, text4, (50, 210), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+        text3 = "Hamming distance (sum): {}".format(int(min_total_descriptor_distance))
+        cv2.putText(video_frame, text3, (50, 170), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+        text4 = "Class: {}".format(detected_model)
+        cv2.putText(video_frame, text4, (50, 260), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 255), 2, cv2.LINE_AA)
 
         # TODO: plot graph of last 5 values?
-        return videoFrame
+        return video_frame
 
 
 if __name__ == '__main__':
 
-    writeVideo = False
+    write_video = False
 
-    modelReference = cv2.imread("picsQr/model0.png", cv2.IMREAD_COLOR)
+    model_reference = cv2.imread("picsQr/model0.png", cv2.IMREAD_COLOR)
 
-    captureDevice = cv2.VideoCapture(0)  # TODO: Enable if want to use a local camera
+    capture_device = cv2.VideoCapture(0)  # TODO: Enable if want to use a local camera
     # captureDevice = cv2.VideoCapture('picsQr/vids/good8.mp4')  # TODO: Enable if u want to use a video file
 
 
     # TODO: set resolution
-
-    captureDevice.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-    captureDevice.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
-    captureDevice.set(cv2.CAP_PROP_FPS, 15)
+    capture_device.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    capture_device.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+    # capture_device.set(cv2.CAP_PROP_FPS, 15)
 
     # lastDocumentDbData = getLastDbDocument()  # Get last document db data
     lastDocumentDbData = {'setPointMin': 0, 'setPointMax': 1, 'maxMoisture': 80,
                           'totalWater': 3000, 'waterings': 3, 'minMoisture': 30,
                           'proportional': 1.2, 'integral': 0.8, 'derivative': 1.0}  # TODO: dummy data
 
-    if writeVideo:
+    if write_video:
         # Define the codec and create VideoWriter object
         fourcc = cv2.VideoWriter_fourcc(*'MJPG')
         out = cv2.VideoWriter('good8.avi', fourcc, 20, (1920, 1080))
 
     flashFrame = 0
 
-    while (True):
-        _, videoFrame = captureDevice.read()  # Capture frame-by-frame
+    while True:
+        _, videoFrame = capture_device.read()  # Capture frame-by-frame
 
         # print("videoFrame.shape", videoFrame.shape)
         # break
 
-        alignedFrame = alignImages(videoFrame, modelReference, lastDocumentDbData, flashFrame)
+        aligned_frame = align_images(videoFrame, model_reference, lastDocumentDbData, flashFrame)
         flashFrame += 1
         if flashFrame >= FLASH_EVERY_FRAMES * 0.75:
             flashFrame = 0
-        cv2.imshow('Video Frame', alignedFrame)  # Display the resulting frame
+        cv2.imshow('Video Frame', aligned_frame)  # Display the resulting frame
 
-        if writeVideo:
-            out.write(alignedFrame)
+        if write_video:
+            out.write(aligned_frame)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-captureDevice.release()  # When everything done, release the capture
-if writeVideo:
-    out.release()
-cv2.destroyAllWindows()
+    capture_device.release()  # When everything done, release the capture
+    if write_video:
+        out.release()
+    cv2.destroyAllWindows()
