@@ -43,11 +43,11 @@ second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_RANSACRegressor_xyz.sav'
 # second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_MultiTaskLasso_xyz.sav')  # TODO: good for xyz
 # second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_MultiTaskLassoCV_xyz.sav')  # TODO: good for xyz
 # second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_PLSRegression_xyz.sav')  # TODO: good for xyz
-pred_clf = second_regressor_qr_to_arm_xyz.predict(X_validate)
-print(pred_clf)
+prediction_second_regressor = second_regressor_qr_to_arm_xyz.predict(X_validate)
+print(prediction_second_regressor)
 linear_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_LinearRegressor_xyz.sav')  # X, Y ok
-pred_regr = linear_regressor_qr_to_arm_xyz.predict(X_validate)
-print(pred_regr)
+pred_linear_regressor = linear_regressor_qr_to_arm_xyz.predict(X_validate)
+print(pred_linear_regressor)
 print(y_validate)
 
 
@@ -294,7 +294,7 @@ def align_images(video_frame, model_reference_in, last_data, flash_frame):
 
 if __name__ == '__main__':
 
-    write_video = False
+    write_video = True
 
     model_reference = cv2.imread("picsQr/model0.png", cv2.IMREAD_COLOR)
 
@@ -315,7 +315,7 @@ if __name__ == '__main__':
     if write_video:
         # Define the codec and create VideoWriter object
         fourcc = cv2.VideoWriter_fourcc(*'MJPG')
-        out = cv2.VideoWriter('good8.avi', fourcc, 20, (1920, 1080))
+        out = cv2.VideoWriter('pixelsQrToArmXYZ_AR.avi', fourcc, 20, (1920, 1080))
 
     flashFrame = 0
 
