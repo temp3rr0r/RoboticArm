@@ -7,10 +7,10 @@ from ikpy import geometry_utils
 import requests
 import time
 
-send_requests = False
+send_requests = True
 # send_requests = False
-scale = 0.04  # For the plotting
-# scale = 1.0  # For the plotting
+# scale = 0.04  # For the plotting
+scale = 1.0
 servo_count = 6
 command_delay = 0.05  # seconds
 center_init = True
@@ -27,9 +27,11 @@ gripper_open = 600
 # target_position = np.array([12.5, -12.5, 2.0]) * scale
 # target_position = np.array([20, -20.0, 20]) * scale
 # target_position = np.array([12.5, -12.5, 25]) * scale
-target_position = np.array([-20, -20, 25]) * scale
 # target_position = np.array([-5, -5, 40]) * scale
 # target_position = np.array([-16, 0.0, 10]) * scale
+# target_position = np.array([-20, -20, 25]) * scale
+target_position = np.array([0, 0, 0]) * scale
+# target_position = np.array([-20.5, -2.9, 1.1]) * scale
 
 init_position = np.array([0, 0, 1]) * scale
 

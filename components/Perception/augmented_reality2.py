@@ -150,8 +150,8 @@ def align_images(video_frame, model_reference_in, last_data, flash_frame):
                 min_y = point[0][1]
             if max_y < point[0][1]:
                 max_y = point[0][1]
-        roi_percent_max = 0.1  # 0.25
-        roi_percent_min = 0.05  # 0.1
+        roi_percent_max = 0.001 # 0.25
+        roi_percent_min = 0.0002  # 0.1
         side_ratio_min = 0.6
         side_ratio_max = 1.2
         if max_x < (1 - roi_percent_max) * video_frame_gray.shape[1] and min_x > roi_percent_max * \
@@ -294,7 +294,7 @@ def align_images(video_frame, model_reference_in, last_data, flash_frame):
 
 if __name__ == '__main__':
 
-    write_video = True
+    write_video = False
 
     model_reference = cv2.imread("picsQr/model0.png", cv2.IMREAD_COLOR)
 
