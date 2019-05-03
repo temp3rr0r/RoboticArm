@@ -25,10 +25,27 @@ y_validate = [[-33.8, -17.8, 0.0],
               [-15.8, 2.2, 0.0],
               [-17.8, -7.8, 0.0],
               [-25.8, -2.8, 0.0]]
-mlp_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_MLPRegressor_xyz.sav')
-pred_clf = mlp_regressor_qr_to_arm_xyz.predict(X_validate)
+# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_MLPRegressor_xyz.sav')
+# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_GradientBoostingRegressor_xyz.sav')
+# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_RandomForestRegressor_xyz.sav')
+# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_ExtraTreesRegressor_xyz.sav')
+# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_KNeighborsRegressor_xyz.sav')
+# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_AdaBoostRegressor_xyz.sav')
+# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_BaggingRegressor_xyz.sav')
+# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_LinearSVR_xyz.sav')
+# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_GaussianProcessRegressor_xyz.sav')  # TODO: good for xy
+# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_MultiOutputRegressor_xyz.sav')  # TODO: good for xy
+second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_RANSACRegressor_xyz.sav')  # TODO: good for xyz
+# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_RidgeCV_xyz.sav')  # TODO: good for xyz
+# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_ElasticNet_xyz.sav')  # TODO: good for xyz
+# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_MultiTaskElasticNetCV_xyz.sav')  # TODO: good for xyz
+# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_Lasso_xyz.sav')  # TODO: good for xyz
+# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_MultiTaskLasso_xyz.sav')  # TODO: good for xyz
+# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_MultiTaskLassoCV_xyz.sav')  # TODO: good for xyz
+# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_PLSRegression_xyz.sav')  # TODO: good for xyz
+pred_clf = second_regressor_qr_to_arm_xyz.predict(X_validate)
 print(pred_clf)
-linear_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_LinearRegressor_xyz.sav')
+linear_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_LinearRegressor_xyz.sav')  # X, Y ok
 pred_regr = linear_regressor_qr_to_arm_xyz.predict(X_validate)
 print(pred_regr)
 print(y_validate)
@@ -173,8 +190,8 @@ def align_images(video_frame, model_reference_in, last_data, flash_frame):
             text_warp1 = '{}%-'.format(round(last_data['minMoisture'], 2))  # Attach text on warped img
             text_warp2 = '{}%'.format(round(last_data['maxMoisture'], 2))
         if detected_model == 2:
-            text1 = 'Arm position (LR):  '
-            text2 = 'Arm position (MLP): '
+            text1 = 'Item vs arm(Linear Regression): '
+            text2 = '   (Multi-Output ElasticNet CV): '
             # TODO: do use regressors
             last_qr_position = [[transformed_rectangle_points[0][0][0], transformed_rectangle_points[0][0][1],
                                  transformed_rectangle_points[1][0][0], transformed_rectangle_points[1][0][1],
@@ -184,7 +201,7 @@ def align_images(video_frame, model_reference_in, last_data, flash_frame):
             # text1 = text1 + str(transformed_rectangle_points)
             arm_xyz_offset = [0.0, 0.0, 0.0]
             linear_regressor_predicted_arm_xyz = linear_regressor_qr_to_arm_xyz.predict(last_qr_position)
-            mlp_regressor_predicted_arm_xyz = mlp_regressor_qr_to_arm_xyz.predict(last_qr_position)  # TODO: z position
+            mlp_regressor_predicted_arm_xyz = second_regressor_qr_to_arm_xyz.predict(last_qr_position)  # TODO: z position
 
             linear_regressor_predicted_arm_xyz[0] += arm_xyz_offset
             mlp_regressor_predicted_arm_xyz[0] += arm_xyz_offset
@@ -285,8 +302,8 @@ if __name__ == '__main__':
     # captureDevice = cv2.VideoCapture('picsQr/vids/good8.mp4')  # TODO: Enable if u want to use a video file
 
     # TODO: set resolution
-    capture_device.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-    capture_device.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+    capture_device.set(cv2.CAP_PROP_FRAME_WIDTH, 1920.0)
+    capture_device.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080.0)
     # capture_device.set(cv2.CAP_PROP_FPS, 15)
     # capture_device.set(cv2.CAP_PROP_AUTOFOCUS, 0)  # turn the autofocus off
 
