@@ -12,7 +12,7 @@ class HierarchicalTaskNetworkPlanner:
             return move_arm(state, "center")
 
         def get_diameter(actee):
-            if actee == "ball":
+            if actee == "target_object":
                 return 3  # cm
             self.failure_reason = "can't get diameter of {}".format(actee)
             return False
@@ -24,13 +24,8 @@ class HierarchicalTaskNetworkPlanner:
             return True
 
         def get_xyz(state, actee):
-            if actee == "ball":
-                xyz = [-16, 12.5, 1.0]
-                xyz = state.xyz["ball"]
-                xyz = [90, 12.5, 1.0]
-                # print("state.xyz['ball']: {}".format(state.xyz["ball"]))
-                print("state.xyz['ball']: {}".format(xyz))
-
+            if actee == "target_object":
+                xyz = state.xyz["target_object"]
                 servo_values = [1500, 1500, 1500, 1500, 1500, 1500]  # TODO: hardcode real servo values
                 return xyz, servo_values
             elif actee == "container":
@@ -50,8 +45,8 @@ class HierarchicalTaskNetworkPlanner:
         def move_arm(state, to_):
             arm_min_bounds = state.min_bounds["xyz"]
             arm_max_bounds = state.max_bounds["xyz"]
-            if to_ == "ball":
-                arm_xyz, servo_values = get_xyz(state, "ball")
+            if to_ == "target_object":
+                arm_xyz, servo_values = get_xyz(state, "target_object")
                 if not is_within_bounds(arm_xyz, arm_min_bounds, arm_max_bounds):
                     self.failure_reason = "can't move arm to {}: {} outside of bounds: {} {}"\
                         .format(to_, arm_xyz, arm_min_bounds, arm_max_bounds)
@@ -111,8 +106,8 @@ class HierarchicalTaskNetworkPlanner:
             return False
 
         def grab(state, actor, actee, from_):
-            if actee == "ball":
-                if state.location['ball'] != 'table':
+            if actee == "target_object":
+                if state.location['target_object'] != 'table':
                     self.failure_reason = "{} can't locate {} from {}".format(actor, actee, from_)
                     return False
 
@@ -127,7 +122,7 @@ class HierarchicalTaskNetworkPlanner:
                             if close_hand(actee_diameter):
                                 state.location['arm_xyz'] = arm_xyz
                                 state.location['servo_values'] = servo_values
-                                state.grabbed["ball"] = True
+                                state.grabbed["target_object"] = True
                                 return state
             self.failure_reason = "{} can't grab {} from {}".format(actor, actee, from_)
             return False
@@ -156,7 +151,7 @@ class HierarchicalTaskNetworkPlanner:
 
         def put_grabbed(state, actor, actee, from_, to_):
             if actor == "arm":
-                if state.grabbed["ball"]:
+                if state.grabbed["target_object"]:
                     return [('put', actor, actee, to_)]
 
             self.failure_reason = "{} can't put_grabbed {} from {} to {}".format(actor, actee, from_, to_)
@@ -177,7 +172,7 @@ class HierarchicalTaskNetworkPlanner:
             self.failure_reason = "{} can't transfer {} from {} to {}".format(actor, actee, from_, to_)
             return False
 
-        pyhop.declare_methods('transfer_ball_to_container', initialize_transfer, put_grabbed, transfer)
+        pyhop.declare_methods('transfer_target_object_to_container', initialize_transfer, put_grabbed, transfer)
 
     def get_plans(self, world_model, goal):
 

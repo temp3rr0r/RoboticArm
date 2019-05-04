@@ -6,8 +6,8 @@ from perception import Perception
 
 def filter_intentions(current_beliefs, current_desires, current_intentions):
     for current_intention in current_intentions:
-        if current_intention == ('transfer_ball_to_container', 'arm', 'ball', 'table', 'container') \
-                and current_beliefs.current_world_model.location["ball"] == "container":
+        if current_intention == ('transfer_target_object_to_container', 'arm', 'target_object', 'table', 'container') \
+                and current_beliefs.current_world_model.location["target_object"] == "container":
             current_intentions = ""  # if goal(s) achieved, empty I
     return current_intentions
 
@@ -29,14 +29,14 @@ if __name__ == '__main__':
     SUCCESS = False
     htn_planner = HierarchicalTaskNetworkPlanner()
 
-    goal = [('transfer_ball_to_container', 'arm', 'ball', 'table', 'container')]
+    goal = [('transfer_target_object_to_container', 'arm', 'target_object', 'table', 'container')]
     intentions = goal  # I = I0 Initial Intentions
     beliefs = WorldModel()  # B = B0 Initial Beliefs
     perception = Perception()
 
     while not SUCCESS and not terminate and beliefs.update_tick() < max_ticks:
 
-        percept = {"xyz": {'ball': perception.get_percept()}}  # get next percept ρ OBSERVE the world
+        percept = {"xyz": {'target_object': perception.get_percept()}}  # get next percept ρ OBSERVE the world
         beliefs = beliefs.belief_revision(percept)
 
         intentions = deliberate(beliefs, intentions)  # DELIBERATE about what INTENTION to achieve next
@@ -61,13 +61,13 @@ if __name__ == '__main__':
                     if action == ('initialize', 'arm'):  # TODO: for testing only
                         percept = {"initialized": {'arm': True}}
                         beliefs = beliefs.belief_revision(percept)
-                    elif action == ('grab', 'arm', 'ball', 'table'):
-                        percept = {"grabbed": {'ball': True}, "initialized": {'arm': False}}
+                    elif action == ('grab', 'arm', 'target_object', 'table'):
+                        percept = {"grabbed": {'target_object': True}, "initialized": {'arm': False}}
                         beliefs = beliefs.belief_revision(percept)
-                    elif action == ('put', 'arm', 'ball', 'container'):
-                        percept = {"location": {"ball": "container"}}
+                    elif action == ('put', 'arm', 'target_object', 'container'):
+                        percept = {"location": {"target_object": "container"}}
                         beliefs = beliefs.belief_revision(percept)
-                        percept = {"grabbed": {'ball': False}}
+                        percept = {"grabbed": {'target_object': False}}
                         beliefs = beliefs.belief_revision(percept)
 
                     # if not sound(π, I, B) then

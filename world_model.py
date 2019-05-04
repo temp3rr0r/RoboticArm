@@ -12,9 +12,9 @@ class WorldModel:
         self.current_world_model = pyhop.State('current_world_model')
         self.current_world_model.tick = 0
         self.current_world_model.timestamp = time.time()
-        self.current_world_model.location = {'ball': 'table'}
-        self.current_world_model.xyz = {'ball': [-30, -30, 0]}
-        self.current_world_model.grabbed = {'ball': False}
+        self.current_world_model.location = {'target_object': 'table'}
+        self.current_world_model.xyz = {'target_object': [-30, -30, 0]}
+        self.current_world_model.grabbed = {'target_object': False}
         self.current_world_model.initialized = {'arm': False}
         self.current_world_model.min_bounds = {'xyz': [-25, -25, -25]}
         self.current_world_model.max_bounds = {'xyz': [25, 25, 25]}
