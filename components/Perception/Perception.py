@@ -4,31 +4,25 @@ import numpy as np
 import sys
 from sklearn.externals import joblib
 
-MAX_FEATURES = 900  # 900
-MIN_MATCHES = 30  # 15
-GOOD_MATCH_PERCENT = 0.3  # 0.3
-FLASH_EVERY_FRAMES = 40.0
-MIN_DESCRIPTOR_DISTANCE_SUM = 10000
-use_flann = True
-regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_RANSACRegressor_xyz.sav')
-class_logo = None
-
 
 class Perception:
+    """
+    Acquires percepts via computer vision. Percept is the sensed XYZ position of an object in relation to the
+    arm's frame of reference, in centimeters.
+    """
 
-    def align_images(self, video_frame, model_reference_in, flash_frame):
-        flash_logo_weight_ratio = flash_frame / float(FLASH_EVERY_FRAMES)
+    def align_images_get_xyz(self, video_frame, model_reference_in, flash_frame):
+        flash_logo_weight_ratio = flash_frame / float(self.FLASH_EVERY_FRAMES)
 
         video_frame_gray = cv2.cvtColor(video_frame, cv2.COLOR_BGR2GRAY)  # Convert images to gray-scale
         # video_frame_gray = cv2.medianBlur(video_frame_gray, 3)
 
-        orb_features = cv2.ORB_create(MAX_FEATURES)  # Detect ORB features and compute descriptors.
+        orb_features = cv2.ORB_create(self.MAX_FEATURES)  # Detect ORB features and compute descriptors.
         keypoints1, descriptors1 = orb_features.detectAndCompute(video_frame_gray, None)
 
-        if use_flann:
-            FLANN_INDEX_LSH = 6
+        if self.use_flann:
             search_params = {}
-            flann_params = dict(algorithm=FLANN_INDEX_LSH)
+            flann_params = dict(algorithm=self.FLANN_INDEX_LSH)
             descriptor_matcher = cv2.FlannBasedMatcher(flann_params,
                                                        search_params)  # bug : need to pass empty dict (#1329)
         else:
@@ -51,7 +45,7 @@ class Perception:
 
             current_descriptor_matches.sort(key=lambda x_point: x_point.distance,
                                             reverse=False)  # Sort matches by score
-            num_good_matches = int(len(current_descriptor_matches) * GOOD_MATCH_PERCENT)  # Remove mediocre matches
+            num_good_matches = int(len(current_descriptor_matches) * self.GOOD_MATCH_PERCENT)  # Remove mediocre matches
             current_descriptor_matches = current_descriptor_matches[:num_good_matches]
             total_descriptor_distance = 0
             for x in current_descriptor_matches:
@@ -63,7 +57,8 @@ class Perception:
                 descriptor_matches = current_descriptor_matches
                 detected_model = i
 
-        if len(descriptor_matches) < MIN_MATCHES or min_total_descriptor_distance < MIN_DESCRIPTOR_DISTANCE_SUM:
+        if len(descriptor_matches) < self.MIN_MATCHES or min_total_descriptor_distance \
+                < self.MIN_DESCRIPTOR_DISTANCE_SUM:
             return video_frame  # Not good detection
         else:
             matched_points1 = np.zeros((len(descriptor_matches), 2),
@@ -108,11 +103,11 @@ class Perception:
                         max_y - min_y) > roi_percent_min * video_frame_gray.shape[0]:
                     if side_ratio_min <= (abs(max_x - min_x) / float(
                             abs(
-                                max_y - min_y))) <= side_ratio_max:  # TODO: do not draw if one side is > 2x the other sides
+                                max_y - min_y))) <= side_ratio_max:  # TODO: don't draw if one side is > 2x the others
                         transformedRectangle = cv2.polylines(video_frame, [np.int32(transformed_rectangle_points)],
                                                              True,
                                                              (0, 0, 255), 3,
-                                                             cv2.LINE_AA)  # Draw a rectangle that marks the found model in the frame
+                                                             cv2.LINE_AA)  # Draw rectangle of the found model in frame
 
             text1 = ""
             text2 = ""
@@ -126,9 +121,8 @@ class Perception:
                                      transformed_rectangle_points[1][0][0], transformed_rectangle_points[1][0][1],
                                      transformed_rectangle_points[2][0][0], transformed_rectangle_points[2][0][1],
                                      transformed_rectangle_points[3][0][0], transformed_rectangle_points[3][0][1]]]
-                arm_xyz_offset = [0.0, 0.0, 0.0]
-                regressor_predicted_arm_xyz = regressor_qr_to_arm_xyz.predict(last_qr_position)  # TODO: z position
-                regressor_predicted_arm_xyz[0] += arm_xyz_offset
+                regressor_predicted_arm_xyz = self.regressor_qr_to_arm_xyz.predict(last_qr_position)  # TODO: z pos
+                regressor_predicted_arm_xyz[0] += self.arm_xyz_offset
                 regressor_predicted_arm_xyz = np.round(regressor_predicted_arm_xyz, 1)
 
                 object_xyz = [regressor_predicted_arm_xyz[0][0],
@@ -191,44 +185,66 @@ class Perception:
             text4 = "Class: {}".format(detected_model)
             cv2.putText(video_frame, text4, (50, 260), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 255), 2, cv2.LINE_AA)
 
-            # TODO: plot graph of last 5 values?
             return video_frame, object_xyz
 
     def __init__(self):
+
+        self.MAX_FEATURES = 900  # 900
+        self.MIN_MATCHES = 30  # 15
+        self.GOOD_MATCH_PERCENT = 0.3  # 0.3
+        self.FLASH_EVERY_FRAMES = 40.0
+        self.MIN_DESCRIPTOR_DISTANCE_SUM = 10000
+        self.use_flann = True
+        self.FLANN_INDEX_LSH = 6
+        self.regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_RANSACRegressor_xyz.sav')
+        self.class_logo = None
         self.write_video = False
+        self.display_output_frames = True
         self.model_reference = cv2.imread("picsQr/model2.png", cv2.IMREAD_COLOR)
         self.percept_frames = 10
+        self.arm_xyz_offset = [0.0, 0.0, 0.0]
+        self.use_local_camera = True
 
-        self.capture_device = cv2.VideoCapture(0)  # TODO: Enable if want to use a local camera
-        # captureDevice = cv2.VideoCapture('picsQr/vids/good8.mp4')  # TODO: Enable if u want to use a video file
+        if self.use_local_camera:
+            self.capture_device = cv2.VideoCapture(0)
+        else:
+            self.captureDevice = cv2.VideoCapture('picsQr/vids/good8.mp4')
 
         self.capture_device.set(cv2.CAP_PROP_FRAME_WIDTH, 1920.0)
         self.capture_device.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080.0)
         # capture_device.set(cv2.CAP_PROP_FPS, 15)
         # capture_device.set(cv2.CAP_PROP_AUTOFOCUS, 0)  # turn the autofocus off
 
-        if self.write_video:
-            # Define the codec and create VideoWriter object
+        if self.write_video:  # Define the codec and create VideoWriter object
             fourcc = cv2.VideoWriter_fourcc(*'MJPG')
             self.out = cv2.VideoWriter('pixelsQrToArmXYZ_AR.avi', fourcc, 20, (1920, 1080))
 
     def destroy(self):
+        """
+        Releases the capture device and the write video out device (if storing to a video on disk).
+        :return:
+        """
         self.capture_device.release()  # When everything done, release the capture
         if self.write_video:
             self.out.release()
         cv2.destroyAllWindows()
 
     def get_percept(self):
+        """
+        Returns the mean perceived position XYZ in cm, of the detected object.
+        :return: List of 3 XYZ float values, centimeters of the object vs the arm frame of reference.
+        """
         arm_object_xyz_list = []
         flash_frame = 0
         for _ in range(self.percept_frames):
             _, video_frame = self.capture_device.read()  # Capture frame-by-frame
-            aligned_frame, arm_object_xyz = self.align_images(video_frame, self.model_reference, flash_frame)
+            aligned_frame, arm_object_xyz = self.align_images_get_xyz(video_frame, self.model_reference, flash_frame)
             arm_object_xyz_list.append(arm_object_xyz)
             flash_frame += 1
-            if flash_frame >= FLASH_EVERY_FRAMES * 0.75:
+            if flash_frame >= self.FLASH_EVERY_FRAMES * 0.75:
                 flash_frame = 0
-            cv2.imshow('Video Frame', aligned_frame)  # Display the resulting frame
+            if self.display_output_frames:
+                cv2.imshow('Video Frame', aligned_frame)  # Display the resulting frame
 
             if self.write_video:
                 self.out.write(aligned_frame)
@@ -243,8 +259,9 @@ if __name__ == '__main__':
     perception = Perception()
 
     import time  # TODO: test sleep a bit
-    for i in range(10):
-        time.sleep(1)
-        xyz = perception.get_percept()
-        print("Percept({}, mean of {}): {} cm".format(i, perception.percept_frames, xyz))
+    for j in range(10):
+        time.sleep(0.1)
+        xyz = perception.get_percept()  # TODO: in BDI: if xyz outside bounds -> world model: no object detected
+        print("Percept({}, mean of {}): {} cm".format(j, perception.percept_frames, xyz))  # TODO: sliding window mean
+        # TODO: BDI: new percept -> B = BRF(percept)
     perception.destroy()

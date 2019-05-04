@@ -28,13 +28,13 @@ if create_graph:
     #         "servo_delay_after": 5
     #     },
     #     "id": "33",
-    #     "name": "le_arm_esp8266",
-    #     "hardware": "esp8266",
+    #     "name": "le_arm_esp32",
+    #     "hardware": "esp32",
     #     "connected": true
     # }
-    v_esp8266 = g.addV("esp8266").property(id, 3).property("name", "le_arm_esp8266").property("hardware", "esp8266").property("connected", True).next()
+    v_esp32 = g.addV("esp32").property(id, 3).property("name", "le_arm_esp32").property("hardware", "esp32").property("connected", True).next()
     v_variables = g.addV("variables").property(id, 4).property("servo1", 1500).property("servo2", 1500).property("servo3", 1500).property("servo4", 1500).property("servo5", 1500).property("servo6", 1500).property("servo_limit_min", 500).property("servo_limit_max", 2500).property("servo_speed", 150).property("servo_delay_after", 5).next()
-    l = g.V(Bindings.of('id', v_esp8266)).addE('stores').to(v_variables).iterate()
+    l = g.V(Bindings.of('id', v_esp32)).addE('stores').to(v_variables).iterate()
 
     # send_requests = False
     # command_delay = 0.05  # seconds
@@ -194,15 +194,15 @@ if create_graph:
     g.io(current_work_directory + "/" + "world_model.json").write().iterate()
 
 
-print("servo_limit_min: {}".format(g.V().has("hardware", "esp8266").out().values("servo_limit_min").next()))
-print("servo_limit_max: {}".format(g.V().has("hardware", "esp8266").has("name", "le_arm_esp8266").out().values("servo_limit_max").next()))
+print("servo_limit_min: {}".format(g.V().has("hardware", "esp32").out().values("servo_limit_min").next()))
+print("servo_limit_max: {}".format(g.V().has("hardware", "esp32").has("name", "le_arm_esp32").out().values("servo_limit_max").next()))
 
-servo_values = g.V().has("name", "le_arm_esp8266").out().values('servo1', 'servo2', 'servo3', 'servo4', 'servo5',
+servo_values = g.V().has("name", "le_arm_esp32").out().values('servo1', 'servo2', 'servo3', 'servo4', 'servo5',
                                                                 'servo6').toList()
 print("servos: {}".format(servo_values))
 
-g.V().has("name", "le_arm_esp8266").out().property("servo_speed", 150).next()  # Write data
-servo_speed = g.V().has("name", "le_arm_esp8266").out().values("servo_speed").next()  # Read data
+g.V().has("name", "le_arm_esp32").out().property("servo_speed", 150).next()  # Write data
+servo_speed = g.V().has("name", "le_arm_esp32").out().values("servo_speed").next()  # Read data
 print("servo_speed: {}".format(servo_speed))
 
 servo_count = g.V().has("name", "kinematic").values("servo_count").next()  # Read data

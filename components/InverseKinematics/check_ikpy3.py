@@ -31,7 +31,7 @@ gripper_open = 600
 # target_position = np.array([-16, 0.0, 10]) * scale
 # target_position = np.array([-20, -20, 25]) * scale
 target_position = np.array([0, 0, 0]) * scale
-# target_position = np.array([-20.5, -2.9, 1.1]) * scale
+# target_position = np.array([-13.12, 0.27, 1.5]) * scale
 
 init_position = np.array([0, 0, 1]) * scale
 
@@ -188,7 +188,7 @@ init_servo_values = [1500, 1500, 1500, 1500, 1500, 1500]  # TODO: temp
 if detect_last_position:
     try:
         if send_requests:
-            url = "http://esp_02662e/"
+            url = "http://ESP32/"
             r = requests.put(url, data="")
             # print("r.status_code: ", r.status_code)
             # print("r.text: ", r.text)
@@ -275,7 +275,7 @@ servo_mask = active_links_mask  # TODO: servo mask
 
 if send_requests:
 
-    url = "http://ESP_02662E/set_servo{}?value={}".format(gripper_servo, gripper_open)  # TODO: gripper horizontal orientation
+    url = "http://ESP32/set_servo{}?value={}".format(gripper_servo, gripper_open)  # TODO: gripper horizontal orientation
     requests.put(url, data="")
     time.sleep(command_delay)
 
@@ -286,7 +286,7 @@ if send_requests:
                 current_servo = servo_count - i
                 if current_servo == 1 and servo_value < 1500:  # Gripper MUST be >= 1500
                     servo_value = 1500
-                url = "http://ESP_02662E/set_servo{}?value={}".format(current_servo, servo_value)
+                url = "http://ESP32/set_servo{}?value={}".format(current_servo, servo_value)
                 print(url)
                 try:
                     r = requests.put(url, data="")

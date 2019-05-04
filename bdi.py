@@ -41,7 +41,7 @@ while not terminate and beliefs.update_tick() < max_ticks:
     if len(plans) > 0:
         plans.sort(key=len)  # TODO: check why sorting doesn't work on "deeper" levels
         print("{}: Plan: {}".format(beliefs.current_world_model.tick, plans[0]))
-        selected_plan = deque(plans[0])
+        selected_plan = deque(plans[0])  # TODO: Use a "cost function" to evaluate the best plan, not the shortest only
 
         while len(selected_plan) > 0 and beliefs.update_tick() < max_ticks:
             action, selected_plan = selected_plan.popleft(), selected_plan  # action = hd(π); π = tail(π);
