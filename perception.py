@@ -153,7 +153,7 @@ class Perception:
             text_warp1 = ""
             text_warp2 = ""
             if detected_model == 0:
-                text1 = 'Item vs arm(ElasticNet): '
+                text1 = 'Target vs arm (RANSAC): '
                 text2 = ''
                 last_qr_position = [[transformed_rectangle_points[0][0][0], transformed_rectangle_points[0][0][1],
                                      transformed_rectangle_points[1][0][0], transformed_rectangle_points[1][0][1],
@@ -218,7 +218,7 @@ class Perception:
             cv2.putText(video_frame, text2, (50, 120), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 255), 2, cv2.LINE_AA)
             text4 = "Feature matches (ORB): {}".format(len(descriptor_matches))
             cv2.putText(video_frame, text4, (50, 210), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
-            text3 = "Hamming distance (sum): {}".format(int(min_total_descriptor_distance))
+            text3 = "FLANN matcher distance (sum): {}".format(int(min_total_descriptor_distance))
             cv2.putText(video_frame, text3, (50, 170), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
             text4 = "Class: {}".format(detected_model)
             cv2.putText(video_frame, text4, (50, 260), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 255), 2, cv2.LINE_AA)
