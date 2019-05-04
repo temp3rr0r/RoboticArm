@@ -5,6 +5,8 @@ class HierarchicalTaskNetworkPlanner:
 
     def __init__(self):
 
+        self.failure_reason = ""
+
         # Helper methods
         def center_servos(state):
             return move_arm(state, "center")
@@ -12,7 +14,7 @@ class HierarchicalTaskNetworkPlanner:
         def get_diameter(actee):
             if actee == "ball":
                 return 3  # cm
-            pyhop.failure_reason = "can't get diameter of {}".format(actee)
+            self.failure_reason = "can't get diameter of {}".format(actee)
             return False
 
         def is_within_bounds(location1, min_bounds, max_bounds):
@@ -21,21 +23,26 @@ class HierarchicalTaskNetworkPlanner:
                     return False
             return True
 
-        def get_xyz(actee):
+        def get_xyz(state, actee):
             if actee == "ball":
-                arm_xyz = [-16, 12.5, 1.0]
-                servo_values = [1500, 1500, 1500, 1500, 1500, 1500]  # TODO: hardcode real servo values
-                return arm_xyz, servo_values
-            elif actee == "container":
-                arm_xyz = [10, 10, 15.0]
-                servo_values = [1500, 1500, 1500, 1500, 1500, 1500]  # TODO: hardcode real servo values
-                return arm_xyz, servo_values
-            elif actee == "center":
-                arm_xyz = [0, 0, 1]  # TODO: mock get arm position
-                servo_values = [1500, 1500, 1500, 1500, 1500, 1500]
-                return arm_xyz, servo_values
+                xyz = [-16, 12.5, 1.0]
+                xyz = state.xyz["ball"]
+                xyz = [90, 12.5, 1.0]
+                # print("state.xyz['ball']: {}".format(state.xyz["ball"]))
+                print("state.xyz['ball']: {}".format(xyz))
 
-            pyhop.failure_reason = "can't get xyz of {}".format(actee)
+                servo_values = [1500, 1500, 1500, 1500, 1500, 1500]  # TODO: hardcode real servo values
+                return xyz, servo_values
+            elif actee == "container":
+                xyz = [10, 10, 15.0]
+                servo_values = [1500, 1500, 1500, 1500, 1500, 1500]  # TODO: hardcode real servo values
+                return xyz, servo_values
+            elif actee == "center":
+                xyz = [0, 0, 1]  # TODO: mock get arm position
+                servo_values = [1500, 1500, 1500, 1500, 1500, 1500]
+                return xyz, servo_values
+
+            self.failure_reason = "can't get xyz of {}".format(actee)
             return False, False
 
         # Operators (primitive tasks)
@@ -44,28 +51,28 @@ class HierarchicalTaskNetworkPlanner:
             arm_min_bounds = state.min_bounds["xyz"]
             arm_max_bounds = state.max_bounds["xyz"]
             if to_ == "ball":
-                arm_xyz, servo_values = get_xyz("ball")
+                arm_xyz, servo_values = get_xyz(state, "ball")
                 if not is_within_bounds(arm_xyz, arm_min_bounds, arm_max_bounds):
-                    pyhop.failure_reason = "can't move arm to {}: {} outside of bounds: {} {}"\
+                    self.failure_reason = "can't move arm to {}: {} outside of bounds: {} {}"\
                         .format(to_, arm_xyz, arm_min_bounds, arm_max_bounds)
                     return False, False
                 return arm_xyz, servo_values
             elif to_ == "container":
-                arm_xyz, servo_values = get_xyz("container")
+                arm_xyz, servo_values = get_xyz(state, "container")
                 if not is_within_bounds(arm_xyz, arm_min_bounds, arm_max_bounds):
-                    pyhop.failure_reason = "can't move arm to {}: {} outside of bounds: {} {}" \
+                    self.failure_reason = "can't move arm to {}: {} outside of bounds: {} {}" \
                         .format(to_, arm_xyz, arm_min_bounds, arm_max_bounds)
                     return False, False
                 return arm_xyz, servo_values
             elif to_ == "center":
-                arm_xyz, servo_values = get_xyz("center")
+                arm_xyz, servo_values = get_xyz(state, "center")
                 if not is_within_bounds(arm_xyz, arm_min_bounds, arm_max_bounds):
-                    pyhop.failure_reason = "can't move arm to {}: {} outside of bounds: {} {}" \
+                    self.failure_reason = "can't move arm to {}: {} outside of bounds: {} {}" \
                         .format(to_, arm_xyz, arm_min_bounds, arm_max_bounds)
                     return False, False
                 return arm_xyz, servo_values
             else:
-                pyhop.failure_reason = "can't move arm to {}".format(to_)
+                self.failure_reason = "can't move arm to {}".format(to_)
                 return False, False
 
         def close_hand(distance):
@@ -77,7 +84,7 @@ class HierarchicalTaskNetworkPlanner:
             if 500 < suggested_hand_distance_servo_value <= 1500:
                 return suggested_hand_distance_servo_value * distance_ratio
 
-            pyhop.failure_reason = "can't close hand to distance {}".format(distance)
+            self.failure_reason = "can't close hand to distance {}".format(distance)
             return False
 
         def open_hand(distance):
@@ -89,7 +96,7 @@ class HierarchicalTaskNetworkPlanner:
             if 500 < suggested_hand_distance_servo_value <= 1500:
                 return suggested_hand_distance_servo_value * distance_ratio
 
-            pyhop.failure_reason = "can't open hand to distance {}".format(distance)
+            self.failure_reason = "can't open hand to distance {}".format(distance)
             return False
 
         def initialize(state, actor):
@@ -100,16 +107,16 @@ class HierarchicalTaskNetworkPlanner:
                     state.location['servo_values'] = servo_values
                     state.initialized["arm"] = True
                     return state
-            pyhop.failure_reason = "{} can't initialize".format(actor)
+            self.failure_reason = "{} can't initialize".format(actor)
             return False
 
         def grab(state, actor, actee, from_):
             if actee == "ball":
                 if state.location['ball'] != 'table':
-                    pyhop.failure_reason = "{} can't locate {} from {}".format(actor, actee, from_)
+                    self.failure_reason = "{} can't locate {} from {}".format(actor, actee, from_)
                     return False
 
-                arm_xyz, servo_values = get_xyz(actee)
+                arm_xyz, servo_values = get_xyz(state, actee)
                 if arm_xyz != False:
                     state.location['arm_xyz'] = arm_xyz
                     state.location['servo_values'] = servo_values
@@ -122,12 +129,12 @@ class HierarchicalTaskNetworkPlanner:
                                 state.location['servo_values'] = servo_values
                                 state.grabbed["ball"] = True
                                 return state
-            pyhop.failure_reason = "{} can't grab {} from {}".format(actor, actee, from_)
+            self.failure_reason = "{} can't grab {} from {}".format(actor, actee, from_)
             return False
 
         def put(state, actor, actee, to_):
             if to_ == "container":
-                arm_xyz, servo_values = get_xyz(to_)
+                arm_xyz, servo_values = get_xyz(state, to_)
                 if arm_xyz != False:
                     state.location['arm_xyz'] = arm_xyz
                     state.location['servo_values'] = servo_values
@@ -138,7 +145,7 @@ class HierarchicalTaskNetworkPlanner:
                             state.location['arm_xyz'] = arm_xyz
                             state.location['servo_values'] = servo_values
                             return state
-            pyhop.failure_reason = "{} can't put {} to {}".format(actor, actee, to_)
+            self.failure_reason = "{} can't put {} to {}".format(actor, actee, to_)
             return False
 
         pyhop.declare_operators(initialize, grab, put, move_arm, close_hand, open_hand)
@@ -152,14 +159,14 @@ class HierarchicalTaskNetworkPlanner:
                 if state.grabbed["ball"]:
                     return [('put', actor, actee, to_)]
 
-            pyhop.failure_reason = "{} can't put_grabbed {} from {} to {}".format(actor, actee, from_, to_)
+            self.failure_reason = "{} can't put_grabbed {} from {} to {}".format(actor, actee, from_, to_)
             return False
 
         def initialize_transfer(state, actor, actee, from_, to_):
             if actor == "arm":
                 return [('initialize', actor), ('grab', actor, actee, from_), ('put', actor, actee, to_)]
 
-            pyhop.failure_reason = "{} can't initialize and transfer {} from {} to {}".format(actor, actee, from_, to_)
+            self.failure_reason = "{} can't initialize and transfer {} from {} to {}".format(actor, actee, from_, to_)
             return False
 
         def transfer(state, actor, actee, from_, to_):
@@ -167,7 +174,7 @@ class HierarchicalTaskNetworkPlanner:
                 if state.initialized["arm"]:
                     return [('grab', actor, actee, from_), ('put', actor, actee, to_)]
 
-            pyhop.failure_reason = "{} can't transfer {} from {} to {}".format(actor, actee, from_, to_)
+            self.failure_reason = "{} can't transfer {} from {} to {}".format(actor, actee, from_, to_)
             return False
 
         pyhop.declare_methods('transfer_ball_to_container', initialize_transfer, put_grabbed, transfer)
