@@ -25,27 +25,27 @@ y_validate = [[-33.8, -17.8, 0.0],
               [-15.8, 2.2, 0.0],
               [-17.8, -7.8, 0.0],
               [-25.8, -2.8, 0.0]]
-# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_MLPRegressor_xyz.sav')
-# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_GradientBoostingRegressor_xyz.sav')
-# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_RandomForestRegressor_xyz.sav')
-# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_ExtraTreesRegressor_xyz.sav')
-# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_KNeighborsRegressor_xyz.sav')
-# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_AdaBoostRegressor_xyz.sav')
-# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_BaggingRegressor_xyz.sav')
-# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_LinearSVR_xyz.sav')
-# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_GaussianProcessRegressor_xyz.sav')  # TODO: good for xy
-# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_MultiOutputRegressor_xyz.sav')  # TODO: good for xy
-second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_RANSACRegressor_xyz.sav')  # TODO: good for xyz
-# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_RidgeCV_xyz.sav')  # TODO: good for xyz
-# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_ElasticNet_xyz.sav')  # TODO: good for xyz
-# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_MultiTaskElasticNetCV_xyz.sav')  # TODO: good for xyz
-# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_Lasso_xyz.sav')  # TODO: good for xyz
-# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_MultiTaskLasso_xyz.sav')  # TODO: good for xyz
-# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_MultiTaskLassoCV_xyz.sav')  # TODO: good for xyz
-# second_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_PLSRegression_xyz.sav')  # TODO: good for xyz
+# second_regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_MLPRegressor_xyz.sav')
+# second_regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_GradientBoostingRegressor_xyz.sav')
+# second_regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_RandomForestRegressor_xyz.sav')
+# second_regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_ExtraTreesRegressor_xyz.sav')
+# second_regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_KNeighborsRegressor_xyz.sav')
+# second_regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_AdaBoostRegressor_xyz.sav')
+# second_regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_BaggingRegressor_xyz.sav')
+# second_regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_LinearSVR_xyz.sav')
+# second_regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_GaussianProcessRegressor_xyz.sav')  # TODO: good for xy
+# second_regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_MultiOutputRegressor_xyz.sav')  # TODO: good for xy
+second_regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_RANSACRegressor_xyz.sav')  # TODO: good for xyz
+# second_regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_RidgeCV_xyz.sav')  # TODO: good for xyz
+# second_regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_ElasticNet_xyz.sav')  # TODO: good for xyz
+# second_regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_MultiTaskElasticNetCV_xyz.sav')  # TODO: good for xyz
+# second_regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_Lasso_xyz.sav')  # TODO: good for xyz
+# second_regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_MultiTaskLasso_xyz.sav')  # TODO: good for xyz
+# second_regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_MultiTaskLassoCV_xyz.sav')  # TODO: good for xyz
+# second_regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_PLSRegression_xyz.sav')  # TODO: good for xyz
 prediction_second_regressor = second_regressor_qr_to_arm_xyz.predict(X_validate)
 print(prediction_second_regressor)
-linear_regressor_qr_to_arm_xyz = joblib.load('pixels_qr_LinearRegressor_xyz.sav')  # X, Y ok
+linear_regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_LinearRegressor_xyz.sav')  # X, Y ok
 pred_linear_regressor = linear_regressor_qr_to_arm_xyz.predict(X_validate)
 print(pred_linear_regressor)
 print(y_validate)
