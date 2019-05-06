@@ -12,21 +12,44 @@ X_dimensions = np.array([(-25, 25), (-25, 25), (-25, 25)])  # dimensions of Sear
 ground_plane = (-25, -25, -25, 25, 25, 0)
 obstacles = [(0.0, 0.0, 0.0, 2.2, 2.2, 2.2)]
 
+cube_side = 2.2
 center = (0, 0, 20)  # starting location
-target = (-20, 5, 1.5)  # goal location
+target = (-10, -15, cube_side / 2.0)  # goal location
+boundary_distance = cube_side
+boundary_height = cube_side * 2.5
+
+target_obstacles = [
+    # (target[0] - 2 * d, target[1] - 2 * d, 0, target[0] + 2 * d, target[1] - d, 2 * cube_side),
+    # (target[0] - 2 * d, 10, 0.0, target[0] + 2 * d, 15, 2 * cube_side),
+    # (target[0] - 2 * d, target[1] - 2 * d, 0.0, -25, 15, 2 * cube_side),
+    # (target[0] + 2 * d, target[1] - 2 * d, 0.0, -5, 15, 2 * cube_side)
+
+    # (target[0] - 2 * d, target[1] - 2 * d, 0, target[0] + 2 * d, target[1] - d, 2 * cube_side),
+    # (target[0] - 2 * d, target[1] + 1 * d, 0.0, target[0] + 2 * d, target[1] + 2 * d, 2 * cube_side),
+    # (target[0] - 2 * d, target[1] - 2 * d, 0.0, target[0] - 1 * d, target[1] + 2 * d, 2 * cube_side),
+    # (target[0] + 2 * d, target[1] - 2 * d, 0.0, target[0] + 3 * d, target[1] + 2 * d, 2 * cube_side)
+
+    (target[0] - 1 * boundary_distance, target[1] - 2 * boundary_distance, 0, target[0] + 1 * boundary_distance, target[1] - boundary_distance, boundary_height),
+    (target[0] - 1 * boundary_distance, target[1] + 1 * boundary_distance, 0.0, target[0] + 1 * boundary_distance, target[1] + 2 * boundary_distance, boundary_height),
+    (target[0] - 2 * boundary_distance, target[1] - 1 * boundary_distance, 0.0, target[0] - 1 * boundary_distance, target[1] + 1 * boundary_distance, boundary_height),
+    (target[0] + 1 * boundary_distance, target[1] - 1 * boundary_distance, 0.0, target[0] + 2 * boundary_distance, target[1] + 1 * boundary_distance, boundary_height)
+]
+print(target_obstacles)
 
 Obstacles = np.array([
-    # (2, 2, 2, 4, 4, 10),
     ground_plane,
-    [obstacle for obstacle in obstacles][0]
+    [obstacle for obstacle in obstacles][0],
+    target_obstacles[0],
+    target_obstacles[1],
+    target_obstacles[2],
+    target_obstacles[3]
     ])  # Each 3d bbox:  x1, y1, z1, x2, y2, z2
 
-
-r = 5  # length of smallest edge to check for intersection with obstacles
-Q = np.array([(r, r)])  # length of tree edges
-
-Q = np.array([(8, 4)])  # length of tree edges
 r = 1  # length of smallest edge to check for intersection with obstacles
+# r = 5
+Q = np.array([(r, r)])  # length of tree edges
+# Q = np.array([(8, 4)])
+
 
 max_samples = 512  # max number of samples to take before timing out
 prc = 0.1  # probability of checking for a connection to goal
