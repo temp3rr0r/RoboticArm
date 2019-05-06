@@ -32,7 +32,7 @@ class WorldModel:
 
     def belief_revision(self, percept):
         """
-        UPDATE the internal world model: B = beliefRevisionFunction(B, ρ)
+        Updates the internal world model: B = beliefRevisionFunction(B, ρ)
         :param percept: Dictionary.
         :return: The updated world model, instance of pyhop State class.
         """
