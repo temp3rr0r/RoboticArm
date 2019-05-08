@@ -4,61 +4,55 @@ from src.search_space.search_space import SearchSpace
 from src.utilities.plotting import Plot
 
 X_dimensions = np.array([(-25, 25), (-25, 25), (-25, 25)])  # dimensions of Search Space
-
-# Obstacles = np.array(
-#     [(20, 20, 20, 40, 40, 40), (20, 20, 60, 40, 40, 80), (20, 60, 20, 40, 80, 40), (60, 60, 20, 80, 80, 40),
-#      (60, 20, 20, 80, 40, 40), (60, 20, 60, 80, 40, 80), (20, 60, 60, 40, 80, 80), (60, 60, 60, 80, 80, 80)])
-
 ground_plane = (-25, -25, -25, 25, 25, 0)
-obstacles = [(0.0, 0.0, 0.0, 2.2, 2.2, 2.2)]
-
-cube_side = 2.2
+target_side_size = 4.4
 center = (0, 0, 20)  # starting location
-target = (-20, -15, cube_side / 2.0)  # goal location
-boundary_distance = cube_side * 1
-boundary_height = cube_side * 0.5
+fence_radius = target_side_size * 0.5
+fence_height = target_side_size * 1.5
 
-target_obstacles = [
-    # (target[0] - 2 * d, target[1] - 2 * d, 0, target[0] + 2 * d, target[1] - d, 2 * cube_side),
-    # (target[0] - 2 * d, 10, 0.0, target[0] + 2 * d, 15, 2 * cube_side),
-    # (target[0] - 2 * d, target[1] - 2 * d, 0.0, -25, 15, 2 * cube_side),
-    # (target[0] + 2 * d, target[1] - 2 * d, 0.0, -5, 15, 2 * cube_side)
+target = (-20, -15, target_side_size / 2.0)  # goal location
 
-    # (target[0] - 2 * d, target[1] - 2 * d, 0, target[0] + 2 * d, target[1] - d, 2 * cube_side),
-    # (target[0] - 2 * d, target[1] + 1 * d, 0.0, target[0] + 2 * d, target[1] + 2 * d, 2 * cube_side),
-    # (target[0] - 2 * d, target[1] - 2 * d, 0.0, target[0] - 1 * d, target[1] + 2 * d, 2 * cube_side),
-    # (target[0] + 2 * d, target[1] - 2 * d, 0.0, target[0] + 3 * d, target[1] + 2 * d, 2 * cube_side)
-
-    (target[0] - 2 * boundary_distance, target[1] - 2 * boundary_distance, 0, target[0] + 2 * boundary_distance, target[1] - boundary_distance, boundary_height),
-    (target[0] - 2 * boundary_distance, target[1] + 1 * boundary_distance, 0.0, target[0] + 2 * boundary_distance, target[1] + 2 * boundary_distance, boundary_height),
-    (target[0] - 2 * boundary_distance, target[1] - 2 * boundary_distance, 0.0, target[0] - 1 * boundary_distance, target[1] + 2 * boundary_distance, boundary_height),
-    (target[0] + 1 * boundary_distance, target[1] - 2 * boundary_distance, 0.0, target[0] + 2 * boundary_distance, target[1] + 2 * boundary_distance, boundary_height)
-]
-print(target_obstacles)
-
-Obstacles = np.array([
+boundary_obstacles = [  # Each 3d bbox:  x1, y1, z1, x2, y2, z2
     ground_plane,
-    [obstacle for obstacle in obstacles][0],
-    target_obstacles[0],
-    target_obstacles[1],
-    target_obstacles[2],
-    target_obstacles[3]
-    ])  # Each 3d bbox:  x1, y1, z1, x2, y2, z2
+    (target[0] - 2 * fence_radius, target[1] - 2 * fence_radius, 0, target[0] + 2 * fence_radius, target[1] - fence_radius, fence_height),
+    (target[0] - 2 * fence_radius, target[1] + 1 * fence_radius, 0.0, target[0] + 2 * fence_radius, target[1] + 2 * fence_radius, fence_height),
+    (target[0] - 2 * fence_radius, target[1] - 2 * fence_radius, 0.0, target[0] - 1 * fence_radius, target[1] + 2 * fence_radius, fence_height),
+    (target[0] + 1 * fence_radius, target[1] - 2 * fence_radius, 0.0, target[0] + 2 * fence_radius, target[1] + 2 * fence_radius, fence_height)
+]
+Obstacles = np.array(boundary_obstacles)
 
 r = 1  # length of smallest edge to check for intersection with obstacles
 # r = 5
-Q = np.array([(r, r)])  # length of tree edges
+# Q = np.array([(r, r)])  # length of tree edges
 # Q = np.array([(8, 4)])
-
+Q = np.array([(12, 4)])
 
 max_samples = 1024  # max number of samples to take before timing out
 prc = 0.1  # probability of checking for a connection to goal
 rewire_count = 32  # optional, number of nearby branches to rewire
 
 X = SearchSpace(X_dimensions, Obstacles)
-
 rrt = RRTStar(X, Q, center, target, max_samples, r, prc, rewire_count)
 path = rrt.rrt_star()
+
+min_path_length = 5
+max_path_length = 10
+
+print("Path length: {}".format(len(path)))
+
+while len(path) > max_path_length:
+    path = rrt.rrt_star()
+
+if len(path) < min_path_length:
+    n = len(path)
+
+    def function1(x):
+        return n + (n - 1) * x  # y = n + (n - 1) * x
+
+    from scipy.optimize import minimize, minimize_scalar
+    result = minimize_scalar(function1, bounds=[min_path_length, max_path_length], method='bounded')
+    print("result: {}".format(result))
+
 
 if path is not None:
     print(path)
