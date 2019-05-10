@@ -28,14 +28,17 @@ class Perception:
         self.percept_frames = 15
         self.arm_xyz_offset = [0.0, 0.0, 0.0]
         self.use_local_camera = True
+        self.camera_frame_width = 1920
+        self.camera_frame_height = 1080
+
 
         if self.use_local_camera:
             self.capture_device = cv2.VideoCapture(0)
         else:
             self.captureDevice = cv2.VideoCapture('picsQr/vids/good8.mp4')
 
-        self.capture_device.set(cv2.CAP_PROP_FRAME_WIDTH, 1920.0)
-        self.capture_device.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080.0)
+        self.capture_device.set(cv2.CAP_PROP_FRAME_WIDTH, self.camera_frame_width)
+        self.capture_device.set(cv2.CAP_PROP_FRAME_HEIGHT, self.camera_frame_height)
         self.capture_device.set(cv2.CAP_PROP_FPS, self.percept_frames)  # 15
         # capture_device.set(cv2.CAP_PROP_AUTOFOCUS, 0)  # turn the autofocus off
 

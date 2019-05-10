@@ -13,7 +13,9 @@ class Control:
 
     def __init__(self):
 
-        # send_requests = True
+        self.closed_hand_distance_ratio = 0.8
+        self.opened_hand_distance_ratio = 1.2
+        self.base_put_url = "http://ESP32/set_servo{}?value={}"
         self.send_requests = False
         self.detect_last_position = False
         self.verbose = False
@@ -22,13 +24,10 @@ class Control:
         # self.scale = 0.04  # For the plotting
         self.scale = 1.0
         self.servo_count = 6
-        self.command_delay = 0.05  # seconds
-        self.center_init = True
-        self.closed_hand_distance_ratio = 0.8
-        self.opened_hand_distance_ratio = 1.2
-        # self.center_init = False
+        self.command_delay = 0.001  # seconds
+        self.center_init = False
         self.angle_degree_limit = 75  # degrees
-        self.trajectory_steps = 10
+        self.trajectory_steps = 20
         self.current_servo_monotony = [-1.0, -1.0, 1.0, -1.0, -1.0, -1.0]
         self.active_links_mask = [True, True, True, True, False, True]  # Enabled/disabled links
         self.min_steps = 1
@@ -182,63 +181,48 @@ class Control:
         target_position = np.array(self.init_position) * self.scale
         action_successful = self.move_arm(target_position)
         print("=== Arm initialized")
-
         return action_successful
 
     def move_arm_to_container(self, xyz):
         action_successful = False
-        # target_position = np.array([-0.1, 22.0, 10]) * self.scale
         target_position = np.array(xyz) * self.scale
-        # np.array([0, 18, 10]) * self.scale
         action_successful = self.move_arm(target_position)
         print("=== Arm to container")
-
         return action_successful
 
     def move_arm_to_object(self, xyz):
         action_successful = False
-        # target_position = np.array([-12.5, -12.5, 5]) * self.scale
         target_position = np.array(xyz) * self.scale
-        # np.array([0, 18, 10]) * self.scale
         action_successful = self.move_arm(target_position)
         print("=== Arm to container")
-
         return action_successful
 
     def close_hand(self, object_side_length):
         action_successful = False
-        closed_hand_distance_ratio = 0.8
-
+        closed_hand_distance_ratio = self.closed_hand_distance_ratio
         closed_length = object_side_length * closed_hand_distance_ratio
         servo_range = int(self.cm_to_servo_polynomial_fitter(closed_length))
         if self.verbose:
             print("cm: {}, predicted servo value: {}".format(closed_length, servo_range))
-
         action_successful = self.send_restful_servo_range(self.gripping_gripper_servo, servo_range)
-
         print("=== Gripper closed")
-
         return action_successful
 
     def open_hand(self, object_side_length):
         action_successful = False
-
-        opened_hand_distance_ratio = 1.2
-
+        opened_hand_distance_ratio = self.opened_hand_distance_ratio
         opened_length = object_side_length * opened_hand_distance_ratio
         servo_range = int(self.cm_to_servo_polynomial_fitter(opened_length))
         if self.verbose:
             print("cm: {}, predicted servo value: {}".format(opened_length, servo_range))
-
         action_successful = self.send_restful_servo_range(self.gripping_gripper_servo, servo_range)
-
         print("=== Gripper opened")
-
         return action_successful
 
     def send_restful_servo_range(self, servo, range):
         action_successful = False
-        url = "http://ESP32/set_servo{}?value={}".format(servo, range)  # TODO: gripper horizontal orientation
+        # url = "http://ESP32/set_servo{}?value={}".format(servo, range)  # TODO: gripper horizontal orientation
+        url = self.base_put_url.format(servo, range)  # TODO: gripper horizontal orientation
         requests.put(url, data="")
         time.sleep(self.command_delay)
         action_successful = True
@@ -256,7 +240,8 @@ class Control:
                     if current_servo is not self.gripping_gripper_servo and current_servo is not self.rotating_gripper_servo:
                         if current_servo == 1 and servo_value < 1500:  # Gripper MUST be >= 1500
                             servo_value = 1500
-                        url = "http://ESP32/set_servo{}?value={}".format(current_servo, servo_value)
+                        # url = "http://ESP32/set_servo{}?value={}".format(current_servo, servo_value)
+                        url = self.base_put_url.format(current_servo, servo_value)
                         if self.verbose:
                             print(url)
                         try:

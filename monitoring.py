@@ -11,17 +11,13 @@ class Monitoring:
         action_successful = False
 
         if action == ('initialize', 'arm'):  # TODO: for testing only
-            action, actor = action
-            # TODO:
-            object_side_length = 4.0
+            object_side_length = world_model.size["object_side_length"]
             action_successful = self.control.initialize_arm()
             action_successful = self.control.open_hand(object_side_length)
-        #     percept = {"initialized": {'arm': True}}
-        #     beliefs = beliefs.belief_revision(percept)
         elif action == ('grab', 'arm', 'target_object', 'table'):
             # pass
             xyz = world_model.xyz["target_object"]
-            object_side_length = 4.0
+            object_side_length = world_model.size["object_side_length"]
             if self.verbose:
                 print("target_object xyz: {}".format(xyz))
             xyz[2] = object_side_length * 2.0
@@ -29,18 +25,13 @@ class Monitoring:
             xyz[2] = object_side_length * 0.5
             action_successful = self.control.move_arm_to_object(xyz)  # To object
             action_successful = self.control.close_hand(object_side_length)
-        #     percept = {"grabbed": {'target_object': True}, "initialized": {'arm': False}}
-        #     beliefs = beliefs.belief_revision(percept)
+            xyz[2] = object_side_length * 2.0
+            action_successful = self.control.move_arm_to_object(xyz)  # Above object
         elif action == ('put', 'arm', 'target_object', 'container'):
-            container_xyz = [-15.0, 24.0, 19]
-            container_xyz = [-0.1, 24.0, 19]
-            object_side_length = 4.4
+            container_xyz = world_model.xyz["container"]
+            object_side_length = world_model.size["object_side_length"]
             action_successful = self.control.move_arm_to_container(container_xyz)
             action_successful = self.control.open_hand(object_side_length)
-        #     percept = {"location": {"target_object": "container"}}
-        #     beliefs = beliefs.belief_revision(percept)
-        #     percept = {"grabbed": {'target_object': False}}
-        #     beliefs = beliefs.belief_revision(percept)
 
         return action_successful
 
