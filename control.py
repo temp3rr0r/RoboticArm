@@ -15,6 +15,7 @@ class Control:
         # send_requests = True
         self.send_requests = False
         self.detect_last_position = False
+        self.verbose = False
         self.scale = 0.04  # For the plotting
         # self.scale = 1.0
         self.servo_count = 6
@@ -148,14 +149,16 @@ class Control:
 
         from_servo_range = np.array(from_servo_range_in)
         to_servo_range = np.array(to_servo_range_in)
-        print("from_servo_range: ", from_servo_range)
-        print("to_servo_range: ", to_servo_range)
+        if self.verbose:
+            print("from_servo_range: ", from_servo_range)
+            print("to_servo_range: ", to_servo_range)
 
         step_servo_range = []
         for index in range(len(to_servo_range)):
             step_servo_range.append((to_servo_range[index] - from_servo_range[index]) / float(steps))
 
-        print("step_servo_range: ", step_servo_range)
+        if self.verbose:
+            print("step_servo_range: ", step_servo_range)
 
         servo_range_trajectory = []
         step_servo_range = np.array(step_servo_range)
@@ -199,18 +202,20 @@ class Control:
                             [result["servo6"], result["servo5"], result["servo4"], result["servo3"],
                              result["servo2"], result["servo1"]])
 
-                        print("last_servo_values: ", last_servo_values)
-                        print("last_servo_xyz",
-                              np.round(self.servo_range_to_xyz(last_servo_values, self.current_servo_monotony), 2))
+                        if self.verbose:
+                            print("last_servo_values: ", last_servo_values)
+                            print("last_servo_xyz",
+                                  np.round(self.servo_range_to_xyz(last_servo_values, self.current_servo_monotony), 2))
 
             except Exception as e_pos:
                 print("Exception: {}".format(str(e_pos)))
 
         if self.center_init:
-            print("Top position (radians): ",
-                  self.le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
-                      self.init_position,
-                      np.eye(3))))
+            if self.verbose:
+                print("Top position (radians): ",
+                      self.le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
+                          self.init_position,
+                          np.eye(3))))
             ax = matplotlib.pyplot.figure().add_subplot(111, projection='3d')
 
             self.le_arm_chain.plot(self.le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
@@ -230,8 +235,9 @@ class Control:
         to_servo_range = self.xyz_to_servo_range(target_position, self.current_servo_monotony)
         kinematic_servo_range_trajectory = self.get_servo_range_trajectory(from_servo_range, to_servo_range,
                                                                            self.trajectory_steps)
-        print("init_angle_radians2: {}, from_servo_range: {}, to_servo_range: {}, servo_range_trajectory: {}"
-              .format(init_angle_radians2, from_servo_range, to_servo_range, kinematic_servo_range_trajectory))
+        if self.verbose:
+            print("init_angle_radians2: {}, from_servo_range: {}, to_servo_range: {}, servo_range_trajectory: {}"
+                  .format(init_angle_radians2, from_servo_range, to_servo_range, kinematic_servo_range_trajectory))
 
         ax = matplotlib.pyplot.figure().add_subplot(111, projection='3d')
 
@@ -258,7 +264,8 @@ class Control:
                         if current_servo == 1 and servo_value < 1500:  # Gripper MUST be >= 1500
                             servo_value = 1500
                         url = "http://ESP32/set_servo{}?value={}".format(current_servo, servo_value)
-                        print(url)
+                        if self.verbose:
+                            print(url)
                         try:
                             r = requests.put(url, data="")
                             if r.status_code != 200:
@@ -266,7 +273,8 @@ class Control:
                         except Exception as e:
                             print("Exception: {}".format(str(e)))
                         time.sleep(self.command_delay)
-                print("")
+                if self.verbose:
+                    print("")
 
         action_successful = True
         return action_successful
