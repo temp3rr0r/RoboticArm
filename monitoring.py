@@ -14,7 +14,7 @@ class Monitoring:
             action, actor = action
             # TODO:
             object_side_length = 4.0
-            # action_successful = self.control.initialize_arm()
+            action_successful = self.control.initialize_arm()
             action_successful = self.control.open_hand(object_side_length)
         #     percept = {"initialized": {'arm': True}}
         #     beliefs = beliefs.belief_revision(percept)

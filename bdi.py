@@ -34,6 +34,7 @@ if __name__ == '__main__':
     intentions = goal  # I = I0 Initial Intentions
     beliefs = WorldModel()  # B = B0 Initial Beliefs
     perception = Perception()
+    perception.write_video = True
     monitoring = Monitoring()
     # Disable all 3 monitoring switches for testing
     monitoring.control.send_requests = True
@@ -65,6 +66,9 @@ if __name__ == '__main__':
                     monitoring.execute_action(action, beliefs.current_world_model)
 
                     # get next percept ρ # TODO: OBSERVE the world
+                    percept = {"xyz": {'target_object': perception.get_percept()}}  # get next percept ρ OBSERVE the world
+                    beliefs = beliefs.belief_revision(percept)
+
                     if action == ('initialize', 'arm'):  # TODO: for testing only
                         percept = {"initialized": {'arm': True}}  # TODO: post conditions
                         beliefs = beliefs.belief_revision(percept)  # TODO: post conditions

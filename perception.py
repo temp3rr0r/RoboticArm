@@ -21,11 +21,11 @@ class Perception:
         self.use_flann = True
         self.FLANN_INDEX_LSH = 6
         self.regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_RANSACRegressor_xyz.sav')
-        self.write_video = False
+        self.write_video = True
         self.display_output_frames = True
         self.class_logo = cv2.imread("picsQr/logoTarget.png", cv2.IMREAD_COLOR)
         self.model_reference = cv2.imread("picsQr/modelTarget.png", cv2.IMREAD_COLOR)
-        self.percept_frames = 10
+        self.percept_frames = 15
         self.arm_xyz_offset = [0.0, 0.0, 0.0]
         self.use_local_camera = True
 
@@ -36,12 +36,12 @@ class Perception:
 
         self.capture_device.set(cv2.CAP_PROP_FRAME_WIDTH, 1920.0)
         self.capture_device.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080.0)
-        self.capture_device.set(cv2.CAP_PROP_FPS, 60)  # 15
+        self.capture_device.set(cv2.CAP_PROP_FPS, self.percept_frames)  # 15
         # capture_device.set(cv2.CAP_PROP_AUTOFOCUS, 0)  # turn the autofocus off
 
         if self.write_video:  # Define the codec and create VideoWriter object
-            fourcc = cv2.VideoWriter_fourcc(*'MJPG')
-            self.out = cv2.VideoWriter('perception.avi', fourcc, 20, (1920, 1080))
+            self.fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+            self.out = cv2.VideoWriter('perception.avi', self.fourcc, self.percept_frames, (1920, 1080))
 
         print("--- Perception initialized.")
 
