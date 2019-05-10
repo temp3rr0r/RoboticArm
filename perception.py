@@ -264,7 +264,8 @@ class Perception:
 if __name__ == '__main__':
     perception = Perception()
     import time
-    for j in range(10):
+    steps = 500
+    for j in range(steps):
         time.sleep(0.1)
         xyz = perception.get_percept()  # TODO: in BDI: if xyz outside bounds -> world model: no object detected
         print("Percept({}, mean of {}): {} cm".format(j, perception.percept_frames, xyz))  # TODO: sliding window mean

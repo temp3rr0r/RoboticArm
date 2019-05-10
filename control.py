@@ -22,7 +22,7 @@ class Control:
         # self.scale = 0.04  # For the plotting
         self.scale = 1.0
         self.servo_count = 6
-        self.command_delay = 0.1  # seconds
+        self.command_delay = 0.05  # seconds
         self.center_init = True
         self.closed_hand_distance_ratio = 0.8
         self.opened_hand_distance_ratio = 1.2
@@ -205,9 +205,8 @@ class Control:
 
         return action_successful
 
-    def close_hand(self):
+    def close_hand(self, object_side_length):
         action_successful = False
-        object_side_length = 4.4
         closed_hand_distance_ratio = 0.8
 
         closed_length = object_side_length * closed_hand_distance_ratio
@@ -221,9 +220,9 @@ class Control:
 
         return action_successful
 
-    def open_hand(self):
+    def open_hand(self, object_side_length):
         action_successful = False
-        object_side_length = 4.4
+
         opened_hand_distance_ratio = 1.2
 
         opened_length = object_side_length * opened_hand_distance_ratio
@@ -251,21 +250,22 @@ class Control:
 
         for step in kinematic_servo_range_trajectory:
             for i in range(len(step)):
-                if servo_mask[i]:
+                if servo_mask[i]:  # TODO: why not servo mask fully work?
                     servo_value = step[i]
                     current_servo = self.servo_count - i
-                    if current_servo == 1 and servo_value < 1500:  # Gripper MUST be >= 1500
-                        servo_value = 1500
-                    url = "http://ESP32/set_servo{}?value={}".format(current_servo, servo_value)
-                    if self.verbose:
-                        print(url)
-                    try:
-                        r = requests.put(url, data="")
-                        if r.status_code != 200:
-                            break  # TODO: abort
-                    except Exception as e:
-                        print("Exception: {}".format(str(e)))
-                    time.sleep(self.command_delay)
+                    if current_servo is not self.gripping_gripper_servo and current_servo is not self.rotating_gripper_servo:
+                        if current_servo == 1 and servo_value < 1500:  # Gripper MUST be >= 1500
+                            servo_value = 1500
+                        url = "http://ESP32/set_servo{}?value={}".format(current_servo, servo_value)
+                        if self.verbose:
+                            print(url)
+                        try:
+                            r = requests.put(url, data="")
+                            if r.status_code != 200:
+                                break  # TODO: abort
+                        except Exception as e:
+                            print("Exception: {}".format(str(e)))
+                        time.sleep(self.command_delay)
             if self.verbose:
                 print("")
 
@@ -348,9 +348,10 @@ if __name__ == '__main__':
     control.center_init = False
     # control.detect_last_position = False
     control.initialize_arm()
-    control.open_hand()
-    control.move_arm_to_container()
-    control.close_hand()
+    control.open_hand(4.4)
+    container_xyz = [-0.1, 25.0, 12]
+    control.move_arm_to_container(container_xyz)
+    control.close_hand(4.4)
 
     # target_position = np.array([12.5, -12.5, 2.0]) * monitoring.control.scale
     target_position = np.array([20, -20.0, 20]) * control.scale

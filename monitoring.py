@@ -5,6 +5,7 @@ class Monitoring:
 
     def __init__(self):
         self.control = Control()
+        self.verbose = False
 
     def execute_action(self, action, world_model):
         action_successful = False
@@ -12,22 +13,30 @@ class Monitoring:
         if action == ('initialize', 'arm'):  # TODO: for testing only
             action, actor = action
             # TODO:
+            object_side_length = 4.0
             # action_successful = self.control.initialize_arm()
+            action_successful = self.control.open_hand(object_side_length)
         #     percept = {"initialized": {'arm': True}}
         #     beliefs = beliefs.belief_revision(percept)
         elif action == ('grab', 'arm', 'target_object', 'table'):
             # pass
             xyz = world_model.xyz["target_object"]
-            xyz[2] = 2.2
-            print("xyz: {}".format(xyz))
-            action_successful = self.control.move_arm_to_object(xyz)
-            action_successful = self.control.close_hand()
+            object_side_length = 4.0
+            if self.verbose:
+                print("target_object xyz: {}".format(xyz))
+            xyz[2] = object_side_length * 2.0
+            action_successful = self.control.move_arm_to_object(xyz)  # Above object
+            xyz[2] = object_side_length * 0.5
+            action_successful = self.control.move_arm_to_object(xyz)  # To object
+            action_successful = self.control.close_hand(object_side_length)
         #     percept = {"grabbed": {'target_object': True}, "initialized": {'arm': False}}
         #     beliefs = beliefs.belief_revision(percept)
         elif action == ('put', 'arm', 'target_object', 'container'):
-            container_xyz = [-0.1, 25.0, 12]
+            container_xyz = [-15.0, 24.0, 19]
+            container_xyz = [-0.1, 24.0, 19]
+            object_side_length = 4.4
             action_successful = self.control.move_arm_to_container(container_xyz)
-            action_successful = self.control.open_hand()
+            action_successful = self.control.open_hand(object_side_length)
         #     percept = {"location": {"target_object": "container"}}
         #     beliefs = beliefs.belief_revision(percept)
         #     percept = {"grabbed": {'target_object': False}}
