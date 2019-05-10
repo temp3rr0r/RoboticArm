@@ -4,6 +4,7 @@ from collections import deque
 from perception import Perception
 from monitoring import Monitoring
 
+
 def filter_intentions(current_beliefs, current_desires, current_intentions):
     for current_intention in current_intentions:
         if current_intention == ('transfer_target_object_to_container', 'arm', 'target_object', 'table', 'container') \
@@ -34,6 +35,7 @@ if __name__ == '__main__':
     beliefs = WorldModel()  # B = B0 Initial Beliefs
     perception = Perception()
     monitoring = Monitoring()
+    # Disable all 3 monitoring switches for testing
     monitoring.control.send_requests = True
     monitoring.control.center_init = False
     monitoring.control.detect_last_position = True
@@ -63,8 +65,8 @@ if __name__ == '__main__':
 
                     # get next percept ρ # TODO: OBSERVE the world
                     if action == ('initialize', 'arm'):  # TODO: for testing only
-                        percept = {"initialized": {'arm': True}}
-                        beliefs = beliefs.belief_revision(percept)
+                        percept = {"initialized": {'arm': True}}  # TODO: post conditions
+                        beliefs = beliefs.belief_revision(percept)  # TODO: post conditions
                     elif action == ('grab', 'arm', 'target_object', 'table'):
                         percept = {"grabbed": {'target_object': True}, "initialized": {'arm': False}}
                         beliefs = beliefs.belief_revision(percept)

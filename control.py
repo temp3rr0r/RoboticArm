@@ -6,6 +6,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from ikpy import geometry_utils
 import requests
 import time
+from sklearn.externals import joblib
 
 
 class Control:
@@ -17,11 +18,14 @@ class Control:
         self.detect_last_position = False
         self.verbose = False
         self.show_plots = False
+        self.cm_to_servo_polynomial_fitter = joblib.load('modelsQr/cm_to_servo_polynomial_fitter.sav')
         self.scale = 0.04  # For the plotting
         # self.scale = 1.0
         self.servo_count = 6
         self.command_delay = 0.1  # seconds
         self.center_init = True
+        self.closed_hand_distance_ratio = 0.8
+        self.opened_hand_distance_ratio = 1.2
         # self.center_init = False
         self.angle_degree_limit = 75  # degrees
         self.trajectory_steps = 10
@@ -30,6 +34,7 @@ class Control:
         self.min_steps = 1
         self.max_steps = 5000
         self.rotating_gripper_servo = 2
+        self.gripping_gripper_servo = 1
         self.horizontal_gripper_position = 600
         self.init_position = np.array([0, 0, 1]) * self.scale
         self.init_servo_values = [1500, 1500, 1500, 1500, 1500, 1500]  # TODO: temp
@@ -187,25 +192,51 @@ class Control:
 
         return action_successful
 
-    # def close_hand(self, suggested_hand_distance_servo_value):
     def close_hand(self):
         action_successful = False
-        # distance_ratio = 0.9
-        #
-        # target_position = np.array([-20, -20, 25]) * self.scale  # TODO:
-        # action_successful = self.move_arm(target_position)
-        print("-- Arm closed")
+        object_side_length = 4.4
+        closed_length = object_side_length * self.closed_hand_distance_ratio
+        servo_range = int(self.cm_to_servo_polynomial_fitter(closed_length))
+        if self.verbose:
+            print("cm: {}, predicted servo value: {}".format(closed_length, servo_range))
+
+        action_successful = self.send_restful_servo_range(self.gripping_gripper_servo, servo_range)
+
+        print("-- Gripper closed")
 
         return action_successful
 
-    def send_restful_requests(self, kinematic_servo_range_trajectory):
+    def open_hand(self):
+        action_successful = False
+        object_side_length = 4.4
+
+        opened_length = object_side_length * self.opened_hand_distance_ratio
+        servo_range = int(self.cm_to_servo_polynomial_fitter(opened_length))
+        if self.verbose:
+            print("cm: {}, predicted servo value: {}".format(opened_length, servo_range))
+
+        action_successful = self.send_restful_servo_range(self.gripping_gripper_servo, servo_range)
+
+        print("-- Gripper opened")
+
+        return action_successful
+
+    def send_restful_servo_range(self, servo, range):
+        action_successful = False
+        url = "http://ESP32/set_servo{}?value={}".format(servo, range)  # TODO: gripper horizontal orientation
+        requests.put(url, data="")
+        time.sleep(self.command_delay)
+        action_successful = True
+        return action_successful
+
+    def send_restful_trajectory_requests(self, kinematic_servo_range_trajectory):
         action_successful = False
         servo_mask = self.active_links_mask  # servo mask
 
-        url = "http://ESP32/set_servo{}?value={}".format(self.rotating_gripper_servo,
-                                                         self.horizontal_gripper_position)  # TODO: gripper horizontal orientation
-        requests.put(url, data="")
-        time.sleep(self.command_delay)
+        # url = "http://ESP32/set_servo{}?value={}".format(self.rotating_gripper_servo,
+        #                                                  self.horizontal_gripper_position)  # TODO: gripper horizontal orientation
+        # requests.put(url, data="")
+        # time.sleep(self.command_delay)
 
         for step in kinematic_servo_range_trajectory:
             for i in range(len(step)):
@@ -293,19 +324,22 @@ class Control:
             matplotlib.pyplot.show()
 
         if self.send_requests:
-            action_successful = self.send_restful_requests(kinematic_servo_range_trajectory)
+            action_successful = self.send_restful_trajectory_requests(kinematic_servo_range_trajectory)
 
         return action_successful
 
 
 if __name__ == '__main__':
 
+    # Sequence for testing
     control = Control()
-    control.send_requests = False  # TODO: test
-    control.center_init = False  # TODO: test
+    control.send_requests = False
+    control.center_init = False
     control.detect_last_position = False
     control.initialize_arm()
+    control.open_hand()
     control.move_arm_to_container()
+    control.close_hand()
 
     # target_position = np.array([12.5, -12.5, 2.0]) * monitoring.control.scale
     target_position = np.array([20, -20.0, 20]) * control.scale

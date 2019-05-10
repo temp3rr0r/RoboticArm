@@ -21,6 +21,7 @@ class Monitoring:
         #     beliefs = beliefs.belief_revision(percept)
         elif action == ('put', 'arm', 'target_object', 'container'):
             action_successful = self.control.move_arm_to_container()
+            action_successful = self.control.open_hand()
         #     percept = {"location": {"target_object": "container"}}
         #     beliefs = beliefs.belief_revision(percept)
         #     percept = {"grabbed": {'target_object': False}}
@@ -31,15 +32,15 @@ class Monitoring:
 
 if __name__ == '__main__':
 
+    # Sequence for testing
     monitoring = Monitoring()
-    monitoring.control.send_requests = True  # TODO: test
-    monitoring.control.center_init = False  # TODO: test
+    monitoring.control.send_requests = True
+    monitoring.control.center_init = False
     monitoring.control.detect_last_position = True
     monitoring.execute_action(('initialize', 'arm'))
+    monitoring.execute_action(('grab', 'arm', 'target_object', 'table'))
     monitoring.execute_action(('put', 'arm', 'target_object', 'container'))
-
     import numpy as np
-
     # target_position = np.array([12.5, -12.5, 2.0]) * monitoring.control.scale
     target_position = np.array([20, -20.0, 20]) * monitoring.control.scale
     # target_position = np.array([12.5, -12.5, 25]) * monitoring.control.scale
