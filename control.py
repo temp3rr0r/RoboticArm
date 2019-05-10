@@ -186,6 +186,48 @@ class Control:
 
         return action_successful
 
+    # def close_hand(self, suggested_hand_distance_servo_value):
+    def close_hand(self):
+        action_successful = False
+        # distance_ratio = 0.9
+        #
+        # target_position = np.array([-20, -20, 25]) * self.scale  # TODO:
+        # action_successful = self.move_arm(target_position)
+        print("-- Arm closed")
+
+        return action_successful
+
+    def send_requests(self, kinematic_servo_range_trajectory):
+        action_successful = False
+
+        url = "http://ESP32/set_servo{}?value={}".format(self.rotating_gripper_servo,
+                                                         self.horizontal_gripper_position)  # TODO: gripper horizontal orientation
+        requests.put(url, data="")
+        time.sleep(self.command_delay)
+
+        for step in kinematic_servo_range_trajectory:
+            for i in range(len(step)):
+                if servo_mask[i]:
+                    servo_value = step[i]
+                    current_servo = self.servo_count - i
+                    if current_servo == 1 and servo_value < 1500:  # Gripper MUST be >= 1500
+                        servo_value = 1500
+                    url = "http://ESP32/set_servo{}?value={}".format(current_servo, servo_value)
+                    if self.verbose:
+                        print(url)
+                    try:
+                        r = requests.put(url, data="")
+                        if r.status_code != 200:
+                            break  # TODO: abort
+                    except Exception as e:
+                        print("Exception: {}".format(str(e)))
+                    time.sleep(self.command_delay)
+            if self.verbose:
+                print("")
+
+        action_successful = True
+        return action_successful
+
     def move_arm(self, target_position):
         action_successful = False
 
@@ -250,31 +292,31 @@ class Control:
         servo_mask = self.active_links_mask  # TODO: servo mask
 
         if self.send_requests:
-
-            url = "http://ESP32/set_servo{}?value={}".format(self.rotating_gripper_servo,
-                                                             self.horizontal_gripper_position)  # TODO: gripper horizontal orientation
-            requests.put(url, data="")
-            time.sleep(self.command_delay)
-
-            for step in kinematic_servo_range_trajectory:
-                for i in range(len(step)):
-                    if servo_mask[i]:
-                        servo_value = step[i]
-                        current_servo = self.servo_count - i
-                        if current_servo == 1 and servo_value < 1500:  # Gripper MUST be >= 1500
-                            servo_value = 1500
-                        url = "http://ESP32/set_servo{}?value={}".format(current_servo, servo_value)
-                        if self.verbose:
-                            print(url)
-                        try:
-                            r = requests.put(url, data="")
-                            if r.status_code != 200:
-                                break  # TODO: abort
-                        except Exception as e:
-                            print("Exception: {}".format(str(e)))
-                        time.sleep(self.command_delay)
-                if self.verbose:
-                    print("")
+            action_successful = self.send_requests(kinematic_servo_range_trajectory)
+            # url = "http://ESP32/set_servo{}?value={}".format(self.rotating_gripper_servo,
+            #                                                  self.horizontal_gripper_position)  # TODO: gripper horizontal orientation
+            # requests.put(url, data="")
+            # time.sleep(self.command_delay)
+            #
+            # for step in kinematic_servo_range_trajectory:
+            #     for i in range(len(step)):
+            #         if servo_mask[i]:
+            #             servo_value = step[i]
+            #             current_servo = self.servo_count - i
+            #             if current_servo == 1 and servo_value < 1500:  # Gripper MUST be >= 1500
+            #                 servo_value = 1500
+            #             url = "http://ESP32/set_servo{}?value={}".format(current_servo, servo_value)
+            #             if self.verbose:
+            #                 print(url)
+            #             try:
+            #                 r = requests.put(url, data="")
+            #                 if r.status_code != 200:
+            #                     break  # TODO: abort
+            #             except Exception as e:
+            #                 print("Exception: {}".format(str(e)))
+            #             time.sleep(self.command_delay)
+            #     if self.verbose:
+            #         print("")
 
         action_successful = True
         return action_successful

@@ -15,7 +15,8 @@ class Monitoring:
             action_successful = self.control.initialize_arm()
         #     percept = {"initialized": {'arm': True}}
         #     beliefs = beliefs.belief_revision(percept)
-        # elif action == ('grab', 'arm', 'target_object', 'table'):
+        elif action == ('grab', 'arm', 'target_object', 'table'):
+            action_successful = self.control.close_hand()
         #     percept = {"grabbed": {'target_object': True}, "initialized": {'arm': False}}
         #     beliefs = beliefs.belief_revision(percept)
         elif action == ('put', 'arm', 'target_object', 'container'):
