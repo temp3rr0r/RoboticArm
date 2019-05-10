@@ -19,8 +19,8 @@ class Control:
         self.verbose = False
         self.show_plots = False
         self.cm_to_servo_polynomial_fitter = joblib.load('modelsQr/cm_to_servo_polynomial_fitter.sav')
-        self.scale = 0.04  # For the plotting
-        # self.scale = 1.0
+        # self.scale = 0.04  # For the plotting
+        self.scale = 1.0
         self.servo_count = 6
         self.command_delay = 0.1  # seconds
         self.center_init = True
@@ -179,16 +179,28 @@ class Control:
 
     def initialize_arm(self):
         action_successful = False
-        target_position = np.array([0, 0, 0]) * self.scale
+        target_position = np.array(self.init_position) * self.scale
         action_successful = self.move_arm(target_position)
         print("=== Arm initialized")
 
         return action_successful
 
-    def move_arm_to_container(self):
+    def move_arm_to_container(self, xyz):
         action_successful = False
-        # target_position = np.array([-20, -20, 25]) * self.scale  # TODO:
-        action_successful = self.move_arm(self.container_position)
+        # target_position = np.array([-0.1, 22.0, 10]) * self.scale
+        target_position = np.array(xyz) * self.scale
+        # np.array([0, 18, 10]) * self.scale
+        action_successful = self.move_arm(target_position)
+        print("=== Arm to container")
+
+        return action_successful
+
+    def move_arm_to_object(self, xyz):
+        action_successful = False
+        # target_position = np.array([-12.5, -12.5, 5]) * self.scale
+        target_position = np.array(xyz) * self.scale
+        # np.array([0, 18, 10]) * self.scale
+        action_successful = self.move_arm(target_position)
         print("=== Arm to container")
 
         return action_successful
@@ -196,7 +208,9 @@ class Control:
     def close_hand(self):
         action_successful = False
         object_side_length = 4.4
-        closed_length = object_side_length * self.closed_hand_distance_ratio
+        closed_hand_distance_ratio = 0.8
+
+        closed_length = object_side_length * closed_hand_distance_ratio
         servo_range = int(self.cm_to_servo_polynomial_fitter(closed_length))
         if self.verbose:
             print("cm: {}, predicted servo value: {}".format(closed_length, servo_range))
@@ -210,8 +224,9 @@ class Control:
     def open_hand(self):
         action_successful = False
         object_side_length = 4.4
+        opened_hand_distance_ratio = 1.2
 
-        opened_length = object_side_length * self.opened_hand_distance_ratio
+        opened_length = object_side_length * opened_hand_distance_ratio
         servo_range = int(self.cm_to_servo_polynomial_fitter(opened_length))
         if self.verbose:
             print("cm: {}, predicted servo value: {}".format(opened_length, servo_range))
@@ -329,9 +344,9 @@ if __name__ == '__main__':
 
     # Sequence for testing
     control = Control()
-    control.send_requests = False
+    # control.send_requests = False
     control.center_init = False
-    control.detect_last_position = False
+    # control.detect_last_position = False
     control.initialize_arm()
     control.open_hand()
     control.move_arm_to_container()

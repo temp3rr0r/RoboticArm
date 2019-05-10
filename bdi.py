@@ -39,6 +39,7 @@ if __name__ == '__main__':
     monitoring.control.send_requests = True
     monitoring.control.center_init = False
     monitoring.control.detect_last_position = True
+    # monitoring.control.verbose = True
 
     while not SUCCESS and not terminate and beliefs.update_tick() < max_ticks:
 
@@ -61,7 +62,7 @@ if __name__ == '__main__':
                     action, selected_plan = selected_plan.popleft(), selected_plan  # action = hd(π); π = tail(π);
 
                     print("{}: Action: {}".format(beliefs.current_world_model.tick, action))
-                    monitoring.execute_action(action)
+                    monitoring.execute_action(action, beliefs.current_world_model)
 
                     # get next percept ρ # TODO: OBSERVE the world
                     if action == ('initialize', 'arm'):  # TODO: for testing only
