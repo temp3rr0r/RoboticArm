@@ -37,6 +37,7 @@ class Control:
         self.gripping_gripper_servo = 1
         self.horizontal_gripper_position = 600
         self.init_position = np.array([0, 0, 1]) * self.scale
+        self.container_position = np.array([0, 18, 10]) * self.scale
         self.init_servo_values = [1500, 1500, 1500, 1500, 1500, 1500]  # TODO: temp
 
         # Link lengths in centimeters
@@ -180,15 +181,15 @@ class Control:
         action_successful = False
         target_position = np.array([0, 0, 0]) * self.scale
         action_successful = self.move_arm(target_position)
-        print("-- Arm initialized")
+        print("=== Arm initialized")
 
         return action_successful
 
     def move_arm_to_container(self):
         action_successful = False
-        target_position = np.array([-20, -20, 25]) * self.scale  # TODO:
-        action_successful = self.move_arm(target_position)
-        print("-- Arm to container")
+        # target_position = np.array([-20, -20, 25]) * self.scale  # TODO:
+        action_successful = self.move_arm(self.container_position)
+        print("=== Arm to container")
 
         return action_successful
 
@@ -202,7 +203,7 @@ class Control:
 
         action_successful = self.send_restful_servo_range(self.gripping_gripper_servo, servo_range)
 
-        print("-- Gripper closed")
+        print("=== Gripper closed")
 
         return action_successful
 
@@ -217,7 +218,7 @@ class Control:
 
         action_successful = self.send_restful_servo_range(self.gripping_gripper_servo, servo_range)
 
-        print("-- Gripper opened")
+        print("=== Gripper opened")
 
         return action_successful
 
@@ -232,11 +233,6 @@ class Control:
     def send_restful_trajectory_requests(self, kinematic_servo_range_trajectory):
         action_successful = False
         servo_mask = self.active_links_mask  # servo mask
-
-        # url = "http://ESP32/set_servo{}?value={}".format(self.rotating_gripper_servo,
-        #                                                  self.horizontal_gripper_position)  # TODO: gripper horizontal orientation
-        # requests.put(url, data="")
-        # time.sleep(self.command_delay)
 
         for step in kinematic_servo_range_trajectory:
             for i in range(len(step)):
