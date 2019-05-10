@@ -16,6 +16,7 @@ class Control:
         self.send_requests = False
         self.detect_last_position = False
         self.verbose = False
+        self.show_plots = False
         self.scale = 0.04  # For the plotting
         # self.scale = 1.0
         self.servo_count = 6
@@ -197,8 +198,9 @@ class Control:
 
         return action_successful
 
-    def send_requests(self, kinematic_servo_range_trajectory):
+    def send_restful_requests(self, kinematic_servo_range_trajectory):
         action_successful = False
+        servo_mask = self.active_links_mask  # servo mask
 
         url = "http://ESP32/set_servo{}?value={}".format(self.rotating_gripper_servo,
                                                          self.horizontal_gripper_position)  # TODO: gripper horizontal orientation
@@ -258,12 +260,13 @@ class Control:
                       self.le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
                           self.init_position,
                           np.eye(3))))
-            ax = matplotlib.pyplot.figure().add_subplot(111, projection='3d')
 
-            self.le_arm_chain.plot(self.le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
-                self.init_position,
-                np.eye(3))), ax, target=self.init_position)
-            matplotlib.pyplot.show()
+            if self.show_plots:
+                ax = matplotlib.pyplot.figure().add_subplot(111, projection='3d')
+                self.le_arm_chain.plot(self.le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
+                    self.init_position,
+                    np.eye(3))), ax, target=self.init_position)
+                matplotlib.pyplot.show()
 
         # TODO: from to servo range -> trajectory
         init_position2 = self.init_position
@@ -281,44 +284,17 @@ class Control:
             print("init_angle_radians2: {}, from_servo_range: {}, to_servo_range: {}, servo_range_trajectory: {}"
                   .format(init_angle_radians2, from_servo_range, to_servo_range, kinematic_servo_range_trajectory))
 
-        ax = matplotlib.pyplot.figure().add_subplot(111, projection='3d')
-
-        self.le_arm_chain.plot(self.le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
-            target_position,
-            np.eye(3))), ax,
-            target=target_position)
-        matplotlib.pyplot.show()
-
-        servo_mask = self.active_links_mask  # TODO: servo mask
+        if self.show_plots:
+            ax = matplotlib.pyplot.figure().add_subplot(111, projection='3d')
+            self.le_arm_chain.plot(self.le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
+                target_position,
+                np.eye(3))), ax,
+                target=target_position)
+            matplotlib.pyplot.show()
 
         if self.send_requests:
-            action_successful = self.send_requests(kinematic_servo_range_trajectory)
-            # url = "http://ESP32/set_servo{}?value={}".format(self.rotating_gripper_servo,
-            #                                                  self.horizontal_gripper_position)  # TODO: gripper horizontal orientation
-            # requests.put(url, data="")
-            # time.sleep(self.command_delay)
-            #
-            # for step in kinematic_servo_range_trajectory:
-            #     for i in range(len(step)):
-            #         if servo_mask[i]:
-            #             servo_value = step[i]
-            #             current_servo = self.servo_count - i
-            #             if current_servo == 1 and servo_value < 1500:  # Gripper MUST be >= 1500
-            #                 servo_value = 1500
-            #             url = "http://ESP32/set_servo{}?value={}".format(current_servo, servo_value)
-            #             if self.verbose:
-            #                 print(url)
-            #             try:
-            #                 r = requests.put(url, data="")
-            #                 if r.status_code != 200:
-            #                     break  # TODO: abort
-            #             except Exception as e:
-            #                 print("Exception: {}".format(str(e)))
-            #             time.sleep(self.command_delay)
-            #     if self.verbose:
-            #         print("")
+            action_successful = self.send_restful_requests(kinematic_servo_range_trajectory)
 
-        action_successful = True
         return action_successful
 
 

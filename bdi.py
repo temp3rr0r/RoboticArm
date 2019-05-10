@@ -34,6 +34,9 @@ if __name__ == '__main__':
     beliefs = WorldModel()  # B = B0 Initial Beliefs
     perception = Perception()
     monitoring = Monitoring()
+    monitoring.control.send_requests = True
+    monitoring.control.center_init = False
+    monitoring.control.detect_last_position = True
 
     while not SUCCESS and not terminate and beliefs.update_tick() < max_ticks:
 
@@ -56,7 +59,6 @@ if __name__ == '__main__':
                     action, selected_plan = selected_plan.popleft(), selected_plan  # action = hd(π); π = tail(π);
 
                     print("{}: Action: {}".format(beliefs.current_world_model.tick, action))
-                    # execute(action)  # TODO: do execute the action
                     monitoring.execute_action(action)
 
                     # get next percept ρ # TODO: OBSERVE the world
@@ -67,9 +69,7 @@ if __name__ == '__main__':
                         percept = {"grabbed": {'target_object': True}, "initialized": {'arm': False}}
                         beliefs = beliefs.belief_revision(percept)
                     elif action == ('put', 'arm', 'target_object', 'container'):
-                        percept = {"location": {"target_object": "container"}}
-                        beliefs = beliefs.belief_revision(percept)
-                        percept = {"grabbed": {'target_object': False}}
+                        percept = {"location": {"target_object": "container"}, "grabbed": {'target_object': False}}
                         beliefs = beliefs.belief_revision(percept)
 
                     # if not sound(π, I, B) then
