@@ -1,5 +1,5 @@
 from ikpy.chain import Chain
-from ikpy.link import OriginLink, URDFLink
+from ikpy.link import URDFLink
 import matplotlib.pyplot
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
@@ -14,7 +14,7 @@ class Control:
     def __init__(self):
 
         self.closed_hand_distance_ratio = 0.8
-        self.opened_hand_distance_ratio = 1.2
+        self.opened_hand_distance_ratio = 1.5
         self.base_put_url = "http://ESP32/set_servo{}?value={}"
         self.send_requests = False
         self.detect_last_position = False
@@ -29,7 +29,7 @@ class Control:
         self.angle_degree_limit = 75  # degrees
         self.trajectory_steps = 20
         self.current_servo_monotony = [-1.0, -1.0, 1.0, -1.0, -1.0, -1.0]
-        self.active_links_mask = [True, True, True, True, False, True]  # Enabled/disabled links
+        self.active_links_mask = [True, True, True, True, False, False]  # Enabled/disabled links
         self.min_steps = 1
         self.max_steps = 5000
         self.rotating_gripper_servo = 2
@@ -190,11 +190,21 @@ class Control:
         print("=== Arm to container")
         return action_successful
 
+    def move_arm_above_xyz(self, xyz, height):
+        action_successful = False
+        xyz[2] = height
+        target_position = np.array(xyz) * self.scale
+        if self.send_requests:
+            action_successful = self.move_arm(target_position)
+        print("=== Arm to object")
+        return action_successful
+
     def move_arm_to_object(self, xyz):
         action_successful = False
         target_position = np.array(xyz) * self.scale
-        action_successful = self.move_arm(target_position)
-        print("=== Arm to container")
+        if self.send_requests:
+            action_successful = self.move_arm(target_position)
+        print("=== Arm to object")
         return action_successful
 
     def close_hand(self, object_side_length):
@@ -204,7 +214,8 @@ class Control:
         servo_range = int(self.cm_to_servo_polynomial_fitter(closed_length))
         if self.verbose:
             print("cm: {}, predicted servo value: {}".format(closed_length, servo_range))
-        action_successful = self.send_restful_servo_range(self.gripping_gripper_servo, servo_range)
+        if self.send_requests:
+            action_successful = self.send_restful_servo_range(self.gripping_gripper_servo, servo_range)
         print("=== Gripper closed")
         return action_successful
 
@@ -215,14 +226,14 @@ class Control:
         servo_range = int(self.cm_to_servo_polynomial_fitter(opened_length))
         if self.verbose:
             print("cm: {}, predicted servo value: {}".format(opened_length, servo_range))
-        action_successful = self.send_restful_servo_range(self.gripping_gripper_servo, servo_range)
+        if self.send_requests:
+            action_successful = self.send_restful_servo_range(self.gripping_gripper_servo, servo_range)
         print("=== Gripper opened")
         return action_successful
 
     def send_restful_servo_range(self, servo, range):
         action_successful = False
-        # url = "http://ESP32/set_servo{}?value={}".format(servo, range)  # TODO: gripper horizontal orientation
-        url = self.base_put_url.format(servo, range)  # TODO: gripper horizontal orientation
+        url = self.base_put_url.format(servo, range)
         requests.put(url, data="")
         time.sleep(self.command_delay)
         action_successful = True
@@ -234,31 +245,29 @@ class Control:
 
         for step in kinematic_servo_range_trajectory:
             for i in range(len(step)):
-                if servo_mask[i]:  # TODO: why not servo mask fully work?
+                if servo_mask[i]:
                     servo_value = step[i]
                     current_servo = self.servo_count - i
-                    if current_servo is not self.gripping_gripper_servo and current_servo is not self.rotating_gripper_servo:
-                        if current_servo == 1 and servo_value < 1500:  # Gripper MUST be >= 1500
-                            servo_value = 1500
-                        # url = "http://ESP32/set_servo{}?value={}".format(current_servo, servo_value)
-                        url = self.base_put_url.format(current_servo, servo_value)
-                        if self.verbose:
-                            print(url)
-                        try:
-                            r = requests.put(url, data="")
-                            if r.status_code != 200:
-                                break  # TODO: abort
-                        except Exception as e:
-                            print("Exception: {}".format(str(e)))
-                        time.sleep(self.command_delay)
+                    url = self.base_put_url.format(current_servo, servo_value)
+                    if self.verbose:
+                        print(url)
+                    try:
+                        r = requests.put(url, data="")
+                        if r.status_code != 200:
+                            break  # TODO: abort
+                    except Exception as e:
+                        print("Exception: {}".format(str(e)))
+                    time.sleep(self.command_delay)
             if self.verbose:
                 print("")
 
         action_successful = True
         return action_successful
 
-    def move_arm(self, target_position):
+    def move_arm(self, target_position, trajectory_steps=-1):
         action_successful = False
+        if trajectory_steps == -1:
+            trajectory_steps = self.trajectory_steps
 
         # TODO: init from request
         if self.detect_last_position:
@@ -306,7 +315,7 @@ class Control:
             from_servo_range = last_servo_values
         to_servo_range = self.xyz_to_servo_range(target_position, self.current_servo_monotony)
         kinematic_servo_range_trajectory = self.get_servo_range_trajectory(from_servo_range, to_servo_range,
-                                                                           self.trajectory_steps)
+                                                                           trajectory_steps)
         if self.verbose:
             print("init_angle_radians2: {}, from_servo_range: {}, to_servo_range: {}, servo_range_trajectory: {}"
                   .format(init_angle_radians2, from_servo_range, to_servo_range, kinematic_servo_range_trajectory))
@@ -329,9 +338,9 @@ if __name__ == '__main__':
 
     # Sequence for testing
     control = Control()
-    # control.send_requests = False
+    control.send_requests = False
     control.center_init = False
-    # control.detect_last_position = False
+    control.detect_last_position = False
     control.initialize_arm()
     control.open_hand(4.4)
     container_xyz = [-0.1, 25.0, 12]

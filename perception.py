@@ -49,6 +49,7 @@ class Perception:
         print("--- Perception initialized.")
 
     def align_images_get_xyz(self, video_frame, model_reference_in, flash_frame):
+        object_xyz = [-25, -25, -25]
         flash_logo_weight_ratio = flash_frame / float(self.FLASH_EVERY_FRAMES)
 
         video_frame_gray = cv2.cvtColor(video_frame, cv2.COLOR_BGR2GRAY)  # Convert images to gray-scale
@@ -71,7 +72,6 @@ class Perception:
         min_total_descriptor_distance = sys.maxsize
         detected_model = -1
 
-        object_xyz = [-25, -25, -25]
         descriptor_matches = None
         key_points2 = None
         transformed_rectangle_points2 = None
@@ -247,8 +247,14 @@ class Perception:
         flash_frame = 0
         for _ in range(self.percept_frames):
             _, video_frame = self.capture_device.read()  # Capture frame-by-frame
-            aligned_frame, arm_object_xyz = self.align_images_get_xyz(video_frame, self.model_reference, flash_frame)
-            arm_object_xyz_list.append(arm_object_xyz)
+            # aligned_frame, arm_object_xyz = self.align_images_get_xyz(video_frame, self.model_reference, flash_frame)
+            try:
+                aligned_frame, arm_object_xyz = self.align_images_get_xyz(video_frame, self.model_reference,
+                                                                          flash_frame)
+                arm_object_xyz_list.append(arm_object_xyz)
+            except ValueError as e:
+                print("ValueError Exception: {}".format(str(e)))  # TODO: why too many values error?
+
             flash_frame += 1
             if flash_frame >= self.FLASH_EVERY_FRAMES * 0.75:
                 flash_frame = 0

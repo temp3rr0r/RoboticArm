@@ -25,7 +25,7 @@ def deliberate(current_beliefs, current_intentions):
 
 if __name__ == '__main__':
 
-    max_ticks = 20  # TODO: set it in the property graph
+    # max_ticks = 20  # TODO: set it in the property graph
     terminate = False
     SUCCESS = False
     htn_planner = HierarchicalTaskNetworkPlanner()
@@ -40,9 +40,8 @@ if __name__ == '__main__':
     monitoring.control.send_requests = True
     monitoring.control.center_init = False
     monitoring.control.detect_last_position = True
-    # monitoring.control.verbose = True
 
-    while not SUCCESS and not terminate and beliefs.update_tick() < max_ticks:
+    while not SUCCESS and not terminate and beliefs.update_tick() < beliefs.current_world_model.max_ticks:
 
         percept = {"xyz": {'target_object': perception.get_percept()}}  # get next percept ρ OBSERVE the world
         beliefs = beliefs.belief_revision(percept)
@@ -51,22 +50,22 @@ if __name__ == '__main__':
         if intentions == "":
             SUCCESS = True
 
-        # π = plan(B, I) MEANS_END REASONING to PLAN for the intention
-        plans = htn_planner.get_plans(beliefs.current_world_model, intentions)
+        plans = htn_planner.get_plans(beliefs.current_world_model, intentions)  # π = plan(B, I) MEANS_END REASONING
         if plans != False:
             if len(plans) > 0:
                 plans.sort(key=len)  # TODO: check why sorting doesn't work on "deeper" levels
                 print("{}: Plan: {}".format(beliefs.current_world_model.tick, plans[0]))
-                selected_plan = deque(plans[0])  # TODO: Use a "cost function" to evaluate the best plan, not the shortest only
+                selected_plan = deque(plans[0])  # TODO: Use a "cost function" to evaluate the best plan, not shortest
 
-                while len(selected_plan) > 0 and beliefs.update_tick() < max_ticks:
+                # while len(selected_plan) > 0 and beliefs.update_tick() < max_ticks:
+                while len(selected_plan) > 0 and beliefs.update_tick() < beliefs.current_world_model.max_ticks:
                     action, selected_plan = selected_plan.popleft(), selected_plan  # action = hd(π); π = tail(π);
 
                     print("{}: Action: {}".format(beliefs.current_world_model.tick, action))
                     monitoring.execute_action(action, beliefs.current_world_model)
 
-                    # get next percept ρ # TODO: OBSERVE the world
-                    percept = {"xyz": {'target_object': perception.get_percept()}}  # get next percept ρ OBSERVE the world
+                    # get next percept ρ OBSERVE the world
+                    percept = {"xyz": {'target_object': perception.get_percept()}}
                     beliefs = beliefs.belief_revision(percept)
 
                     if action == ('initialize', 'arm'):  # TODO: for testing only
