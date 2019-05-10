@@ -154,7 +154,6 @@ class Control:
         step_servo_range = []
         for index in range(len(to_servo_range)):
             step_servo_range.append((to_servo_range[index] - from_servo_range[index]) / float(steps))
-            # step_servo_range.append(np.multiply((from_servo_range[index] - to_servo_range[index]) / float(steps), servo_monotony))
 
         print("step_servo_range: ", step_servo_range)
 
@@ -170,9 +169,7 @@ class Control:
 
     def initialize_arm(self):
         action_successful = False
-        # TODO: initialize arm
         target_position = np.array([0, 0, 0]) * self.scale
-
         action_successful = self.move_arm(target_position)
         print("-- Arm initialized")
 
@@ -182,7 +179,7 @@ class Control:
         action_successful = False
         target_position = np.array([-20, -20, 25]) * self.scale  # TODO:
         action_successful = self.move_arm(target_position)
-        print("-- Arm initialized")
+        print("-- Arm to container")
 
         return action_successful
 
@@ -275,150 +272,20 @@ class Control:
         return action_successful
 
 
-# if __name__ == '__main__':
-#
-#     control = Control()
-#     control.send_requests = False  # TODO: test
-#     control.center_init = False  # TODO: test
-#     # control.scale = 0.04  # For the plotting
-#
-#     # target_position = np.array([12.5, -12.5, 2.0]) * control.scale
-#     # target_position = np.array([20, -20.0, 20]) * control.scale
-#     # target_position = np.array([12.5, -12.5, 25]) * control.scale
-#     # target_position = np.array([-5, -5, 40]) * control.scale
-#     # target_position = np.array([-16, 0.0, 10]) * control.scale
-#     target_position = np.array([-20, -20, 25]) * control.scale
-#     # target_position = np.array([0, 0, 0]) * control.scale
-#     # target_position = np.array([-13.12, 0.27, 1.5]) * control.scale
-#
-#     # TODO: init from request
-#     detect_last_position = False
-#     if detect_last_position:
-#         try:
-#             if control.send_requests:
-#                 url = "http://ESP32/"
-#                 r = requests.put(url, data="")
-#                 # print("r.status_code: ", r.status_code)
-#                 # print("r.text: ", r.text)
-#                 # print("r.encoding: ", r.encoding)
-#                 # print("r.json(): ", r.json())
-#                 # print("r.headers['content-type']: ", r.headers['content-type'])
-#                 # print("servo6: ", r.json()['variables']['servo6'])
-#                 result = r.json()['variables']
-#                 # print("servo6: ", result['servo6'], result['servo5'])
-#                 if r.status_code == 200:
-#                     result = r.json()["variables"]
-#                     init_servo_values = np.array(
-#                         [result["servo6"], result["servo5"], result["servo4"], result["servo3"],
-#                          result["servo2"], result["servo1"]])
-#
-#                     # init_servo_radians = np.multiply(servo_range_to_radians(init_servo_values), control.current_servo_monotony)
-#                     # print("init_servo_radians: ", init_servo_radians)
-#                     #
-#                     # print("init_servo_radians: ", np.multiply(servo_range_to_radians(init_servo_values),
-#                     #                                          control.current_servo_monotony[::-1]))
-#                     #
-#                     # init_position2 = le_arm_chain.forward_kinematics(init_servo_radians)
-#                     # init_position = np.round(servo_range_to_xyz2(init_servo_values, control.current_servo_monotony), 2)
-#                     # print("predicted_init_position: ", init_position)
-#                     # print("proper init_position: ", target_position)
-#
-#         except Exception as e:
-#             print("Exception: {}".format(str(e)))
-#
-#     if control.center_init:
-#         print("Top position (radians): ",
-#               control.le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
-#                   control.init_position,
-#                   np.eye(3))))
-#         ax = matplotlib.pyplot.figure().add_subplot(111, projection='3d')
-#
-#         control.le_arm_chain.plot(control.le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
-#             control.init_position,
-#             np.eye(3))), ax, target=control.init_position)
-#         matplotlib.pyplot.show()
-#
-#     # TODO: from to servo range -> trajectory
-#     init_position2 = control.init_position
-#     init_angle_radians2 = control.le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
-#         init_position2,
-#         np.eye(3)))
-#     from_servo_range = control.radians_to_servo_range(init_angle_radians2)
-#     to_servo_range = control.xyz_to_servo_range(target_position, control.current_servo_monotony)
-#     servo_range_trajectory = control.get_servo_range_trajectory(from_servo_range, to_servo_range,
-#                                                              control.trajectory_steps)
-#     print("init_angle_radians2: {}, from_servo_range: {}, to_servo_range: {}, servo_range_trajectory: {}"
-#           .format(init_angle_radians2, from_servo_range, to_servo_range, servo_range_trajectory))
-#
-#
-#     print("Target angles (radians): ", control.le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
-#         target_position,
-#         np.eye(3))))
-#     ax = matplotlib.pyplot.figure().add_subplot(111, projection='3d')
-#
-#     control.le_arm_chain.plot(control.le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
-#         target_position,
-#         np.eye(3))), ax,
-#         target=target_position)
-#     matplotlib.pyplot.show()
-#
-#     target_angle_radians = control.le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
-#         target_position,
-#         np.eye(3)))
-#
-#     # TODO: test 0
-#     # target_servo_range = radians_to_servo_range(np.multiply(target_angle_radians, control.current_servo_monotony))
-#     # kinematic_servo_range_trajectory = get_kinematic_servo_trajectory(init_servo_values, target_servo_range,
-#     #  trajectory_steps)
-#     # print("kinematic_servo_range_trajectory (steps: {}): {}".format(trajectory_steps, kinematic_servo_range_
-#     # trajectory))
-#
-#     # TODO: test 1
-#     init_angle_radians = control.le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
-#         control.init_position,
-#         np.eye(3)))
-#     kinematic_angle_trajectory = control.get_kinematic_angle_trajectory(init_angle_radians, target_angle_radians,
-#                                                                         control.current_servo_monotony,
-#                                                                         control.trajectory_steps)
-#     print("kinematic_angle_trajectory (steps: {}): {}".format(control.trajectory_steps, kinematic_angle_trajectory))
-#     print("kinematic_angle_trajectory (steps: {}): {}".format(control.trajectory_steps,
-#                                                               np.rad2deg(kinematic_angle_trajectory)))
-#     kinematic_servo_range_trajectory = control.radians_to_servo_range(kinematic_angle_trajectory)
-#     print("kinematic_servo_range_trajectory (steps: {}): {}".format(control.trajectory_steps,
-#                                                                     kinematic_servo_range_trajectory))
-#
-#     # TODO: from to, to-from with MONOTONY
-#     servo_range1 = control.xyz_to_servo_range(target_position, control.current_servo_monotony)
-#     target2 = np.round(control.servo_range_to_xyz(servo_range1, control.current_servo_monotony), 2)
-#     print("\n", target_position, " -> \n",
-#           servo_range1, " -> \n",
-#           target2, "\n")
-#
-#     # TODO: https possible in ESP32? How slower?
-#
-#     servo_mask = control.active_links_mask  # TODO: servo mask
-#
-#     if control.send_requests:
-#
-#         url = "http://ESP32/set_servo{}?value={}".format(control.rotating_gripper_servo,
-#                                                          control.horizontal_gripper_position)  # TODO: gripper horizontal orientation
-#         requests.put(url, data="")
-#         time.sleep(control.command_delay)
-#
-#         for step in kinematic_servo_range_trajectory:
-#             for i in range(len(step)):
-#                 if servo_mask[i]:
-#                     servo_value = step[i]
-#                     current_servo = control.servo_count - i
-#                     if current_servo == 1 and servo_value < 1500:  # Gripper MUST be >= 1500
-#                         servo_value = 1500
-#                     url = "http://ESP32/set_servo{}?value={}".format(current_servo, servo_value)
-#                     print(url)
-#                     try:
-#                         r = requests.put(url, data="")
-#                         if r.status_code != 200:
-#                             break  # TODO: abort
-#                     except Exception as e:
-#                         print("Exception: {}".format(str(e)))
-#                     time.sleep(control.command_delay)
-#             print("")
+if __name__ == '__main__':
+
+    control = Control()
+    control.send_requests = False  # TODO: test
+    control.center_init = False  # TODO: test
+    control.detect_last_position = False
+    control.initialize_arm()
+    control.move_arm_to_container()
+
+    # target_position = np.array([12.5, -12.5, 2.0]) * monitoring.control.scale
+    target_position = np.array([20, -20.0, 20]) * control.scale
+    # target_position = np.array([12.5, -12.5, 25]) * monitoring.control.scale
+    # target_position = np.array([-16, 0.0, 10]) * monitoring.control.scale
+    # target_position = np.array([-20, -20, 25]) * monitoring.control.scale
+    # target_position = np.array([0, 0, 0]) * monitoring.control.scale
+    # target_position = np.array([-13.12, 0.27, 1.5]) * monitoring.control.scale
+    action_successful = control.move_arm(np.array(target_position))

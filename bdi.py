@@ -2,7 +2,7 @@ from world_model import WorldModel
 from hierarchical_task_network_planner import HierarchicalTaskNetworkPlanner
 from collections import deque
 from perception import Perception
-
+from monitoring import Monitoring
 
 def filter_intentions(current_beliefs, current_desires, current_intentions):
     for current_intention in current_intentions:
@@ -33,6 +33,7 @@ if __name__ == '__main__':
     intentions = goal  # I = I0 Initial Intentions
     beliefs = WorldModel()  # B = B0 Initial Beliefs
     perception = Perception()
+    monitoring = Monitoring()
 
     while not SUCCESS and not terminate and beliefs.update_tick() < max_ticks:
 
@@ -56,6 +57,7 @@ if __name__ == '__main__':
 
                     print("{}: Action: {}".format(beliefs.current_world_model.tick, action))
                     # execute(action)  # TODO: do execute the action
+                    monitoring.execute_action(action)
 
                     # get next percept ρ # TODO: OBSERVE the world
                     if action == ('initialize', 'arm'):  # TODO: for testing only
