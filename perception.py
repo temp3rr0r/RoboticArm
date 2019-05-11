@@ -92,7 +92,6 @@ class Perception:
 
             current_key_points_2, descriptors2 = orb_features.detectAndCompute(model_reference_gray, None)
             current_descriptor_matches = descriptor_matcher.match(descriptors1, descriptors2, None)
-            # current_descriptor_matches = descriptor_matcher.knnMatch(descriptors1, descriptors2, 2)  # TODO: test knn
 
             current_descriptor_matches.sort(key=lambda x_point: x_point.distance,
                                             reverse=False)  # Sort matches by score
@@ -237,10 +236,10 @@ class Perception:
 
             # TODO: Put text engravings
             if text_engraving is not "":
+                base_y = 650
+                y_step = 50
                 if len(text_engraving) == 4:
                     what, why, how_well, what_else = text_engraving
-                    base_y = 650
-                    y_step = 50
 
                     text_what_question = "Q: What is the robot doing?"
                     cv2.putText(video_frame, text_what_question, (50, base_y), cv2.FONT_HERSHEY_SIMPLEX,
@@ -274,6 +273,15 @@ class Perception:
                     text_what_else_answer = "A: ALTERNATIVE PLANS {}".format(what_else)
                     cv2.putText(video_frame, text_what_else_answer, (50, base_y + (8 * y_step)),
                                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2, cv2.LINE_AA)
+                elif len(text_engraving) == 1:
+                    if text_engraving[0] is not "":
+                        why_failed = text_engraving[0]
+                        text_why_failed_question = "Q: What is the robot doing?"
+                        cv2.putText(video_frame, text_why_failed_question, (50, base_y), cv2.FONT_HERSHEY_SIMPLEX,
+                                    1, (255, 0, 0), 2, cv2.LINE_AA)
+                        text_why_failed_answer = "A: FAILED {}".format(why_failed)
+                        cv2.putText(video_frame, text_why_failed_answer, (50, base_y + y_step), cv2.FONT_HERSHEY_SIMPLEX,
+                                    1, (0, 0, 255), 2, cv2.LINE_AA)
 
             return video_frame, object_xyz
 

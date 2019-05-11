@@ -50,12 +50,13 @@ if __name__ == '__main__':
     coordination.control.center_init = False
     coordination.control.detect_last_position = True
 
-    what, why, how_well, what_else = "", "", "", ""
+    what, why, how_well, what_else, why_failed = "", "", "", "", ""
 
     start_time = datetime.datetime.now()
     while not SUCCESS and not terminate and beliefs.update_tick() < beliefs.current_world_model.max_ticks:
 
-        percept = {"xyz": {'target_object': perception.get_percept()}}  # get next percept ρ OBSERVE the world
+        percept = {"xyz": {'target_object': perception.get_percept(text_engraving=(why_failed,))}}  # get next percept ρ OBSERVE the world
+        # percept = {"xyz": {'target_object': perception.get_percept()}}  # get next percept ρ OBSERVE the world
         beliefs = beliefs.belief_revision(percept)
 
         intentions = deliberate(beliefs, intentions)  # DELIBERATE about what INTENTION to achieve next
@@ -102,7 +103,8 @@ if __name__ == '__main__':
                     # if not sound(π, I, B) then
                     #   π = plan(B, I)
         else:
-            print("Plan failure_reason: {}".format(htn_planner.failure_reason))
+            why_failed = htn_planner.failure_reason
+            print("Plan failure_reason: {}".format(why_failed))
 
     print("Done.")
     perception.destroy()
