@@ -55,7 +55,7 @@ if __name__ == '__main__':
     start_time = datetime.datetime.now()
     while not SUCCESS and not terminate and beliefs.update_tick() < beliefs.current_world_model.max_ticks:
 
-        percept = {"xyz": {'target_object': perception.get_percept(text_engraving=(why_failed,))}}  # get next percept ρ OBSERVE the world
+        percept = {"xyz": {'target_object': perception.get_percept(text_engraving=(why_failed, how_well))}}  # get next percept ρ OBSERVE the world
         # percept = {"xyz": {'target_object': perception.get_percept()}}  # get next percept ρ OBSERVE the world
         beliefs = beliefs.belief_revision(percept)
 
@@ -105,7 +105,11 @@ if __name__ == '__main__':
                     #   π = plan(B, I)
         else:
             why_failed = htn_planner.failure_reason
-            print("Plan failure_reason: {}".format(why_failed))
+            print("Plan failure_reason: {}".format(why_failed), end=" ")
+            how_well = (beliefs.current_world_model.tick, beliefs.current_world_model.max_ticks,
+                        int((datetime.datetime.now() - start_time).total_seconds() * 1000),  # milliseconds
+                        plans)
+            print("how_well: {}".format(how_well))
 
     print("Done.")
     perception.destroy()

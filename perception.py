@@ -22,11 +22,11 @@ class Perception:
         self.FLANN_INDEX_LSH = 6
         self.regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_RANSACRegressor_xyz.sav')
         self.write_video = True
-        self.display_output_frames = False
+        self.display_output_frames = True
         self.class_logo = cv2.imread("picsQr/logoTarget.png", cv2.IMREAD_COLOR)
         self.model_reference = cv2.imread("picsQr/modelTarget.png", cv2.IMREAD_COLOR)
-        self.percept_frames = 20
-        self.video_frames_per_second = 20
+        self.percept_frames = 60
+        self.video_frames_per_second = 15
         self.arm_xyz_offset = [0.0, 0.0, 0.0]
         self.use_local_camera = True
         self.camera_frame_width = 1920
@@ -277,8 +277,8 @@ class Perception:
                     text_what_else_answer = "A: ALTERNATIVE PLANS {}".format(what_else)
                     cv2.putText(video_frame, text_what_else_answer, (50, base_y + (8 * y_step)),
                                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2, cv2.LINE_AA)
-                elif len(text_engraving) == 1:
-                    if text_engraving[0] is not "":
+                elif len(text_engraving) == 2:
+                    if text_engraving[0] is not "" and text_engraving[1] is not "":
                         why_failed = text_engraving[0]
                         text_why_failed_question = "Q: What is the robot doing?"
                         cv2.putText(video_frame, text_why_failed_question, (50, base_y), cv2.FONT_HERSHEY_SIMPLEX,
@@ -286,6 +286,19 @@ class Perception:
                         text_why_failed_answer = "A: FAILED {}".format(why_failed)
                         cv2.putText(video_frame, text_why_failed_answer, (50, base_y + y_step), cv2.FONT_HERSHEY_SIMPLEX,
                                     1, (0, 0, 255), 2, cv2.LINE_AA)
+
+                        how_well = text_engraving[1]
+                        text_how_well_question = "Q: How well is it doing it?"
+                        if len(how_well) == 4:
+                            cv2.putText(video_frame, text_how_well_question, (50, base_y + (4 * y_step)),
+                                        cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+                            text_how_well_answer_1 = "A: STATUS ticks {}/{}, {} ms" \
+                                .format(how_well[0], how_well[1], how_well[2])
+                            cv2.putText(video_frame, text_how_well_answer_1, (50, base_y + (5 * y_step)),
+                                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2, cv2.LINE_AA)
+                            text_how_well_answer_2 = "A: REMAINING PLAN {}".format(how_well[3])
+                            cv2.putText(video_frame, text_how_well_answer_2, (50, base_y + (6 * y_step)),
+                                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2, cv2.LINE_AA)
 
             return video_frame, object_xyz
 
