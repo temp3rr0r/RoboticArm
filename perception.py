@@ -238,7 +238,7 @@ class Perception:
             # text4 = "Class: {}".format(detected_model)
             # cv2.putText(video_frame, text4, (50, 260), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 255), 2, cv2.LINE_AA)
 
-            # TODO: Put text engravings
+            # Put text engravings
             if text_engraving is not "":
                 base_y = 650
                 y_step = 50
