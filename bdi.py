@@ -5,6 +5,10 @@ from perception import Perception
 from monitoring import Monitoring
 
 
+def print_answers(what, why, how_well, what_else):
+    print("What is the robot doing? {}\nWhy is it doing it? {}\nHow well is it doing it? {}\n"
+          "What else could it have been doing instead?{}".format(what, why, how_well, what_else))
+
 def filter_intentions(current_beliefs, current_desires, current_intentions):
     for current_intention in current_intentions:
         if current_intention == ('transfer_target_object_to_container', 'arm', 'target_object', 'table', 'container') \
@@ -41,6 +45,8 @@ if __name__ == '__main__':
     monitoring.control.center_init = False
     monitoring.control.detect_last_position = True
 
+    what, why, how_well, what_else = "", "", "", ""
+
     while not SUCCESS and not terminate and beliefs.update_tick() < beliefs.current_world_model.max_ticks:
 
         percept = {"xyz": {'target_object': perception.get_percept()}}  # get next percept ρ OBSERVE the world
@@ -63,6 +69,12 @@ if __name__ == '__main__':
 
                     print("{}: Action: {}".format(beliefs.current_world_model.tick, action))
                     monitoring.execute_action(action, beliefs.current_world_model)
+
+                    what = action
+                    why = intentions
+                    how_well = ""
+                    what_else = plans[1] if len(plans) > 1 else plans[0]
+                    print_answers(what, why, how_well, what_else)
 
                     # get next percept ρ OBSERVE the world
                     percept = {"xyz": {'target_object': perception.get_percept()}}
