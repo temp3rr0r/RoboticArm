@@ -1,3 +1,4 @@
+import datetime
 from world_model import WorldModel
 from hierarchical_task_network_planner import HierarchicalTaskNetworkPlanner
 from collections import deque
@@ -5,9 +6,13 @@ from perception import Perception
 from coordination import Coordination
 
 
-def print_answers(what, why, how_well, what_else):
-    print("What is the robot doing? {}\nWhy is it doing it? {}\nHow well is it doing it? {}\n"
-          "What else could it have been doing instead?{}".format(what, why, how_well, what_else))
+def print_answers(what_answer, why_answer, how_well_answer, what_else_answer):
+    print("Q: What is the robot doing? A: {}\n"
+          "Q: Why is it doing it? A: {}\n"
+          "Q: How well is it doing it? A: {}\n"
+          "Q: What else could it have been doing instead? A: {}"
+          .format(what_answer, why_answer, how_well_answer, what_else_answer))
+
 
 def filter_intentions(current_beliefs, current_desires, current_intentions):
     for current_intention in current_intentions:
@@ -29,11 +34,11 @@ def deliberate(current_beliefs, current_intentions):
 
 if __name__ == '__main__':
 
-    # max_ticks = 20  # TODO: set it in the property graph
     terminate = False
     SUCCESS = False
-    htn_planner = HierarchicalTaskNetworkPlanner()
 
+    # Initialization
+    htn_planner = HierarchicalTaskNetworkPlanner()
     goal = [('transfer_target_object_to_container', 'arm', 'target_object', 'table', 'container')]
     intentions = goal  # I = I0 Initial Intentions
     beliefs = WorldModel()  # B = B0 Initial Beliefs
@@ -47,6 +52,7 @@ if __name__ == '__main__':
 
     what, why, how_well, what_else = "", "", "", ""
 
+    start_time = datetime.datetime.now()
     while not SUCCESS and not terminate and beliefs.update_tick() < beliefs.current_world_model.max_ticks:
 
         percept = {"xyz": {'target_object': perception.get_percept()}}  # get next percept ρ OBSERVE the world
@@ -63,7 +69,6 @@ if __name__ == '__main__':
                 print("{}: Plan: {}".format(beliefs.current_world_model.tick, plans[0]))
                 selected_plan = deque(plans[0])  # TODO: Use a "cost function" to evaluate the best plan, not shortest
 
-                # while len(selected_plan) > 0 and beliefs.update_tick() < max_ticks:
                 while len(selected_plan) > 0 and beliefs.update_tick() < beliefs.current_world_model.max_ticks:
                     action, selected_plan = selected_plan.popleft(), selected_plan  # action = hd(π); π = tail(π);
 
@@ -72,15 +77,19 @@ if __name__ == '__main__':
 
                     what = action
                     why = intentions
-                    how_well = ""
+                    # how_well = "tick: {}/{} rest of plan: {}".format(beliefs.current_world_model.tick, beliefs.current_world_model.max_ticks, selected_plan)
+                    how_well = (beliefs.current_world_model.tick, beliefs.current_world_model.max_ticks,
+                                int((datetime.datetime.now() - start_time).total_seconds() * 1000),  # milliseconds
+                                selected_plan)
                     what_else = plans[1] if len(plans) > 1 else plans[0]
                     print_answers(what, why, how_well, what_else)
 
                     # get next percept ρ OBSERVE the world
-                    percept = {"xyz": {'target_object': perception.get_percept()}}
+                    percept = {"xyz": {'target_object': perception
+                        .get_percept(text_engraving=(what, why, how_well, what_else))}}
                     beliefs = beliefs.belief_revision(percept)
 
-                    if action == ('initialize', 'arm'):  # TODO: for testing only
+                    if action == ('initialize', 'arm'):
                         percept = {"initialized": {'arm': True}}  # TODO: post conditions
                         beliefs = beliefs.belief_revision(percept)  # TODO: post conditions
                     elif action == ('grab', 'arm', 'target_object', 'table'):

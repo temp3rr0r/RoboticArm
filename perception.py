@@ -49,9 +49,9 @@ class Perception:
 
         print("--- Perception initialized.")
 
-    def align_images_get_xyz(self, video_frame, model_reference_in, flash_frame):
+    def align_images_get_xyz(self, video_frame, model_reference_in, flash_frame, text_engraving=""):
         """
-
+        Predicts the xyz 3d cartesian location of a given QR code picture, from a raw input video image.
         :param video_frame: Input raw image from the live video feed.
         :param model_reference_in: Input raw image from the target QR code to match.
         :param flash_frame: Integer counter for flashing picture over the QR code effect.
@@ -165,7 +165,7 @@ class Perception:
             text_warp1 = ""
             text_warp2 = ""
             if detected_model == 0:
-                text1 = 'Target vs arm (RANSAC): '
+                text1 = 'Target vs arm XYZ (RANSAC): '
                 text2 = ''
                 last_qr_position = [[transformed_rectangle_points[0][0][0], transformed_rectangle_points[0][0][1],
                                      transformed_rectangle_points[1][0][0], transformed_rectangle_points[1][0][1],
@@ -179,9 +179,9 @@ class Perception:
                               regressor_predicted_arm_xyz[0][1],
                               regressor_predicted_arm_xyz[0][2]]
 
-                text2 = text2 + "{} {} {} cm".format(object_xyz[0],
-                                                     object_xyz[1],
-                                                     object_xyz[2])
+                # text2 = text2 + "{} {} {} cm".format(object_xyz[0], object_xyz[1], object_xyz[2])  # TODO: engraving?
+                text1 = text1 + "{} {} {} cm".format(object_xyz[0], object_xyz[1], object_xyz[2])
+
                 text_warp1 = "Target"
                 text_warp2 = "object"
 
@@ -232,8 +232,48 @@ class Perception:
             cv2.putText(video_frame, text4, (50, 210), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
             text3 = "FLANN matcher distance (sum): {}".format(int(min_total_descriptor_distance))
             cv2.putText(video_frame, text3, (50, 170), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
-            text4 = "Class: {}".format(detected_model)
-            cv2.putText(video_frame, text4, (50, 260), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 255), 2, cv2.LINE_AA)
+            # text4 = "Class: {}".format(detected_model)
+            # cv2.putText(video_frame, text4, (50, 260), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 255), 2, cv2.LINE_AA)
+
+            # TODO: Put text engravings
+            if text_engraving is not "":
+                if len(text_engraving) == 4:
+                    what, why, how_well, what_else = text_engraving
+                    base_y = 650
+                    y_step = 50
+
+                    text_what_question = "Q: What is the robot doing?"
+                    cv2.putText(video_frame, text_what_question, (50, base_y), cv2.FONT_HERSHEY_SIMPLEX,
+                                1, (255, 0, 0), 2, cv2.LINE_AA)
+                    text_what_answer = "A: ACTION {}".format(what)
+                    cv2.putText(video_frame, text_what_answer, (50, base_y + y_step), cv2.FONT_HERSHEY_SIMPLEX,
+                                1, (0, 255, 255), 2, cv2.LINE_AA)
+
+                    text_why_question = "Q: Why is it doing it?"
+                    cv2.putText(video_frame, text_why_question, (50, base_y + (2 * y_step)),
+                                cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+                    text_why_answer = "A: GOAL {}".format(why)
+                    cv2.putText(video_frame, text_why_answer, (50, base_y + (3 * y_step)),
+                                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2, cv2.LINE_AA)
+
+                    text_how_well_question = "Q: How well is it doing it?"
+                    if len(how_well) == 4:
+                        cv2.putText(video_frame, text_how_well_question, (50, base_y + (4 * y_step)),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+                        text_how_well_answer_1 = "A: STATUS ticks {}/{}, {} ms"\
+                            .format(how_well[0], how_well[1], how_well[2])
+                        cv2.putText(video_frame, text_how_well_answer_1, (50, base_y + (5 * y_step)),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2, cv2.LINE_AA)
+                        text_how_well_answer_2 = "A: REMAINING PLAN {}".format(how_well[3])
+                        cv2.putText(video_frame, text_how_well_answer_2, (50, base_y + (6 * y_step)),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2, cv2.LINE_AA)
+
+                    text_what_else_question = "Q: What else could it have been doing instead?"
+                    cv2.putText(video_frame, text_what_else_question, (50, base_y + (7 * y_step)),
+                                cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+                    text_what_else_answer = "A: ALTERNATIVE PLANS {}".format(what_else)
+                    cv2.putText(video_frame, text_what_else_answer, (50, base_y + (8 * y_step)),
+                                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2, cv2.LINE_AA)
 
             return video_frame, object_xyz
 
@@ -247,7 +287,7 @@ class Perception:
             self.out.release()
         cv2.destroyAllWindows()
 
-    def get_percept(self):
+    def get_percept(self, text_engraving=""):
         """
         Returns the mean perceived position XYZ in cm, of the detected object.
         :return: List of 3 XYZ float values, centimeters of the object vs the arm frame of reference.
@@ -258,7 +298,7 @@ class Perception:
             _, video_frame = self.capture_device.read()  # Capture frame-by-frame
             try:
                 aligned_frame, arm_object_xyz = self.align_images_get_xyz(video_frame, self.model_reference,
-                                                                          flash_frame)
+                                                                          flash_frame, text_engraving)
                 arm_object_xyz_list.append(arm_object_xyz)
             except ValueError as e:
                 print("ValueError Exception: {}".format(str(e)))  # TODO: why too many values error?

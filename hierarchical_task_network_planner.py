@@ -4,10 +4,10 @@ import pyhop
 class HierarchicalTaskNetworkPlanner:
 
     def __init__(self):
-
         self.failure_reason = ""
 
         # Helper methods
+
         def center_servos(state):
             return move_arm(state, "center")
 
