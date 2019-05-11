@@ -175,6 +175,12 @@ class HierarchicalTaskNetworkPlanner:
         pyhop.declare_methods('transfer_target_object_to_container', initialize_transfer, put_grabbed, transfer)
 
     def get_plans(self, world_model, goal):
+        """
+
+        :param world_model: The current perceived world state (json object).
+        :param goal: The end goal we try to achieve (tuple).
+        :return: List of suggested plans.
+        """
 
         if goal is not "":
             return pyhop.pyhop(world_model, goal, verbose=0, all_plans=True, sort_asc=True)

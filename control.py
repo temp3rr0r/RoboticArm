@@ -12,7 +12,6 @@ from sklearn.externals import joblib
 class Control:
 
     def __init__(self):
-
         self.closed_hand_distance_ratio = 0.8
         self.opened_hand_distance_ratio = 1.5
         self.base_put_url = "http://ESP32/set_servo{}?value={}"
@@ -346,12 +345,11 @@ if __name__ == '__main__':
     container_xyz = [-0.1, 25.0, 12]
     control.move_arm_to_container(container_xyz)
     control.close_hand(4.4)
-
-    # target_position = np.array([12.5, -12.5, 2.0]) * monitoring.control.scale
+    # target_position = np.array([12.5, -12.5, 2.0]) * coordination.control.scale
     target_position = np.array([20, -20.0, 20]) * control.scale
-    # target_position = np.array([12.5, -12.5, 25]) * monitoring.control.scale
-    # target_position = np.array([-16, 0.0, 10]) * monitoring.control.scale
-    # target_position = np.array([-20, -20, 25]) * monitoring.control.scale
-    # target_position = np.array([0, 0, 0]) * monitoring.control.scale
-    # target_position = np.array([-13.12, 0.27, 1.5]) * monitoring.control.scale
+    # target_position = np.array([12.5, -12.5, 25]) * coordination.control.scale
+    # target_position = np.array([-16, 0.0, 10]) * coordination.control.scale
+    # target_position = np.array([-20, -20, 25]) * coordination.control.scale
+    # target_position = np.array([0, 0, 0]) * coordination.control.scale
+    # target_position = np.array([-13.12, 0.27, 1.5]) * coordination.control.scale
     action_successful = control.move_arm(np.array(target_position))

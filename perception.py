@@ -10,8 +10,8 @@ class Perception:
     Acquires percepts via computer vision. Percept is the sensed XYZ position of an object in relation to the
     arm's frame of reference, in centimeters.
     """
-    def __init__(self):
 
+    def __init__(self):
         print("--- Initializing perception...")
         self.MAX_FEATURES = 900  # 900
         self.MIN_MATCHES = 30  # 15
@@ -30,7 +30,7 @@ class Perception:
         self.use_local_camera = True
         self.camera_frame_width = 1920
         self.camera_frame_height = 1080
-
+        self.auto_focus = True
 
         if self.use_local_camera:
             self.capture_device = cv2.VideoCapture(0)
@@ -40,7 +40,8 @@ class Perception:
         self.capture_device.set(cv2.CAP_PROP_FRAME_WIDTH, self.camera_frame_width)
         self.capture_device.set(cv2.CAP_PROP_FRAME_HEIGHT, self.camera_frame_height)
         self.capture_device.set(cv2.CAP_PROP_FPS, self.percept_frames)  # 15
-        # capture_device.set(cv2.CAP_PROP_AUTOFOCUS, 0)  # turn the autofocus off
+        if not self.auto_focus:
+            self.capture_device.set(cv2.CAP_PROP_AUTOFOCUS, 0)  # turn the auto-focus off
 
         if self.write_video:  # Define the codec and create VideoWriter object
             self.fourcc = cv2.VideoWriter_fourcc(*'MJPG')
@@ -49,6 +50,14 @@ class Perception:
         print("--- Perception initialized.")
 
     def align_images_get_xyz(self, video_frame, model_reference_in, flash_frame):
+        """
+
+        :param video_frame: Input raw image from the live video feed.
+        :param model_reference_in: Input raw image from the target QR code to match.
+        :param flash_frame: Integer counter for flashing picture over the QR code effect.
+        :return: Tuple of 2 elements. First: input video frame with embedded matching information.
+        Second: Predicted xyz position of the QR code.
+        """
         object_xyz = [-25, -25, -25]
         flash_logo_weight_ratio = flash_frame / float(self.FLASH_EVERY_FRAMES)
 
@@ -247,7 +256,6 @@ class Perception:
         flash_frame = 0
         for _ in range(self.percept_frames):
             _, video_frame = self.capture_device.read()  # Capture frame-by-frame
-            # aligned_frame, arm_object_xyz = self.align_images_get_xyz(video_frame, self.model_reference, flash_frame)
             try:
                 aligned_frame, arm_object_xyz = self.align_images_get_xyz(video_frame, self.model_reference,
                                                                           flash_frame)
@@ -271,6 +279,8 @@ class Perception:
 
 
 if __name__ == '__main__':
+
+    "Sequence for testing"
     perception = Perception()
     import time
     steps = 500

@@ -2,7 +2,7 @@ from world_model import WorldModel
 from hierarchical_task_network_planner import HierarchicalTaskNetworkPlanner
 from collections import deque
 from perception import Perception
-from monitoring import Monitoring
+from coordination import Coordination
 
 
 def print_answers(what, why, how_well, what_else):
@@ -39,11 +39,11 @@ if __name__ == '__main__':
     beliefs = WorldModel()  # B = B0 Initial Beliefs
     perception = Perception()
     perception.write_video = True
-    monitoring = Monitoring()
-    # Disable all 3 monitoring switches for testing
-    monitoring.control.send_requests = True
-    monitoring.control.center_init = False
-    monitoring.control.detect_last_position = True
+    coordination = Coordination()
+    # Disable all 3 coordination switches for testing
+    coordination.control.send_requests = True
+    coordination.control.center_init = False
+    coordination.control.detect_last_position = True
 
     what, why, how_well, what_else = "", "", "", ""
 
@@ -68,7 +68,7 @@ if __name__ == '__main__':
                     action, selected_plan = selected_plan.popleft(), selected_plan  # action = hd(π); π = tail(π);
 
                     print("{}: Action: {}".format(beliefs.current_world_model.tick, action))
-                    monitoring.execute_action(action, beliefs.current_world_model)
+                    coordination.execute_action(action, beliefs.current_world_model)
 
                     what = action
                     why = intentions
