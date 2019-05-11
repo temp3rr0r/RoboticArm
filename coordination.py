@@ -21,7 +21,7 @@ class Coordination:
 
         if action == ('initialize', 'arm'):
             object_side_length = world_model.size["object_side_length"]
-            action_successful = self.control.initialize_arm()
+            # action_successful = self.control.initialize_arm()
             action_successful = self.control.open_hand(object_side_length)
         elif action == ('grab', 'arm', 'target_object', 'table'):
             # pass

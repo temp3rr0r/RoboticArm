@@ -26,7 +26,7 @@ class Control:
         self.command_delay = 0.001  # seconds
         self.center_init = False
         self.angle_degree_limit = 75  # degrees
-        self.trajectory_steps = 20
+        self.trajectory_steps = 10
         self.current_servo_monotony = [-1.0, -1.0, 1.0, -1.0, -1.0, -1.0]
         self.active_links_mask = [True, True, True, True, False, False]  # Enabled/disabled links
         self.min_steps = 1

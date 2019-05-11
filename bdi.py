@@ -45,7 +45,6 @@ if __name__ == '__main__':
     intentions = goal  # I := I0; Initial Intentions
     beliefs = WorldModel()  # B := B0; Initial Beliefs
     perception = Perception()
-    perception.write_video = True
     coordination = Coordination()
     # Disable all 3 coordination switches for testing
     coordination.control.send_requests = True

@@ -21,12 +21,12 @@ class Perception:
         self.use_flann = True
         self.FLANN_INDEX_LSH = 6
         self.regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_RANSACRegressor_xyz.sav')
-        self.write_video = True
-        self.display_output_frames = True
         self.class_logo = cv2.imread("picsQr/logoTarget.png", cv2.IMREAD_COLOR)
         self.model_reference = cv2.imread("picsQr/modelTarget.png", cv2.IMREAD_COLOR)
         self.percept_frames = 60
-        self.video_frames_per_second = 15
+        self.write_video = True
+        self.video_frames_per_second = 15  # 15
+        self.display_output_frames = True
         self.arm_xyz_offset = [0.0, 0.0, 0.0]
         self.use_local_camera = True
         self.camera_frame_width = 1920
@@ -40,7 +40,7 @@ class Perception:
 
         self.capture_device.set(cv2.CAP_PROP_FRAME_WIDTH, self.camera_frame_width)
         self.capture_device.set(cv2.CAP_PROP_FRAME_HEIGHT, self.camera_frame_height)
-        self.capture_device.set(cv2.CAP_PROP_FPS, self.percept_frames)  # 15
+        self.capture_device.set(cv2.CAP_PROP_FPS, self.percept_frames)
         if not self.auto_focus:
             self.capture_device.set(cv2.CAP_PROP_AUTOFOCUS, 0)  # turn the auto-focus off
 
