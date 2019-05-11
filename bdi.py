@@ -69,6 +69,7 @@ if __name__ == '__main__':
                 plans.sort(key=len)  # TODO: check why sorting doesn't work on "deeper" levels
                 print("{}: Plan: {}".format(beliefs.current_world_model.tick, plans[0]))
                 selected_plan = deque(plans[0])  # TODO: Use a "cost function" to evaluate the best plan, not shortest
+                why_failed = ""
 
                 while len(selected_plan) > 0 and beliefs.update_tick() < beliefs.current_world_model.max_ticks:
                     action, selected_plan = selected_plan.popleft(), selected_plan  # action = hd(π); π = tail(π);

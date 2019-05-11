@@ -22,10 +22,11 @@ class Perception:
         self.FLANN_INDEX_LSH = 6
         self.regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_RANSACRegressor_xyz.sav')
         self.write_video = True
-        self.display_output_frames = True
+        self.display_output_frames = False
         self.class_logo = cv2.imread("picsQr/logoTarget.png", cv2.IMREAD_COLOR)
         self.model_reference = cv2.imread("picsQr/modelTarget.png", cv2.IMREAD_COLOR)
-        self.percept_frames = 15
+        self.percept_frames = 20
+        self.video_frames_per_second = 20
         self.arm_xyz_offset = [0.0, 0.0, 0.0]
         self.use_local_camera = True
         self.camera_frame_width = 1920
@@ -45,13 +46,16 @@ class Perception:
 
         if self.write_video:  # Define the codec and create VideoWriter object
             self.fourcc = cv2.VideoWriter_fourcc(*'MJPG')
-            self.out = cv2.VideoWriter('perception.avi', self.fourcc, self.percept_frames, (1920, 1080))
+            self.out = cv2.VideoWriter('perception.avi', self.fourcc, self.video_frames_per_second, (1920, 1080))
 
         print("--- Perception initialized.")
 
     def align_images_get_xyz(self, video_frame, model_reference_in, flash_frame, text_engraving=""):
         """
         Predicts the xyz 3d cartesian location of a given QR code picture, from a raw input video image.
+        :param text_engraving: Text to engrave in output video. If empty string: engrave nothing.
+            If tuple of size 1: engrave failure reason.
+            If tuple of size 4: Engrave what, why, how well and what else the robot is doing.
         :param video_frame: Input raw image from the live video feed.
         :param model_reference_in: Input raw image from the target QR code to match.
         :param flash_frame: Integer counter for flashing picture over the QR code effect.
@@ -330,6 +334,7 @@ if __name__ == '__main__':
 
     "Sequence for testing"
     perception = Perception()
+    perception.write_video = False
     import time
     steps = 500
     for j in range(steps):
