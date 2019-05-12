@@ -25,10 +25,7 @@ class Perception:
         self.regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_RANSACRegressor_xyz.sav')
         self.class_logo = cv2.imread("picsQr/logoTarget.png", cv2.IMREAD_COLOR)
         self.model_reference = cv2.imread("picsQr/modelTarget.png", cv2.IMREAD_COLOR)
-        self.percept_frames = 30
-        self.write_video = True
         self.video_frames_per_second = 15  # 15
-        self.display_output_frames = True
         self.arm_xyz_offset = [0.0, 0.0, 0.0]
         self.use_local_camera = True
         self.camera_frame_width = 1920
@@ -36,6 +33,9 @@ class Perception:
         self.auto_focus = True
         self.send_requests = True
         self.verbose = False
+        self.percept_frames = 5
+        self.write_video = False
+        self.display_output_frames = True
 
         if self.use_local_camera:
             self.capture_device = cv2.VideoCapture(0)
@@ -330,15 +330,13 @@ class Perception:
                 aligned_frame, arm_object_xyz = self.align_images_get_xyz(video_frame, self.model_reference,
                                                                           flash_frame, text_engraving)
                 arm_object_xyz_list.append(arm_object_xyz)
-            except ValueError as e:
-                print("ValueError Exception: {}".format(str(e)))  # TODO: why too many values error?
 
-            try:
                 flash_frame += 1
                 if flash_frame >= self.FLASH_EVERY_FRAMES * 0.75:
                     flash_frame = 0
                 if self.display_output_frames:
-                    cv2.imshow('Video Frame', aligned_frame)  # Display the resulting frame
+                    if aligned_frame is not None:
+                        cv2.imshow('Video Frame', aligned_frame)  # Display the resulting frame
             except ValueError as e:
                 print("ValueError Exception: {}".format(str(e)))  # TODO: why too many values error?
 
@@ -348,6 +346,7 @@ class Perception:
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
+        # TODO: end effector xyz from servo values
         percept = {"xyz": {'target_object': np.round(np.mean(arm_object_xyz_list, axis=0), 1).tolist()},
                    "location": {"servo_values": self.get_last_servo_values()}}
 
@@ -386,9 +385,10 @@ class Perception:
         if percept is not "":
             world_model.world_model_history.append(copy.deepcopy(world_model.current_world_model))  # Store as history
 
-            print("-- world_model.current_world_model.location[\"servo_values\"]): {}"
-                  .format(world_model.current_world_model.location["servo_values"]))
-            print("-- percept: {}".format(percept))
+            # TODO: don't update xyz, if the object is already grabbed, will get confused
+            # print("-- world_model.current_world_model.location[\"servo_values\"]): {}"
+            #       .format(world_model.current_world_model.location["servo_values"]))
+            # print("-- percept: {}".format(percept))
 
             for key in percept.keys():
                 if key == "xyz":

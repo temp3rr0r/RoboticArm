@@ -19,31 +19,6 @@ class Coordination:
         """
         action_successful = False
 
-        # if action == ('initialize', 'arm'):
-        #     object_side_length = world_model.size["object_side_length"]
-        #     # action_successful = self.control.initialize_arm()
-        # elif action == ('open_hand',):
-        #     object_side_length = world_model.size["object_side_length"]
-        #     action_successful = self.control.open_hand(object_side_length)
-        # elif action == ('move_arm_above', 'target_object'):
-        #     xyz = world_model.xyz["target_object"]
-        #     last_servo_values = world_model.location["servo_values"]
-        #     object_side_length = world_model.size["object_side_length"]
-        #     action_successful = self.control.move_arm_above_xyz(xyz, last_servo_values, object_side_length * 2.0)
-        # elif action == ('move_arm', 'target_object'):
-        #     xyz = world_model.xyz["target_object"]
-        #     last_servo_values = world_model.location["servo_values"]
-        #     object_side_length = world_model.size["object_side_length"]
-        #     action_successful = self.control.move_arm_above_xyz(xyz, last_servo_values, object_side_length * 0.5)
-        # elif action == ('close_hand',):
-        #     object_side_length = world_model.size["object_side_length"]
-        #     action_successful = self.control.close_hand(object_side_length)
-        # elif action == ('move_arm_above', 'container'):
-        #     xyz = world_model.xyz["container"]
-        #     last_servo_values = world_model.location["servo_values"]
-        #     object_side_length = world_model.size["object_side_length"]
-        #     action_successful = self.control.move_arm_above_xyz(xyz, last_servo_values, 14)
-
         if action == ('initialize', 'arm'):
             object_side_length = world_model.size["object_side_length"]
             # action_successful = self.control.initialize_arm()

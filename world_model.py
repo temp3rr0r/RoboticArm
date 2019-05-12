@@ -14,8 +14,11 @@ class WorldModel:
         self.current_world_model.timestamp = time.time()
         self.current_world_model.location = {
             'target_object': 'table',
-            "servo_values": [1500, 1500, 1500, 1500, 1500, 1500]}  # TODO: Move 2 worldModel, get from instantiation
-        self.current_world_model.xyz = {'target_object': [-30, -30, 0], 'container': [-0.1, 24.0, 12]}
+            "servo_values": [1500, 1500, 1500, 1500, 1500, 1500],}  # TODO: Move 2 worldModel, get from instantiation
+        self.current_world_model.xyz = {'target_object': [-30, -30, 0],
+                                        'container': [-0.1, 24.0, 12],
+                                        'end_effector': [-0.1, 24.0, 12]
+                                        }
         self.current_world_model.size = {'object_side_length': 4.0}
         self.current_world_model.min_bounds = {'xyz': [-25, -25, -25], 'object_side_length': 0.5}
         self.current_world_model.max_bounds = {'xyz': [25, 25, 25], 'object_side_length': 6.0}
