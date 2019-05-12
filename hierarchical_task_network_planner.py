@@ -2,6 +2,13 @@ import pyhop
 
 
 class HierarchicalTaskNetworkPlanner:
+    """
+    Automated planner for hierarchical tasks (with pre-conditions, sub-tasks and effects).
+    Deterministic, with backtracking search. Elements:
+    1. Compound tasks (Methods): Compositions of simpler tasks.
+    2. Primitive tasks (Operators): Base tasks.
+    3. Helper methods.
+    """
 
     def __init__(self):
         self.failure_reason = ""
@@ -114,7 +121,8 @@ class HierarchicalTaskNetworkPlanner:
 
     def get_plans(self, world_model, goal):
         """
-
+        Returns all the suggested plans, given a world model (state object), goal (list) and an internal collection of
+        primitive and compound tasks.
         :param world_model: The current perceived world state (json object).
         :param goal: The end goal we try to achieve (tuple).
         :return: List of suggested plans.

@@ -137,7 +137,7 @@ class Control:
     @staticmethod
     def servo_range_to_radians(x, x_min=500.0, x_max=2500.0, scaled_min=(-np.pi / 2.0), scaled_max=(np.pi / 2.0)):
         """
-        Coverts servo values in [500, 2500] to angle radians.
+        Converts servo values in [500, 2500] to angle radians.
         :param x: List of 6 servo values.
         :param x_min: Scalar float, minimum servo value of 90 degrees angle (default = 500).
         :param x_max: Scalar float, maximum servo value of 90 degrees angle(default = 2500).
@@ -151,7 +151,7 @@ class Control:
     @staticmethod
     def radians_to_servo_range(x, x_min=(-np.pi / 2.0), x_max=(np.pi / 2.0), scaled_min=500.0, scaled_max=2500.0):
         """
-        Coverts angle radians to servo values in [500, 2500].
+        Converts angle radians to servo values in [500, 2500].
         :param x: List of 6 angles in radians.
         :param x_min: Scalar float, minimum radians value of +90 degrees angle(default = -π/2).
         :param x_max: Scalar float, maximum radians value of +90 degrees angle(default = π/2).
@@ -163,6 +163,14 @@ class Control:
         return (np.round(x_std * (scaled_max - scaled_min) + scaled_min, 0)).astype(int)
 
     def get_kinematic_angle_trajectory(self, from_angle_radians_in, to_angle_radians_in, servo_monotony,  steps=10):
+        """
+        Creates a discrete end-effector trajectory, using radians.
+        :param from_angle_radians_in: Current servo angles, list of 6 angles in radians.
+        :param to_angle_radians_in: Desired servo angles, list of 6 angles in radians.
+        :param servo_monotony: List of 6 positive or negative servo rotation directions.
+        :param steps: Scalar integer, the total steps for the end effector trajectory.
+        :return: List of end-effector radian trajectory steps.
+        """
         assert self.min_steps < steps < self.max_steps
 
         from_angle_radians = np.multiply(from_angle_radians_in, servo_monotony)
@@ -184,6 +192,13 @@ class Control:
         return angle_trajectory
 
     def get_servo_range_trajectory(self, from_servo_range_in, to_servo_range_in, steps=10):
+        """
+        Creates a discrete end-effector trajectory, using servo values.
+        :param from_servo_range_in: Current servo values, list of 6 values in [500, 2500].
+        :param to_servo_range_in: Desired servo values, list of 6 values in [500, 2500].
+        :param steps: Scalar integer, the total steps for the end effector trajectory.
+        :return: List of end-effector servo value trajectory steps.
+        """
         assert self.min_steps < steps < self.max_steps
 
         from_servo_range = np.array(from_servo_range_in)
@@ -210,20 +225,25 @@ class Control:
         return np.array(np.round(servo_range_trajectory, 0)).astype(int)
 
     def initialize_arm(self, last_servo_values):
+        """
+        Moves the end-effector to the (0, 0, 0) position of the 3d cartesian.
+        :param last_servo_values: List of the current arm servo positions.
+        :return: True if succeeded.
+        """
         action_successful = False
         target_position = np.array(self.init_position) * self.scale
         action_successful = self.move_arm(target_position, last_servo_values)
         print("=== Arm initialized")
         return action_successful
 
-    def move_arm_to_container(self, xyz, last_servo_values):
-        action_successful = False
-        target_position = np.array(xyz) * self.scale
-        action_successful = self.move_arm(target_position, last_servo_values)
-        print("=== Arm to container")
-        return action_successful
-
     def move_arm_above_xyz(self, xyz, last_servo_values, height):
+        """
+        Moves the end-effector at a specific 3D cartesian centimeter position, plus extra centimeters high.
+        :param xyz: Array of 3 elements of a 3D cartesian systems of centimeters.
+        :param last_servo_values: List of the current arm servo positions.
+        :param height: Scalar positive float. Desired centimeters above xyz, on the z axis.
+        :return: True if succeeded.
+        """
         action_successful = False
         xyz[2] = height
         target_position = np.array(xyz) * self.scale
@@ -233,6 +253,12 @@ class Control:
         return action_successful
 
     def move_arm_up(self, last_servo_values, height):
+        """
+        Moves the end-effector at a specific 3D cartesian centimeter position, plus extra centimeters high.
+        :param last_servo_values: List of the current arm servo positions.
+        :param height: Scalar positive float. Desired centimeters above xyz, on the z axis.
+        :return: True if succeeded.
+        """
         action_successful = False
         xyz = np.round(self.servo_range_to_xyz(last_servo_values, self.current_servo_monotony), 2)
         print("last_servo_xyz", xyz)
@@ -245,6 +271,12 @@ class Control:
         return action_successful
 
     def move_arm_to_object(self, xyz, last_servo_values):
+        """
+        Moves the end-effector to the object's position of the 3d cartesian.
+        :param xyz: Array of 3 elements of a 3D cartesian systems of centimeters.
+        :param last_servo_values: List of the current arm servo positions.
+        :return: True if succeeded.
+        """
         action_successful = False
         target_position = np.array(xyz) * self.scale
         if self.send_requests:
@@ -253,6 +285,11 @@ class Control:
         return action_successful
 
     def close_hand(self, object_side_length):
+        """
+        Closes the gripper enough, to grip an object of a specific length in cm.
+        :param object_side_length: Scalar float, object width in centimeters.
+        :return: True if succeeded.
+        """
         action_successful = False
         closed_hand_distance_ratio = self.closed_hand_distance_ratio
         closed_length = object_side_length * closed_hand_distance_ratio
@@ -265,6 +302,11 @@ class Control:
         return action_successful
 
     def open_hand(self, object_side_length):
+        """
+        Opens the gripper enough, to fit an object of a specific length in cm.
+        :param object_side_length: Scalar float, object width in centimeters.
+        :return: True if succeeded.
+        """
         action_successful = False
         opened_hand_distance_ratio = self.opened_hand_distance_ratio
         opened_length = object_side_length * opened_hand_distance_ratio
@@ -277,6 +319,12 @@ class Control:
         return action_successful
 
     def send_restful_servo_range(self, servo, range):
+        """
+        Sends a direct servo value in [500, 2500], to a specific servo in [1, 6].
+        :param servo: Scalar integer, the servo id in [1, 6].
+        :param range: Scalar integer, servo value in [500, 2500].
+        :return: True if succeeded.
+        """
         action_successful = False
         url = self.base_put_url.format(servo, range)
         requests.put(url, data="")
@@ -285,6 +333,11 @@ class Control:
         return action_successful
 
     def send_restful_trajectory_requests(self, kinematic_servo_range_trajectory):
+        """
+        Sends a full servo value trajectory of discrete steps, to the arm.
+        :param kinematic_servo_range_trajectory:
+        :return: True if succeeded.
+        """
         action_successful = False
         servo_mask = self.active_links_mask  # servo mask
 
@@ -310,6 +363,14 @@ class Control:
         return action_successful
 
     def move_arm(self, target_position, last_servo_locations, trajectory_steps=-1):
+        """
+        Gradually moves the end-effector of the robotic arm, from the latest known servo positions, to a desired
+        3D centimeter cartesian position.
+        :param target_position: List of 3 values, the desired end-effector, 3D centimeter cartesian position.
+        :param last_servo_locations: List of the latest 6 servo values in [500, 2500].
+        :param trajectory_steps: Scalar integer, the total steps for the end effector trajectory.
+        :return: True if successfully move the arm.
+        """
         action_successful = False
         last_servo_values = self.init_position
         if trajectory_steps == -1:
@@ -390,7 +451,7 @@ if __name__ == '__main__':
     control.initialize_arm(last_servo_values_testing)
     control.open_hand(4.4)
     container_xyz = [-0.1, 25.0, 12]
-    control.move_arm_to_container(container_xyz, last_servo_values_testing)
+    control.move_arm(container_xyz, last_servo_values_testing)
     control.close_hand(4.4)
     # target_position = np.array([12.5, -12.5, 2.0]) * coordination.control.scale
     target_position_testing = np.array([20, -20.0, 20]) * control.scale
