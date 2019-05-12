@@ -20,10 +20,6 @@ def filter_intentions(current_beliefs, current_desires, current_intentions):
         if current_intention == ('transfer_target_object_to_container', 'arm', 'target_object', 'table', 'container') \
                 and current_beliefs.current_world_model.location["target_object"] == "container":
             current_intentions = ""  # if goal(s) achieved, empty I
-        # if current_intention == ('transfer_target_object_to_container', 'arm', 'target_object', 'table', 'container'):
-        #     if "target_object" in current_beliefs.current_world_model.location:
-        #         if current_beliefs.current_world_model.location["target_object"] == "container":
-        #             current_intentions = ""  # if goal(s) achieved, empty I
     return current_intentions
 
 

@@ -18,8 +18,6 @@ class Monitoring:
         if percept is not "":
             world_model.world_model_history.append(copy.deepcopy(world_model.current_world_model))  # Store as history
 
-            print("beliefs.current_world_model.location: ", world_model.current_world_model.location)
-
             for key in percept.keys():  # TODO: thresholds
                 if key == "distance":    # TODO: if distance sensor <= 4.5 cm (min distance from plain) -> grabbed
                     distance_to_gripper = percept["distance"]["distance_to_gripper"]
@@ -27,17 +25,12 @@ class Monitoring:
                         world_model.current_world_model.grabbed["target_object"] = True
                         world_model.current_world_model.location["target_object"] = "arm"
                 elif key == "location":  # TODO: if xyz of object within limits -> on table else -> not on table
-                    # world_model.current_world_model.location = percept["location"]
                     for key2 in percept["location"]:
                         if key2 == "target_object":
                             world_model.current_world_model.location["target_object"] = percept["location"][
                                 "target_object"]
-
-                    pass
                 elif key == "initialized":  # TODO: if servos at 1500 -> initialized
                     world_model.current_world_model.initialized = percept["initialized"]
-
-            print("beliefs.current_world_model.location: ", world_model.current_world_model.location)
 
         return world_model
 

@@ -345,13 +345,8 @@ class Perception:
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
-        mean_object_xyz = np.round(np.mean(arm_object_xyz_list, axis=0), 1).tolist()
-
-        last_servo_values = self.get_last_servo_values()
-        # state.location['servo_values']  # TODO:
-
-        # percept = {"xyz": {'target_object': mean_object_xyz}}  # TODO:
-        percept = {"xyz": {'target_object': mean_object_xyz}, "location": {"servo_values": last_servo_values}}
+        percept = {"xyz": {'target_object': np.round(np.mean(arm_object_xyz_list, axis=0), 1).tolist()},
+                   "location": {"servo_values": self.get_last_servo_values()}}
 
         return percept
 
@@ -385,7 +380,6 @@ class Perception:
         """
 
         # TODO: state = "reachable" if object.centerXYZ <= arm radius
-
         if percept is not "":
             world_model.world_model_history.append(copy.deepcopy(world_model.current_world_model))  # Store as history
 
@@ -395,10 +389,11 @@ class Perception:
                 elif key == "distance":
                     print("percept: ", percept)
                     world_model.current_world_model.distance = percept["distance"]
-                elif key == "location":  # TODO:
+                elif key == "location":
                     for key2 in percept["location"]:
                         if key2 == "servo_values":
-                            world_model.current_world_model.location["servo_values"] = percept["location"]["servo_values"]
+                            world_model.current_world_model.location["servo_values"] = \
+                                percept["location"]["servo_values"]
 
         return world_model
 
