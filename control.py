@@ -11,14 +11,18 @@ from sklearn.externals import joblib
 
 class Control:
 
+    """
+    Realization of continuous actions, from world model to desired world.
+    """
+
     def __init__(self):
         self.closed_hand_distance_ratio = 0.8
         self.opened_hand_distance_ratio = 1.5
         self.base_put_url = "http://ESP32/set_servo{}?value={}"
-        self.send_requests = False  # TODO: make communicator?
+        self.send_requests = False  # TODO: make communicator class?
         self.detect_last_position = False
         self.verbose = False
-        self.show_plots = False
+        self.show_plots = False  # TODO: engrave plots
         self.cm_to_servo_polynomial_fitter = joblib.load('modelsQr/cm_to_servo_polynomial_fitter.sav')
         # self.scale = 0.04  # For the plotting
         self.scale = 1.0
@@ -54,7 +58,7 @@ class Control:
         self.rotation2 = np.array([0, 0, 1])
         self.rotation1 = np.array([0, 0, 1])
 
-        # Link bounds (degrees)  # TODO: per servo bounds
+        # Link bounds (degrees)
         self.bounds6 = np.radians(np.array([-self.angle_degree_limit, self.angle_degree_limit]))
         self.bounds5 = np.radians(np.array([-self.angle_degree_limit, self.angle_degree_limit]))
         self.bounds4 = np.radians(np.array([-self.angle_degree_limit, self.angle_degree_limit]))
@@ -108,11 +112,23 @@ class Control:
         ])
 
     def xyz_to_servo_range(self, xyz, current_servo_monotony):
+        """
+        Converts 3D cartesian centimeter coordinates to servo values in [500, 2500].
+        :param xyz: Array of 3 elements of a 3D cartesian systems of centimeters.
+        :param current_servo_monotony: List of 6 positive or negative servo rotation directions.
+        :return: List of 6 servo values in [500, 2500].
+        """
         k = self.le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(xyz, np.eye(3)))
         k = np.multiply(k, np.negative(current_servo_monotony))
         return self.radians_to_servo_range(k)
 
     def servo_range_to_xyz(self, servo_range, current_servo_monotony):
+        """
+        Converts servo values in [500, 2500] to  3D cartesian centimeter coordinates.
+        :param servo_range: List of 6 servo values in [500, 2500].
+        :param current_servo_monotony: List of 6 positive or negative servo rotation directions.
+        :return: Array of 3 elements of a 3D cartesian systems of centimeters.
+        """
         return geometry_utils.from_transformation_matrix(
             self.le_arm_chain.forward_kinematics(
                 np.multiply(self.servo_range_to_radians(servo_range), np.negative(current_servo_monotony)),
@@ -120,11 +136,29 @@ class Control:
 
     @staticmethod
     def servo_range_to_radians(x, x_min=500.0, x_max=2500.0, scaled_min=(-np.pi / 2.0), scaled_max=(np.pi / 2.0)):
+        """
+        Coverts servo values in [500, 2500] to angle radians.
+        :param x: List of 6 servo values.
+        :param x_min: Scalar float, minimum servo value of 90 degrees angle (default = 500).
+        :param x_max: Scalar float, maximum servo value of 90 degrees angle(default = 2500).
+        :param scaled_min: Scalar float, minimum radians value of +90 degrees angle(default = -π/2).
+        :param scaled_max: Scalar float, maximum radians value of +90 degrees angle(default = π/2).
+        :return: List of 6 angles in radians.
+        """
         x_std = (np.array(x) - x_min) / (x_max - x_min)
         return x_std * (scaled_max - scaled_min) + scaled_min
 
     @staticmethod
     def radians_to_servo_range(x, x_min=(-np.pi / 2.0), x_max=(np.pi / 2.0), scaled_min=500.0, scaled_max=2500.0):
+        """
+        Coverts angle radians to servo values in [500, 2500].
+        :param x: List of 6 angles in radians.
+        :param x_min: Scalar float, minimum radians value of +90 degrees angle(default = -π/2).
+        :param x_max: Scalar float, maximum radians value of +90 degrees angle(default = π/2).
+        :param scaled_min: Scalar float, minimum servo value of 90 degrees angle (default = 500).
+        :param scaled_max: Scalar float, maximum servo value of 90 degrees angle(default = 2500).
+        :return: List of 6 servo values.
+        """
         x_std = (np.array(x) - x_min) / (x_max - x_min)
         return (np.round(x_std * (scaled_max - scaled_min) + scaled_min, 0)).astype(int)
 
@@ -265,7 +299,7 @@ class Control:
                     try:
                         r = requests.put(url, data="")
                         if r.status_code != 200:
-                            break  # TODO: abort
+                            break
                     except Exception as e:
                         print("Exception: {}".format(str(e)))
                     time.sleep(self.command_delay)
@@ -277,12 +311,12 @@ class Control:
 
     def move_arm(self, target_position, last_servo_locations, trajectory_steps=-1):
         action_successful = False
+        last_servo_values = self.init_position
         if trajectory_steps == -1:
             trajectory_steps = self.trajectory_steps
 
         # TODO: move last position to world model
         if self.detect_last_position:  # TODO: get last servo values anyway, world model may be old...
-            last_servo_values = self.init_position
             last_servo_values = last_servo_locations
             try:
                 if self.send_requests:
@@ -315,9 +349,7 @@ class Control:
                     np.eye(3))), ax, target=self.init_position)
                 matplotlib.pyplot.show()
 
-        # TODO: from to servo range -> trajectory
         init_position2 = self.init_position
-        # init_position2 = last_servo_values
         init_angle_radians2 = self.le_arm_chain.inverse_kinematics(geometry_utils.to_transformation_matrix(
             init_position2,
             np.eye(3)))
@@ -354,17 +386,17 @@ if __name__ == '__main__':
     control.send_requests = False
     control.center_init = False
     control.detect_last_position = False
-    last_servo_values = current_world_model.current_world_model.location["servo_values"]
-    control.initialize_arm(last_servo_values)
+    last_servo_values_testing = current_world_model.current_world_model.location["servo_values"]
+    control.initialize_arm(last_servo_values_testing)
     control.open_hand(4.4)
     container_xyz = [-0.1, 25.0, 12]
-    control.move_arm_to_container(container_xyz, last_servo_values)
+    control.move_arm_to_container(container_xyz, last_servo_values_testing)
     control.close_hand(4.4)
     # target_position = np.array([12.5, -12.5, 2.0]) * coordination.control.scale
-    target_position = np.array([20, -20.0, 20]) * control.scale
+    target_position_testing = np.array([20, -20.0, 20]) * control.scale
     # target_position = np.array([12.5, -12.5, 25]) * coordination.control.scale
     # target_position = np.array([-16, 0.0, 10]) * coordination.control.scale
     # target_position = np.array([-20, -20, 25]) * coordination.control.scale
     # target_position = np.array([0, 0, 0]) * coordination.control.scale
     # target_position = np.array([-13.12, 0.27, 1.5]) * coordination.control.scale
-    action_successful = control.move_arm(np.array(target_position), last_servo_values)
+    action_successful_testing = control.move_arm(np.array(target_position_testing), last_servo_values_testing)

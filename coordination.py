@@ -20,7 +20,8 @@ class Coordination:
         action_successful = False
 
         if action == ('initialize', 'arm'):
-            object_side_length = world_model.size["object_side_length"]
+            pass
+            # object_side_length = world_model.size["object_side_length"]
             # action_successful = self.control.initialize_arm()
         elif action == ('open_hand',):
             action_successful = self.control.open_hand(world_model.size["object_side_length"])
@@ -54,31 +55,15 @@ if __name__ == '__main__':
     coordination.control.send_requests = False
     coordination.control.center_init = False
     coordination.control.detect_last_position = False
-    # coordination.execute_action(('initialize', 'arm'), current_world_model.current_world_model)
-    # coordination.execute_action(('grab', 'arm', 'target_object', 'table'), current_world_model.current_world_model)
-    # coordination.execute_action(('put', 'arm', 'target_object', 'container'), current_world_model.current_world_model)
-
-    # [('initialize', 'arm'), ('open_hand',), ('move_arm_above', 'target_object'), ('move_arm', 'target_object'),
-    #  ('close_hand',), ('move_arm_above', 'target_object'), ('move_arm_above', 'container'), ('open_hand',)]
-
     coordination.execute_action(('initialize', 'arm'), current_world_model.current_world_model)
     coordination.execute_action(('open_hand', ), current_world_model.current_world_model)
     coordination.execute_action(('move_arm_above', 'target_object'), current_world_model.current_world_model)
     coordination.execute_action(('move_arm', 'target_object'), current_world_model.current_world_model)
     coordination.execute_action(('close_hand',), current_world_model.current_world_model)
     coordination.execute_action(('move_arm_up', 'target_object'), current_world_model.current_world_model)
-
     coordination.execute_action(('move_arm_above', 'container'), current_world_model.current_world_model)
     coordination.execute_action(('open_hand', ), current_world_model.current_world_model)
-    # coordination.execute_action(('grab', 'arm', 'target_object', 'table'), current_world_model.current_world_model)
-    # coordination.execute_action(('put', 'arm', 'target_object', 'container'), current_world_model.current_world_model)
     import numpy as np
-    # target_position = np.array([12.5, -12.5, 2.0]) * coordination.control.scale
     target_position = np.array([20, -20.0, 20]) * coordination.control.scale
-    # target_position = np.array([12.5, -12.5, 25]) * coordination.control.scale
-    # target_position = np.array([-16, 0.0, 10]) * coordination.control.scale
-    # target_position = np.array([-20, -20, 25]) * coordination.control.scale
-    # target_position = np.array([0, 0, 0]) * coordination.control.scale
-    # target_position = np.array([-13.12, 0.27, 1.5]) * coordination.control.scale
     last_servo_values = current_world_model.current_world_model.location["servo_values"]
     action_successful_test = coordination.control.move_arm(np.array(target_position), last_servo_values)

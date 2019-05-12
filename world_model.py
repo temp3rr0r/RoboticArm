@@ -14,7 +14,7 @@ class WorldModel:
         self.current_world_model.timestamp = time.time()
         self.current_world_model.location = {
             'target_object': 'table',
-            "servo_values": [1500, 1500, 1500, 1500, 1500, 1500],}  # TODO: Move 2 worldModel, get from instantiation
+            "servo_values": [1500, 1500, 1500, 1500, 1500, 1500]}  # TODO: Move 2 gremlin world model with init
         self.current_world_model.xyz = {'target_object': [-30, -30, 0],
                                         'container': [-0.1, 24.0, 12],
                                         'end_effector': [-0.1, 24.0, 12]

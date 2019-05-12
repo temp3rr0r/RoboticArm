@@ -4,7 +4,7 @@ import time
 
 class Monitoring:
     """
-    Fires events, if monitored sensor data exceed specific thresholds.
+    Raises events, if monitored sensor data exceed specific thresholds. From actual world, to world model.
     """
 
     @staticmethod
@@ -12,7 +12,7 @@ class Monitoring:
         """
         Updates the current world model with events: B = fireEvents(B, ρ)
         :param world_model: World model, instance of the WorldModel class.
-        :param percept: Dictionary.
+        :param percept: Dictionary. Input sensory data.
         :return: The updated world model, instance of the WorldModel class with updated list of raised events
         """
         if percept is not "":
@@ -29,7 +29,7 @@ class Monitoring:
                         if key2 == "target_object":
                             world_model.current_world_model.location["target_object"] = percept["location"][
                                 "target_object"]
-                elif key == "initialized":  # TODO: if servos at 1500 -> initialized
+                elif key == "initialized":  # TODO: if servos at 1500-ish -> initialized
                     world_model.current_world_model.initialized = percept["initialized"]
 
         return world_model
@@ -43,19 +43,19 @@ if __name__ == '__main__':
     monitoring = Monitoring()
 
     time.sleep(0.1)
-    current_percept = {"distance": {'distance_to_gripper': 8.2}}  # TODO: post conditions or monitoring
+    current_percept = {"distance": {'distance_to_gripper': 8.2}}
     beliefs.update_tick()
-    beliefs = monitoring.fire_events(beliefs, current_percept)  # TODO: post conditions
+    beliefs = monitoring.fire_events(beliefs, current_percept)
 
     time.sleep(0.1)
-    current_percept = {"distance": {'distance_to_gripper': 5.2}}  # TODO: post conditions or monitoring
+    current_percept = {"distance": {'distance_to_gripper': 5.2}}
     beliefs.update_tick()
-    beliefs = monitoring.fire_events(beliefs, current_percept)  # TODO: post conditions
+    beliefs = monitoring.fire_events(beliefs, current_percept)
 
     time.sleep(0.1)
-    current_percept = {"distance": {'distance_to_gripper': 2.2}}  # TODO: post conditions or monitoring
+    current_percept = {"distance": {'distance_to_gripper': 2.2}}
     beliefs.update_tick()
-    beliefs = monitoring.fire_events(beliefs, current_percept)  # TODO: post conditions
+    beliefs = monitoring.fire_events(beliefs, current_percept)
 
     print()
     print("Final World model:")

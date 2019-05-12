@@ -9,8 +9,9 @@ from sklearn.externals import joblib
 
 class Perception:
     """
-    Acquires percepts via computer vision. Percept is the sensed XYZ position of an object in relation to the
-    arm's frame of reference, in centimeters.
+    Data provided by the sensors, processed into information that update the world model. From actual world, to world
+    model.  Acquires percepts via computer vision and arm controller invocation. Percept is the sensed XYZ position of
+    an object in relation to the arm's frame of reference, in centimeters.
     """
 
     def __init__(self):
@@ -186,7 +187,7 @@ class Perception:
                               regressor_predicted_arm_xyz[0][1],
                               regressor_predicted_arm_xyz[0][2]]
 
-                # text2 = text2 + "{} {} {} cm".format(object_xyz[0], object_xyz[1], object_xyz[2])  # TODO: engraving?
+                # text2 = text2 + "{} {} {} cm".format(object_xyz[0], object_xyz[1], object_xyz[2])
                 text1 = text1 + "{} {} {} cm".format(object_xyz[0], object_xyz[1], object_xyz[2])
 
                 text_warp1 = "Target"
@@ -201,7 +202,7 @@ class Perception:
                         max_y - min_y) > roi_percent_min * video_frame_gray.shape[0]:
                     if side_ratio_min <= (abs(max_x - min_x) / float(
                             abs(
-                                max_y - min_y))) <= side_ratio_max:  # TODO: do not draw if one side is > 2x the other sides
+                                max_y - min_y))) <= side_ratio_max:
                         # Warp class logo perspective & flash alpha blend
 
                         cv2.putText(self.class_logo, text_warp1, (20, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0),
@@ -288,8 +289,8 @@ class Perception:
                         cv2.putText(video_frame, text_why_failed_question, (50, base_y), cv2.FONT_HERSHEY_SIMPLEX,
                                     1, (255, 0, 0), 2, cv2.LINE_AA)
                         text_why_failed_answer = "A: FAILED {}".format(why_failed)
-                        cv2.putText(video_frame, text_why_failed_answer, (50, base_y + y_step), cv2.FONT_HERSHEY_SIMPLEX,
-                                    1, (0, 0, 255), 2, cv2.LINE_AA)
+                        cv2.putText(video_frame, text_why_failed_answer, (50, base_y + y_step),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
 
                         how_well = text_engraving[1]
                         text_how_well_question = "Q: How well is it doing it?"
@@ -353,6 +354,10 @@ class Perception:
         return percept
 
     def get_last_servo_values(self):
+        """
+        Sends a GET request to the arm url and returns the latest servo positions.
+        :return: List of the current arm servo positions.
+        """
         self.init_servo_values = [1500, 1500, 1500, 1500, 1500, 1500]  # TODO: Move 2 worldModel, get from instantiation
         last_servo_values = self.init_servo_values
         try:
@@ -415,24 +420,24 @@ if __name__ == '__main__':
     beliefs = WorldModel()
 
     time.sleep(0.1)
-    current_percept = {"xyz": {'target_object': [15, 15, 0]}}  # TODO: post conditions or monitoring
+    current_percept = {"xyz": {'target_object': [15, 15, 0]}}
     beliefs.update_tick()
-    beliefs = perception.belief_revision(beliefs, current_percept)  # TODO: post conditions
+    beliefs = perception.belief_revision(beliefs, current_percept)
 
     time.sleep(0.1)
-    current_percept = {"xyz": {'target_object': [14, 16, 0]}}  # TODO: post conditions or monitoring
+    current_percept = {"xyz": {'target_object': [14, 16, 0]}}
     beliefs.update_tick()
-    beliefs = perception.belief_revision(beliefs, current_percept)  # TODO: post conditions
+    beliefs = perception.belief_revision(beliefs, current_percept)
 
     time.sleep(0.1)
-    current_percept = {"distance": {'distance_to_gripper': 8.2}}  # TODO: post conditions or monitoring
+    current_percept = {"distance": {'distance_to_gripper': 8.2}}
     beliefs.update_tick()
-    beliefs = perception.belief_revision(beliefs, current_percept)  # TODO: post conditions
+    beliefs = perception.belief_revision(beliefs, current_percept)
 
     time.sleep(0.1)
-    current_percept = {"xyz": {'target_object': [13, 17, 0]}}  # TODO: post conditions or monitoring
+    current_percept = {"xyz": {'target_object': [13, 17, 0]}}
     beliefs.update_tick()
-    beliefs = perception.belief_revision(beliefs, current_percept)  # TODO: post conditions
+    beliefs = perception.belief_revision(beliefs, current_percept)
 
     print()
     print("Final World model:")
@@ -452,6 +457,6 @@ if __name__ == '__main__':
     steps = 500
     for j in range(steps):
         time.sleep(0.1)
-        xyz = perception.get_percept()  # TODO: in BDI: if xyz outside bounds -> world model: no object detected
+        xyz = perception.get_percept()
         print("Percept({}, mean of {}): {} cm".format(j, perception.percept_frames, xyz))  # TODO: sliding window mean
     perception.destroy()

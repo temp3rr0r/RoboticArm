@@ -6,6 +6,22 @@ from perception import Perception
 from coordination import Coordination
 from monitoring import Monitoring
 
+"""
+
+Belief-Desire-Instention (BDI) - Practical Reasoning for resource bounded agents - Bratman 1988
+
+practical reasoning = deliberation + means-ends reasoning
+
+Base agent control loop
+while true
+  OBSERVE the world;
+  UPDATE internal world model;
+  DELIBERATE about what INTENTION to achieve next;
+  use MEANS-END REASONING to get a PLAN for the intention;
+  EXECUTE the plan;
+end while
+"""
+
 
 def print_answers(what_answer, why_answer, how_well_answer, what_else_answer):
     print("Q: What is the robot doing? A: {}\n"
@@ -16,6 +32,13 @@ def print_answers(what_answer, why_answer, how_well_answer, what_else_answer):
 
 
 def filter_intentions(current_beliefs, current_desires, current_intentions):
+    """
+    Choose between competing alternatives and COMMITTING to achieving them.
+    :param current_beliefs: WordModel instance, the world model, information about the world.
+    :param current_desires: List of tuples, tasks that the agent would like to accomplish.
+    :param current_intentions: List of tuples, tasks that the agent has COMMITTED to accomplish.
+    :return: List of tuples, filtered intentions that the agent COMMITS to accomplish.
+    """
     for current_intention in current_intentions:
         if current_intention == ('transfer_target_object_to_container', 'arm', 'target_object', 'table', 'container') \
                 and current_beliefs.current_world_model.location["target_object"] == "container":
@@ -24,6 +47,12 @@ def filter_intentions(current_beliefs, current_desires, current_intentions):
 
 
 def deliberate(current_beliefs, current_intentions):
+    """
+    Decide WHAT sate of affairs you want to achieve.
+    :param current_beliefs: WordModel instance, the world model, information about the world.
+    :param current_intentions: List of tuples, tasks that the agent has COMMITTED to accomplish.
+    :return: List of tuples, filtered intentions that the agent COMMITS to accomplish.
+    """
     # 1. Option Generation: The agent generates a set of possible alternatives.
     current_desires = current_intentions  # TODO: D := option(B, I);
 
@@ -56,39 +85,32 @@ if __name__ == '__main__':
     what, why, how_well, what_else, why_failed = "", "", "", "", ""
     start_time = datetime.datetime.now()
 
-    # Base agent control loop
-    # while true
-    #   OBSERVE the world;
-    #   UPDATE internal world model;
-    #   DELIBERATE about what INTENTION to achieve next;
-    #   use MEANS-END REASONING to get a PLAN for the intention;
-    #   EXECUTE the plan;
-    # end while
-
-    # Agent control loop version 7 (Intention Reconsideration)
-    # I := I0; Initial Intentions
-    # B := B0; Initial Beliefs
-    # while true do
-    #   get next percept ρ; #  OBSERVE the world
-    #   B:= brf(B, ρ); #  Belief revision function
-    #   D: = option(B, I);
-    #   I := filter(B, D, I);
-    #   π := plan(B, I); #  MEANS_END REASONING
-    #   while not (empty(π) or succeeded(Ι, Β) or impossible(I, B)) do  # Drop impossible or succeeded intentions
-    #       α := hd(π); #  Pop first action
-    #       execute(α);
-    #       π := tail(π);
-    #       get next percept ρ;
-    #       B:= brf(B, ρ);
-    #       if reconsider(I, B) then  # Meta-level control: explicit decision, to avoid reconsideration cost
-    #           D := options(B, I);
-    #           I := filter(B, D, I);
-    #       end-if
-    #       if not sound(π, I, B) then  # Re-activity, re-plan
-    #           π := plan(B, I);
-    #       end-if
-    #   end-while
-    # end-while
+    """
+        Agent control loop version 7 (Intention Reconsideration)
+        I := I0; Initial Intentions
+        B := B0; Initial Beliefs
+        while true do
+          get next percept ρ; #  OBSERVE the world
+          B:= brf(B, ρ); #  Belief revision function
+          D: = option(B, I);
+          I := filter(B, D, I);
+          π := plan(B, I); #  MEANS_END REASONING
+          while not (empty(π) or succeeded(Ι, Β) or impossible(I, B)) do  # Drop impossible or succeeded intentions
+              α := hd(π); #  Pop first action
+              execute(α);
+              π := tail(π);
+              get next percept ρ;
+              B:= brf(B, ρ);
+              if reconsider(I, B) then  # Meta-level control: explicit decision, to avoid reconsideration cost
+                  D := options(B, I);
+                  I := filter(B, D, I);
+              end-if
+              if not sound(π, I, B) then  # Re-activity, re-plan
+                  π := plan(B, I);
+              end-if
+          end-while
+        end-while
+    """
 
     # while true do
     while not SUCCESS and not terminate and beliefs.update_tick() < beliefs.current_world_model.max_ticks:
@@ -132,19 +154,6 @@ if __name__ == '__main__':
                     beliefs = monitoring.fire_events(beliefs, percept)
 
                     # TODO: trigger sound percept?
-
-                    # if action == ('initialize', 'arm'):
-                    #     percept = {"initialized": {'arm': True}}  # TODO: post conditions or monitoring
-                    #     beliefs = perception.belief_revision(beliefs, percept)  # TODO: post conditions
-                    #     beliefs = monitoring.fire_events(beliefs, percept)
-                    # elif action == ('grab', 'arm', 'target_object', 'table'):
-                    #     current_percept = {"distance": {'distance_to_gripper': 2.2}}  # TODO: update with monitoring
-                    #     beliefs = perception.belief_revision(beliefs, percept)
-                    #     beliefs = monitoring.fire_events(beliefs, percept)
-                    # elif action == ('put', 'arm', 'target_object', 'container'):
-                    #     percept = {"location": {"target_object": "container"}, "grabbed": {'target_object': False}}
-                    #     beliefs = perception.belief_revision(beliefs, percept)
-                    #     beliefs = monitoring.fire_events(beliefs, percept)
 
                     if action == ('initialize', 'arm'):
                         percept = {"initialized": {'arm': True}}  # TODO: post conditions or monitoring
