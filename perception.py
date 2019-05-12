@@ -1,4 +1,5 @@
 from __future__ import print_function
+import copy
 import cv2
 import numpy as np
 import sys
@@ -342,13 +343,74 @@ class Perception:
 
         return np.round(np.mean(arm_object_xyz_list, axis=0), 1).tolist()
 
+    @staticmethod
+    def belief_revision(world_model, percept):
+        """
+        Updates the current world model: B = beliefRevisionFunction(B, ρ)
+        :param world_model: World model, instance of the WorldModel class.
+        :param percept: Dictionary.
+        :return: The updated world model, instance of the WorldModel class.
+        """
+
+        # TODO: state = "reachable" if object.centerXYZ <= arm radius
+
+        if percept is not "":
+            world_model.world_model_history.append(copy.deepcopy(world_model.current_world_model))  # Store as history
+
+            for key in percept.keys():
+                if key == "xyz":
+                    world_model.current_world_model.xyz["target_object"] = percept["xyz"]["target_object"]
+                elif key == "distance":
+                    print("percept: ", percept)
+                    world_model.current_world_model.distance = percept["distance"]
+
+        return world_model
+
 
 if __name__ == '__main__':
 
-    "Sequence for testing"
+    # Sequence for testing
     perception = Perception()
     perception.write_video = False
     import time
+    from world_model import WorldModel
+    beliefs = WorldModel()
+
+    time.sleep(0.1)
+    current_percept = {"xyz": {'target_object': [15, 15, 0]}}  # TODO: post conditions or monitoring
+    beliefs.update_tick()
+    beliefs = perception.belief_revision(beliefs, current_percept)  # TODO: post conditions
+
+    time.sleep(0.1)
+    current_percept = {"xyz": {'target_object': [14, 16, 0]}}  # TODO: post conditions or monitoring
+    beliefs.update_tick()
+    beliefs = perception.belief_revision(beliefs, current_percept)  # TODO: post conditions
+
+    time.sleep(0.1)
+    current_percept = {"distance": {'distance_to_gripper': 8.2}}  # TODO: post conditions or monitoring
+    beliefs.update_tick()
+    beliefs = perception.belief_revision(beliefs, current_percept)  # TODO: post conditions
+
+    time.sleep(0.1)
+    current_percept = {"xyz": {'target_object': [13, 17, 0]}}  # TODO: post conditions or monitoring
+    beliefs.update_tick()
+    beliefs = perception.belief_revision(beliefs, current_percept)  # TODO: post conditions
+
+    print()
+    print("Final World model:")
+    print("-- Ticks: {}".format(beliefs.current_world_model.tick))
+    print("-- xyz: {}".format(beliefs.current_world_model.xyz))
+    print("-- distance: {}".format(beliefs.current_world_model.distance))
+    print("-- timestamp: {}".format(beliefs.current_world_model.timestamp))
+    print()
+    print("World model History:")
+    for tick in range(len(beliefs.world_model_history)):
+        print("Tick {}:".format(tick))
+        print("-- xyz: {}".format(beliefs.world_model_history[tick].xyz))
+        print("-- distance: {}".format(beliefs.world_model_history[tick].distance))
+        print("-- timestamp: {}".format(beliefs.world_model_history[tick].timestamp))
+
+    # Sequence for testing
     steps = 500
     for j in range(steps):
         time.sleep(0.1)

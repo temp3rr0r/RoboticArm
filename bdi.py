@@ -4,6 +4,7 @@ from hierarchical_task_network_planner import HierarchicalTaskNetworkPlanner
 from collections import deque
 from perception import Perception
 from coordination import Coordination
+from monitoring import Monitoring
 
 
 def print_answers(what_answer, why_answer, how_well_answer, what_else_answer):
@@ -44,6 +45,7 @@ if __name__ == '__main__':
     goal = [('transfer_target_object_to_container', 'arm', 'target_object', 'table', 'container')]
     intentions = goal  # I := I0; Initial Intentions
     beliefs = WorldModel()  # B := B0; Initial Beliefs
+    monitoring = Monitoring()
     perception = Perception()
     coordination = Coordination()
     # Disable all 3 coordination switches for testing
@@ -94,7 +96,8 @@ if __name__ == '__main__':
         # TODO: engrave figures: arm IK, gripper
         percept = {"xyz": {'target_object': perception.get_percept(
             text_engraving=(why_failed, how_well))}}  # get next percept ρ; OBSERVE the world
-        beliefs = beliefs.belief_revision(percept)  # B:= brf(B, ρ);
+        beliefs = perception.belief_revision(beliefs, percept)  # B:= brf(B, ρ);
+        beliefs = monitoring.fire_events(beliefs, percept)
 
         intentions = deliberate(beliefs, intentions)  # DELIBERATE about what INTENTION to achieve next
         SUCCESS = True if intentions == "" else False
@@ -127,17 +130,21 @@ if __name__ == '__main__':
                     # get next percept ρ; OBSERVE the world
                     percept = {"xyz": {'target_object': perception.get_percept(
                         text_engraving=(what, why, how_well, what_else))}}
-                    beliefs = beliefs.belief_revision(percept)
+                    beliefs = perception.belief_revision(beliefs, percept)
+                    beliefs = monitoring.fire_events(beliefs, percept)
 
                     if action == ('initialize', 'arm'):
-                        percept = {"initialized": {'arm': True}}  # TODO: post conditions
-                        beliefs = beliefs.belief_revision(percept)  # TODO: post conditions
+                        percept = {"initialized": {'arm': True}}  # TODO: post conditions or monitoring
+                        beliefs = perception.belief_revision(beliefs, percept)  # TODO: post conditions
+                        beliefs = monitoring.fire_events(beliefs, percept)
                     elif action == ('grab', 'arm', 'target_object', 'table'):
-                        percept = {"grabbed": {'target_object': True}, "initialized": {'arm': False}}
-                        beliefs = beliefs.belief_revision(percept)
+                        current_percept = {"distance": {'distance_to_gripper': 2.2}}  # TODO: update with monitoring
+                        beliefs = perception.belief_revision(beliefs, percept)
+                        beliefs = monitoring.fire_events(beliefs, percept)                        
                     elif action == ('put', 'arm', 'target_object', 'container'):
                         percept = {"location": {"target_object": "container"}, "grabbed": {'target_object': False}}
-                        beliefs = beliefs.belief_revision(percept)
+                        beliefs = perception.belief_revision(beliefs, percept)
+                        beliefs = monitoring.fire_events(beliefs, percept)
 
                     # if reconsider(I, B) then
                     #   D := options(B, I);
