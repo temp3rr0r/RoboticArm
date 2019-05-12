@@ -25,7 +25,7 @@ class Perception:
         self.regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_RANSACRegressor_xyz.sav')
         self.class_logo = cv2.imread("picsQr/logoTarget.png", cv2.IMREAD_COLOR)
         self.model_reference = cv2.imread("picsQr/modelTarget.png", cv2.IMREAD_COLOR)
-        self.percept_frames = 5
+        self.percept_frames = 30
         self.write_video = True
         self.video_frames_per_second = 15  # 15
         self.display_output_frames = True

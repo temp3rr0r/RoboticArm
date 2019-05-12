@@ -23,7 +23,7 @@ class Control:
         # self.scale = 0.04  # For the plotting
         self.scale = 1.0
         self.servo_count = 6
-        self.command_delay = 0.05  # 0.001  # seconds
+        self.command_delay = 0.001  # seconds
         self.center_init = False
         self.angle_degree_limit = 75  # degrees
         self.trajectory_steps = 10
