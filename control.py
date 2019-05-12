@@ -175,34 +175,34 @@ class Control:
 
         return np.array(np.round(servo_range_trajectory, 0)).astype(int)
 
-    def initialize_arm(self):
+    def initialize_arm(self, last_servo_values):
         action_successful = False
         target_position = np.array(self.init_position) * self.scale
-        action_successful = self.move_arm(target_position)
+        action_successful = self.move_arm(target_position, last_servo_values)
         print("=== Arm initialized")
         return action_successful
 
-    def move_arm_to_container(self, xyz):
+    def move_arm_to_container(self, xyz, last_servo_values):
         action_successful = False
         target_position = np.array(xyz) * self.scale
-        action_successful = self.move_arm(target_position)
+        action_successful = self.move_arm(target_position, last_servo_values)
         print("=== Arm to container")
         return action_successful
 
-    def move_arm_above_xyz(self, xyz, height):
+    def move_arm_above_xyz(self, xyz, last_servo_values, height):
         action_successful = False
         xyz[2] = height
         target_position = np.array(xyz) * self.scale
         if self.send_requests:
-            action_successful = self.move_arm(target_position)
+            action_successful = self.move_arm(target_position, last_servo_values)
         print("=== Arm to object")
         return action_successful
 
-    def move_arm_to_object(self, xyz):
+    def move_arm_to_object(self, xyz, last_servo_values):
         action_successful = False
         target_position = np.array(xyz) * self.scale
         if self.send_requests:
-            action_successful = self.move_arm(target_position)
+            action_successful = self.move_arm(target_position, last_servo_values)
         print("=== Arm to object")
         return action_successful
 
@@ -263,14 +263,15 @@ class Control:
         action_successful = True
         return action_successful
 
-    def move_arm(self, target_position, trajectory_steps=-1):
+    def move_arm(self, target_position, last_servo_locations, trajectory_steps=-1):
         action_successful = False
         if trajectory_steps == -1:
             trajectory_steps = self.trajectory_steps
 
         # TODO: move last position to world model
-        if self.detect_last_position:
+        if self.detect_last_position:  # TODO: get last servo values anyway, world model may be old...
             last_servo_values = self.init_position
+            last_servo_values = last_servo_locations
             try:
                 if self.send_requests:
                     url = "http://ESP32/"
@@ -285,7 +286,6 @@ class Control:
                             print("last_servo_values: ", last_servo_values)
                             print("last_servo_xyz",
                                   np.round(self.servo_range_to_xyz(last_servo_values, self.current_servo_monotony), 2))
-
             except Exception as e_pos:
                 print("Exception: {}".format(str(e_pos)))
 

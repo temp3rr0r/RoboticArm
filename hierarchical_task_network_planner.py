@@ -159,6 +159,9 @@ class HierarchicalTaskNetworkPlanner:
 
         def initialize_transfer(state, actor, actee, from_, to_):
             if actor == "arm":
+                # TODO: connect tasks with actual actions
+                # TODO: fully flatten actions
+                # TODO: add all primitive tasks (from coordination): move_arm_above_xyz, close_hand, open_hand, move_arm_above_xyz
                 return [('initialize', actor), ('grab', actor, actee, from_), ('put', actor, actee, to_)]
 
             self.failure_reason = "{} can't initialize and transfer {} from {} to {}".format(actor, actee, from_, to_)

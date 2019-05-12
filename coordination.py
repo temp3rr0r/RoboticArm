@@ -26,15 +26,17 @@ class Coordination:
         elif action == ('grab', 'arm', 'target_object', 'table'):
             # pass
             xyz = world_model.xyz["target_object"]
+            last_servo_values = world_model.location["servo_values"]
             object_side_length = world_model.size["object_side_length"]
-            action_successful = self.control.move_arm_above_xyz(xyz, object_side_length * 2.0)
-            action_successful = self.control.move_arm_above_xyz(xyz, object_side_length * 0.5)
+            action_successful = self.control.move_arm_above_xyz(xyz, last_servo_values, object_side_length * 2.0)
+            action_successful = self.control.move_arm_above_xyz(xyz, last_servo_values, object_side_length * 0.5)
             action_successful = self.control.close_hand(object_side_length)
-            action_successful = self.control.move_arm_above_xyz(xyz, object_side_length * 2.0)
+            action_successful = self.control.move_arm_above_xyz(xyz, last_servo_values, object_side_length * 2.0)
         elif action == ('put', 'arm', 'target_object', 'container'):
             container_xyz = world_model.xyz["container"]
+            last_servo_values = world_model.location["servo_values"]
             object_side_length = world_model.size["object_side_length"]
-            action_successful = self.control.move_arm_above_xyz(container_xyz, 14)
+            action_successful = self.control.move_arm_above_xyz(container_xyz, last_servo_values, 14)
             action_successful = self.control.open_hand(object_side_length)
 
         return action_successful

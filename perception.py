@@ -35,7 +35,7 @@ class Perception:
         self.camera_frame_height = 1080
         self.auto_focus = True
         self.send_requests = True
-        self.verbose = True
+        self.verbose = False
 
         if self.use_local_camera:
             self.capture_device = cv2.VideoCapture(0)
