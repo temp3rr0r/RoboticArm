@@ -25,7 +25,7 @@ class Perception:
         self.regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_RANSACRegressor_xyz.sav')
         self.class_logo = cv2.imread("picsQr/logoTarget.png", cv2.IMREAD_COLOR)
         self.model_reference = cv2.imread("picsQr/modelTarget.png", cv2.IMREAD_COLOR)
-        self.percept_frames = 60
+        self.percept_frames = 5
         self.write_video = True
         self.video_frames_per_second = 15  # 15
         self.display_output_frames = True
@@ -333,11 +333,14 @@ class Perception:
             except ValueError as e:
                 print("ValueError Exception: {}".format(str(e)))  # TODO: why too many values error?
 
-            flash_frame += 1
-            if flash_frame >= self.FLASH_EVERY_FRAMES * 0.75:
-                flash_frame = 0
-            if self.display_output_frames:
-                cv2.imshow('Video Frame', aligned_frame)  # Display the resulting frame
+            try:
+                flash_frame += 1
+                if flash_frame >= self.FLASH_EVERY_FRAMES * 0.75:
+                    flash_frame = 0
+                if self.display_output_frames:
+                    cv2.imshow('Video Frame', aligned_frame)  # Display the resulting frame
+            except ValueError as e:
+                print("ValueError Exception: {}".format(str(e)))  # TODO: why too many values error?
 
             if self.write_video:
                 self.out.write(aligned_frame)
@@ -382,6 +385,10 @@ class Perception:
         # TODO: state = "reachable" if object.centerXYZ <= arm radius
         if percept is not "":
             world_model.world_model_history.append(copy.deepcopy(world_model.current_world_model))  # Store as history
+
+            print("-- world_model.current_world_model.location[\"servo_values\"]): {}"
+                  .format(world_model.current_world_model.location["servo_values"]))
+            print("-- percept: {}".format(percept))
 
             for key in percept.keys():
                 if key == "xyz":

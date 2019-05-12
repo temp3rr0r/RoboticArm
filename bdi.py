@@ -133,15 +133,28 @@ if __name__ == '__main__':
 
                     # TODO: trigger sound percept?
 
+                    # if action == ('initialize', 'arm'):
+                    #     percept = {"initialized": {'arm': True}}  # TODO: post conditions or monitoring
+                    #     beliefs = perception.belief_revision(beliefs, percept)  # TODO: post conditions
+                    #     beliefs = monitoring.fire_events(beliefs, percept)
+                    # elif action == ('grab', 'arm', 'target_object', 'table'):
+                    #     current_percept = {"distance": {'distance_to_gripper': 2.2}}  # TODO: update with monitoring
+                    #     beliefs = perception.belief_revision(beliefs, percept)
+                    #     beliefs = monitoring.fire_events(beliefs, percept)
+                    # elif action == ('put', 'arm', 'target_object', 'container'):
+                    #     percept = {"location": {"target_object": "container"}, "grabbed": {'target_object': False}}
+                    #     beliefs = perception.belief_revision(beliefs, percept)
+                    #     beliefs = monitoring.fire_events(beliefs, percept)
+
                     if action == ('initialize', 'arm'):
                         percept = {"initialized": {'arm': True}}  # TODO: post conditions or monitoring
                         beliefs = perception.belief_revision(beliefs, percept)  # TODO: post conditions
                         beliefs = monitoring.fire_events(beliefs, percept)
-                    elif action == ('grab', 'arm', 'target_object', 'table'):
+                    elif action == ('move_arm', 'target_object'):
                         current_percept = {"distance": {'distance_to_gripper': 2.2}}  # TODO: update with monitoring
                         beliefs = perception.belief_revision(beliefs, percept)
-                        beliefs = monitoring.fire_events(beliefs, percept)                        
-                    elif action == ('put', 'arm', 'target_object', 'container'):
+                        beliefs = monitoring.fire_events(beliefs, percept)
+                    elif action == ('move_arm_above', 'container'):
                         percept = {"location": {"target_object": "container"}, "grabbed": {'target_object': False}}
                         beliefs = perception.belief_revision(beliefs, percept)
                         beliefs = monitoring.fire_events(beliefs, percept)

@@ -10,7 +10,7 @@ class WorldModel:
     def __init__(self):
         self.current_world_model = pyhop.State('current_world_model')
         self.current_world_model.tick = 0
-        self.current_world_model.max_ticks = 20
+        self.current_world_model.max_ticks = 100
         self.current_world_model.timestamp = time.time()
         self.current_world_model.location = {
             'target_object': 'table',

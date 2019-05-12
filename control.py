@@ -23,7 +23,7 @@ class Control:
         # self.scale = 0.04  # For the plotting
         self.scale = 1.0
         self.servo_count = 6
-        self.command_delay = 0.001  # seconds
+        self.command_delay = 0.05  # 0.001  # seconds
         self.center_init = False
         self.angle_degree_limit = 75  # degrees
         self.trajectory_steps = 10
@@ -195,7 +195,19 @@ class Control:
         target_position = np.array(xyz) * self.scale
         if self.send_requests:
             action_successful = self.move_arm(target_position, last_servo_values)
-        print("=== Arm to object")
+        print("=== Arm above object")
+        return action_successful
+
+    def move_arm_up(self, last_servo_values, height):
+        action_successful = False
+        xyz = np.round(self.servo_range_to_xyz(last_servo_values, self.current_servo_monotony), 2)
+        print("last_servo_xyz", xyz)
+
+        xyz[2] = height
+        target_position = np.array(xyz) * self.scale
+        if self.send_requests:
+            action_successful = self.move_arm(target_position, last_servo_values)
+        print("=== Arm up")
         return action_successful
 
     def move_arm_to_object(self, xyz, last_servo_values):

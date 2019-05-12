@@ -19,25 +19,53 @@ class Coordination:
         """
         action_successful = False
 
+        # if action == ('initialize', 'arm'):
+        #     object_side_length = world_model.size["object_side_length"]
+        #     # action_successful = self.control.initialize_arm()
+        # elif action == ('open_hand',):
+        #     object_side_length = world_model.size["object_side_length"]
+        #     action_successful = self.control.open_hand(object_side_length)
+        # elif action == ('move_arm_above', 'target_object'):
+        #     xyz = world_model.xyz["target_object"]
+        #     last_servo_values = world_model.location["servo_values"]
+        #     object_side_length = world_model.size["object_side_length"]
+        #     action_successful = self.control.move_arm_above_xyz(xyz, last_servo_values, object_side_length * 2.0)
+        # elif action == ('move_arm', 'target_object'):
+        #     xyz = world_model.xyz["target_object"]
+        #     last_servo_values = world_model.location["servo_values"]
+        #     object_side_length = world_model.size["object_side_length"]
+        #     action_successful = self.control.move_arm_above_xyz(xyz, last_servo_values, object_side_length * 0.5)
+        # elif action == ('close_hand',):
+        #     object_side_length = world_model.size["object_side_length"]
+        #     action_successful = self.control.close_hand(object_side_length)
+        # elif action == ('move_arm_above', 'container'):
+        #     xyz = world_model.xyz["container"]
+        #     last_servo_values = world_model.location["servo_values"]
+        #     object_side_length = world_model.size["object_side_length"]
+        #     action_successful = self.control.move_arm_above_xyz(xyz, last_servo_values, 14)
+
         if action == ('initialize', 'arm'):
             object_side_length = world_model.size["object_side_length"]
             # action_successful = self.control.initialize_arm()
-            action_successful = self.control.open_hand(object_side_length)
-        elif action == ('grab', 'arm', 'target_object', 'table'):
-            # pass
-            xyz = world_model.xyz["target_object"]
-            last_servo_values = world_model.location["servo_values"]
-            object_side_length = world_model.size["object_side_length"]
-            action_successful = self.control.move_arm_above_xyz(xyz, last_servo_values, object_side_length * 2.0)
-            action_successful = self.control.move_arm_above_xyz(xyz, last_servo_values, object_side_length * 0.5)
-            action_successful = self.control.close_hand(object_side_length)
-            action_successful = self.control.move_arm_above_xyz(xyz, last_servo_values, object_side_length * 2.0)
-        elif action == ('put', 'arm', 'target_object', 'container'):
-            container_xyz = world_model.xyz["container"]
-            last_servo_values = world_model.location["servo_values"]
-            object_side_length = world_model.size["object_side_length"]
-            action_successful = self.control.move_arm_above_xyz(container_xyz, last_servo_values, 14)
-            action_successful = self.control.open_hand(object_side_length)
+        elif action == ('open_hand',):
+            action_successful = self.control.open_hand(world_model.size["object_side_length"])
+        elif action == ('move_arm_above', 'target_object'):
+            action_successful = self.control.move_arm_above_xyz(
+                world_model.xyz["target_object"], world_model.location["servo_values"],
+                world_model.size["object_side_length"] * 2.0)
+        elif action == ('move_arm_up', 'target_object'):
+            action_successful = self.control.move_arm_up(
+                world_model.location["servo_values"],
+                world_model.size["object_side_length"] * 2.0)
+        elif action == ('move_arm', 'target_object'):
+            action_successful = self.control.move_arm_above_xyz(
+                world_model.xyz["target_object"], world_model.location["servo_values"],
+                world_model.size["object_side_length"] * 0.5)
+        elif action == ('close_hand',):
+            action_successful = self.control.close_hand(world_model.size["object_side_length"])
+        elif action == ('move_arm_above', 'container'):
+            action_successful = self.control.move_arm_above_xyz(
+                world_model.xyz["container"], world_model.location["servo_values"], 14)
 
         return action_successful
 
@@ -51,9 +79,24 @@ if __name__ == '__main__':
     coordination.control.send_requests = False
     coordination.control.center_init = False
     coordination.control.detect_last_position = False
+    # coordination.execute_action(('initialize', 'arm'), current_world_model.current_world_model)
+    # coordination.execute_action(('grab', 'arm', 'target_object', 'table'), current_world_model.current_world_model)
+    # coordination.execute_action(('put', 'arm', 'target_object', 'container'), current_world_model.current_world_model)
+
+    # [('initialize', 'arm'), ('open_hand',), ('move_arm_above', 'target_object'), ('move_arm', 'target_object'),
+    #  ('close_hand',), ('move_arm_above', 'target_object'), ('move_arm_above', 'container'), ('open_hand',)]
+
     coordination.execute_action(('initialize', 'arm'), current_world_model.current_world_model)
-    coordination.execute_action(('grab', 'arm', 'target_object', 'table'), current_world_model.current_world_model)
-    coordination.execute_action(('put', 'arm', 'target_object', 'container'), current_world_model.current_world_model)
+    coordination.execute_action(('open_hand', ), current_world_model.current_world_model)
+    coordination.execute_action(('move_arm_above', 'target_object'), current_world_model.current_world_model)
+    coordination.execute_action(('move_arm', 'target_object'), current_world_model.current_world_model)
+    coordination.execute_action(('close_hand',), current_world_model.current_world_model)
+    coordination.execute_action(('move_arm_up', 'target_object'), current_world_model.current_world_model)
+
+    coordination.execute_action(('move_arm_above', 'container'), current_world_model.current_world_model)
+    coordination.execute_action(('open_hand', ), current_world_model.current_world_model)
+    # coordination.execute_action(('grab', 'arm', 'target_object', 'table'), current_world_model.current_world_model)
+    # coordination.execute_action(('put', 'arm', 'target_object', 'container'), current_world_model.current_world_model)
     import numpy as np
     # target_position = np.array([12.5, -12.5, 2.0]) * coordination.control.scale
     target_position = np.array([20, -20.0, 20]) * coordination.control.scale
