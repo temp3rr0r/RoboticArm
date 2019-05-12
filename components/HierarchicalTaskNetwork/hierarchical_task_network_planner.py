@@ -53,7 +53,6 @@ class HierarchicalTaskNetworkPlanner:
 
             if distance < gripper_min_bounds or distance > gripper_max_bounds:
                 self.failure_reason = "can't open hand to distance {}".format(distance)
-                print(self.failure_reason)
                 return False
 
             return state
@@ -131,13 +130,37 @@ if __name__ == '__main__':
     intentions = end_goal  # I := I0; Initial Intentions
     from world_model import WorldModel
     beliefs = WorldModel()  # B := B0; Initial Beliefs
-    # beliefs.current_world_model.xyz["target_object"] = [-510, -10, 0]
-    beliefs.current_world_model.xyz["target_object"] = [-10, -10, 0]
-    # beliefs.current_world_model.xyz["container"] = [-510, -10, 0]
-    # beliefs.current_world_model.size['object_side_length'] = 53.0
 
-    htn_plans = htn_planner.get_plans(beliefs.current_world_model, intentions)  # π := plan(B, I); MEANS_END REASONING
     print()
+    beliefs.current_world_model.xyz["target_object"] = [-10, -10, 0]
+    htn_plans = htn_planner.get_plans(beliefs.current_world_model, intentions)  # π := plan(B, I); MEANS_END REASONING
+    if not htn_plans:
+        print("-- No valid plan. Failure_reason: {}".format(htn_planner.failure_reason))
+    else:
+        beliefs.current_world_model.plans = htn_plans
+        print("== Best current_world_model.plan: ", beliefs.current_world_model.plans[0])
+
+    print()
+    beliefs.current_world_model.xyz["target_object"] = [-510, -10, 0]
+    htn_plans = htn_planner.get_plans(beliefs.current_world_model, intentions)  # π := plan(B, I); MEANS_END REASONING
+    if not htn_plans:
+        print("-- No valid plan. Failure_reason: {}".format(htn_planner.failure_reason))
+    else:
+        beliefs.current_world_model.plans = htn_plans
+        print("Best current_world_model.plan: ", beliefs.current_world_model.plans[0])
+
+    print()
+    beliefs.current_world_model.xyz["container"] = [-510, -10, 0]
+    htn_plans = htn_planner.get_plans(beliefs.current_world_model, intentions)  # π := plan(B, I); MEANS_END REASONING
+    if not htn_plans:
+        print("-- No valid plan. Failure_reason: {}".format(htn_planner.failure_reason))
+    else:
+        beliefs.current_world_model.plans = htn_plans
+        print("Best current_world_model.plan: ", beliefs.current_world_model.plans[0])
+
+    print()
+    beliefs.current_world_model.size['object_side_length'] = 53.0
+    htn_plans = htn_planner.get_plans(beliefs.current_world_model, intentions)  # π := plan(B, I); MEANS_END REASONING
     if not htn_plans:
         print("-- No valid plan. Failure_reason: {}".format(htn_planner.failure_reason))
     else:
