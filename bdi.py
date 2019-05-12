@@ -133,6 +133,8 @@ if __name__ == '__main__':
                     beliefs = perception.belief_revision(beliefs, percept)
                     beliefs = monitoring.fire_events(beliefs, percept)
 
+                    # TODO: trigger sound percept?
+
                     if action == ('initialize', 'arm'):
                         percept = {"initialized": {'arm': True}}  # TODO: post conditions or monitoring
                         beliefs = perception.belief_revision(beliefs, percept)  # TODO: post conditions

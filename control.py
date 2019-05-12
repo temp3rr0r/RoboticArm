@@ -268,7 +268,7 @@ class Control:
         if trajectory_steps == -1:
             trajectory_steps = self.trajectory_steps
 
-        # TODO: init from request
+        # TODO: move last position to world model
         if self.detect_last_position:
             last_servo_values = self.init_position
             try:
