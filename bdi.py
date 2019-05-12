@@ -91,6 +91,7 @@ if __name__ == '__main__':
     # while true do
     while not SUCCESS and not terminate and beliefs.update_tick() < beliefs.current_world_model.max_ticks:
 
+        # TODO: engrave figures: arm IK, gripper
         percept = {"xyz": {'target_object': perception.get_percept(
             text_engraving=(why_failed, how_well))}}  # get next percept ρ; OBSERVE the world
         beliefs = beliefs.belief_revision(percept)  # B:= brf(B, ρ);
