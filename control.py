@@ -337,13 +337,16 @@ if __name__ == '__main__':
 
     # Sequence for testing
     control = Control()
+    from world_model import WorldModel
+    current_world_model = WorldModel()
     control.send_requests = False
     control.center_init = False
     control.detect_last_position = False
-    control.initialize_arm()
+    last_servo_values = current_world_model.current_world_model.location["servo_values"]
+    control.initialize_arm(last_servo_values)
     control.open_hand(4.4)
     container_xyz = [-0.1, 25.0, 12]
-    control.move_arm_to_container(container_xyz)
+    control.move_arm_to_container(container_xyz, last_servo_values)
     control.close_hand(4.4)
     # target_position = np.array([12.5, -12.5, 2.0]) * coordination.control.scale
     target_position = np.array([20, -20.0, 20]) * control.scale
@@ -352,4 +355,4 @@ if __name__ == '__main__':
     # target_position = np.array([-20, -20, 25]) * coordination.control.scale
     # target_position = np.array([0, 0, 0]) * coordination.control.scale
     # target_position = np.array([-13.12, 0.27, 1.5]) * coordination.control.scale
-    action_successful = control.move_arm(np.array(target_position))
+    action_successful = control.move_arm(np.array(target_position), last_servo_values)

@@ -62,4 +62,5 @@ if __name__ == '__main__':
     # target_position = np.array([-20, -20, 25]) * coordination.control.scale
     # target_position = np.array([0, 0, 0]) * coordination.control.scale
     # target_position = np.array([-13.12, 0.27, 1.5]) * coordination.control.scale
-    action_successful_test = coordination.control.move_arm(np.array(target_position))
+    last_servo_values = current_world_model.current_world_model.location["servo_values"]
+    action_successful_test = coordination.control.move_arm(np.array(target_position), last_servo_values)
