@@ -122,14 +122,14 @@ Call pyhop.pyhop(state1,[('travel','me','home','park')]) with different verbosit
 # print("- If verbose=0 (the default), Pyhop returns the solution but prints nothing.\n")
 # pyhop.pyhop(state1, [('travel', 'me', 'home', 'park')])
 
-print('- If verbose=1, Pyhop prints the problem and solution, and returns the solution:')
-pyhop.pyhop(state1, [('travel', 'me', 'home', 'park')], verbose=1, all_plans=True)
-#
+# print('- If verbose=1, Pyhop prints the problem and solution, and returns the solution:')
+# pyhop.pyhop(state1, [('travel', 'me', 'home', 'park')], verbose=1, all_plans=True)
+
 # print('- If verbose=2, Pyhop also prints a note at each recursive call:')
 # pyhop.pyhop(state1, [('travel', 'me', 'home', 'park')], verbose=2)
-#
-# print('- If verbose=3, Pyhop also prints the intermediate states:')
-# pyhop.pyhop(state1, [('travel', 'me', 'home', 'park')], verbose=3)
+
+print('- If verbose=3, Pyhop also prints the intermediate states:')
+pyhop.pyhop(state1, [('travel', 'me', 'home', 'park')], verbose=3)
 
 
 # TODO: Terms:

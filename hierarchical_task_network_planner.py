@@ -164,6 +164,14 @@ class HierarchicalTaskNetworkPlanner:
                 # TODO: add all primitive tasks (from coordination): move_arm_above_xyz, close_hand, open_hand, move_arm_above_xyz
                 return [('initialize', actor), ('grab', actor, actee, from_), ('put', actor, actee, to_)]
 
+                # def open_hand(distance):
+                # def close_hand(distance):
+                # distance = 3.3
+                # return [('initialize', actor),
+                #         ('open_hand', distance),
+                #         ('grab', actor, actee, from_),
+                #         ('put', actor, actee, to_)]
+
             self.failure_reason = "{} can't initialize and transfer {} from {} to {}".format(actor, actee, from_, to_)
             return False
 
@@ -189,3 +197,21 @@ class HierarchicalTaskNetworkPlanner:
             return pyhop.pyhop(world_model, goal, verbose=0, all_plans=True, sort_asc=True)
         else:
             return ""
+
+
+if __name__ == '__main__':
+
+    htn_planner = HierarchicalTaskNetworkPlanner()
+    goal = [('transfer_target_object_to_container', 'arm', 'target_object', 'table', 'container')]
+    intentions = goal  # I := I0; Initial Intentions
+    from world_model import WorldModel
+    beliefs = WorldModel()  # B := B0; Initial Beliefs
+    beliefs.current_world_model.xyz["target_object"] = [-10, -10, 0]
+
+    htn_plans = htn_planner.get_plans(beliefs.current_world_model, intentions)  # π := plan(B, I); MEANS_END REASONING
+    print()
+    if not htn_plans:
+        print("-- No valid plan. Failure_reason: {}".format(htn_planner.failure_reason))
+    else:
+        beliefs.current_world_model.plans = htn_plans
+        print("Best current_world_model.plan: ", beliefs.current_world_model.plans[0])

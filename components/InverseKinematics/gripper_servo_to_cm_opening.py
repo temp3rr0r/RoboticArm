@@ -26,3 +26,8 @@ print("cm: {}, predicted servo value: {}".format(open_length, open_servo_value))
 closed_length = object_side_length * 0.8
 closed_servo_value = int(loaded_cm_to_servo_polynomial_fitter(closed_length))
 print("cm: {}, predicted servo value: {}".format(closed_length, closed_servo_value))
+
+
+max_closed_length = 6.0
+max_closed_servo_value = int(loaded_cm_to_servo_polynomial_fitter(max_closed_length))
+print("~ max cm: {}, ~max predicted servo value: {}".format(max_closed_length, max_closed_servo_value))

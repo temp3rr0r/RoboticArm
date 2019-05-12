@@ -182,10 +182,8 @@ def transfer(state, actor, actee, from_, to_):
     return False
 
 
-pyhop.declare_methods('transfer_ball_to_container', initialize_transfer, put_grabbed, transfer)
-#
-# pyhop.declare_methods('transfer_ball_to_container2', put_grabbed, transfer)
-# pyhop.declare_methods('transfer_ball_to_container', initialize_transfer)
+pyhop.declare_methods('transfer_ball_to_container', initialize_transfer)
+pyhop.declare_methods('transfer_ball_to_container2', put_grabbed, transfer)
 
 print('')
 pyhop.print_methods()
@@ -202,8 +200,9 @@ current_world_model.plans = "None"
 
 htn_plans = pyhop.pyhop(current_world_model,
                         [('transfer_ball_to_container', 'arm', 'ball', 'table', 'container')],
-                       verbose=2, all_plans=True, sort_asc=True)
+                       verbose=1, all_plans=True, sort_asc=True)
 
+print()
 if not htn_plans:
     print("-- No valid plan. Failure_reason: {}".format(pyhop.failure_reason))
 else:
