@@ -15,7 +15,7 @@ class Control:
         self.closed_hand_distance_ratio = 0.8
         self.opened_hand_distance_ratio = 1.5
         self.base_put_url = "http://ESP32/set_servo{}?value={}"
-        self.send_requests = False
+        self.send_requests = False  # TODO: make communicator?
         self.detect_last_position = False
         self.verbose = False
         self.show_plots = False
@@ -36,7 +36,7 @@ class Control:
         self.horizontal_gripper_position = 600
         self.init_position = np.array([0, 0, 1]) * self.scale
         self.container_position = np.array([0, 18, 10]) * self.scale
-        self.init_servo_values = [1500, 1500, 1500, 1500, 1500, 1500]  # TODO: temp
+        self.init_servo_values = [1500, 1500, 1500, 1500, 1500, 1500]  # TODO: Move 2 worldModel, get from instantiation
 
         # Link lengths in centimeters
         self.link6 = np.array([0, 0, 7.0])

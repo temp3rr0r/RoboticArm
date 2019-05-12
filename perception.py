@@ -3,6 +3,7 @@ import copy
 import cv2
 import numpy as np
 import sys
+import requests
 from sklearn.externals import joblib
 
 
@@ -33,6 +34,8 @@ class Perception:
         self.camera_frame_width = 1920
         self.camera_frame_height = 1080
         self.auto_focus = True
+        self.send_requests = True
+        self.verbose = True
 
         if self.use_local_camera:
             self.capture_device = cv2.VideoCapture(0)
@@ -318,6 +321,7 @@ class Perception:
         Returns the mean perceived position XYZ in cm, of the detected object.
         :return: List of 3 XYZ float values, centimeters of the object vs the arm frame of reference.
         """
+        percept = ""
         arm_object_xyz_list = []
         flash_frame = 0
         for _ in range(self.percept_frames):
@@ -341,7 +345,35 @@ class Perception:
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
-        return np.round(np.mean(arm_object_xyz_list, axis=0), 1).tolist()
+        mean_object_xyz = np.round(np.mean(arm_object_xyz_list, axis=0), 1).tolist()
+
+        last_servo_values = self.get_last_servo_values()
+        # state.location['servo_values']  # TODO:
+
+        # percept = {"xyz": {'target_object': mean_object_xyz}}  # TODO:
+        percept = {"xyz": {'target_object': mean_object_xyz}, "location": {"servo_values": last_servo_values}}
+
+        return percept
+
+    def get_last_servo_values(self):
+        self.init_servo_values = [1500, 1500, 1500, 1500, 1500, 1500]  # TODO: Move 2 worldModel, get from instantiation
+        last_servo_values = self.init_servo_values
+        try:
+            if self.send_requests:
+                url = "http://ESP32/"
+                r = requests.get(url, data="")
+                if r.status_code == 200:
+                    result = r.json()["variables"]
+                    last_servo_values = np.array(
+                        [result["servo6"], result["servo5"], result["servo4"], result["servo3"],
+                         result["servo2"], result["servo1"]])
+
+                    if self.verbose:
+                        print("last_servo_values: ", last_servo_values)
+
+        except Exception as e_pos:
+            print("Exception: {}".format(str(e_pos)))
+        return last_servo_values
 
     @staticmethod
     def belief_revision(world_model, percept):
@@ -363,6 +395,10 @@ class Perception:
                 elif key == "distance":
                     print("percept: ", percept)
                     world_model.current_world_model.distance = percept["distance"]
+                elif key == "location":  # TODO:
+                    for key2 in percept["location"]:
+                        if key2 == "servo_values":
+                            world_model.current_world_model.location["servo_values"] = percept["location"]["servo_values"]
 
         return world_model
 

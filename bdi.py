@@ -20,6 +20,10 @@ def filter_intentions(current_beliefs, current_desires, current_intentions):
         if current_intention == ('transfer_target_object_to_container', 'arm', 'target_object', 'table', 'container') \
                 and current_beliefs.current_world_model.location["target_object"] == "container":
             current_intentions = ""  # if goal(s) achieved, empty I
+        # if current_intention == ('transfer_target_object_to_container', 'arm', 'target_object', 'table', 'container'):
+        #     if "target_object" in current_beliefs.current_world_model.location:
+        #         if current_beliefs.current_world_model.location["target_object"] == "container":
+        #             current_intentions = ""  # if goal(s) achieved, empty I
     return current_intentions
 
 
@@ -94,8 +98,7 @@ if __name__ == '__main__':
     while not SUCCESS and not terminate and beliefs.update_tick() < beliefs.current_world_model.max_ticks:
 
         # TODO: engrave figures: arm IK, gripper
-        percept = {"xyz": {'target_object': perception.get_percept(
-            text_engraving=(why_failed, how_well))}}  # get next percept ρ; OBSERVE the world
+        percept = perception.get_percept(text_engraving=(why_failed, how_well))  # get next percept ρ; OBSERVE the world
         beliefs = perception.belief_revision(beliefs, percept)  # B:= brf(B, ρ);
         beliefs = monitoring.fire_events(beliefs, percept)
 
@@ -128,8 +131,7 @@ if __name__ == '__main__':
                         print_answers(what, why, how_well, what_else)
 
                     # get next percept ρ; OBSERVE the world
-                    percept = {"xyz": {'target_object': perception.get_percept(
-                        text_engraving=(what, why, how_well, what_else))}}
+                    percept = perception.get_percept(text_engraving=(what, why, how_well, what_else))
                     beliefs = perception.belief_revision(beliefs, percept)
                     beliefs = monitoring.fire_events(beliefs, percept)
 
