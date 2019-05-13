@@ -31,7 +31,7 @@ class HierarchicalTaskNetworkPlanner:
             if to_ == "target_object" or to_ == "container":
                 xyz = state.xyz[to_]
                 if not is_within_bounds(xyz, arm_min_bounds, arm_max_bounds):
-                    self.failure_reason = "can't move arm to {}: {} outside of bounds: {} {}"\
+                    self.failure_reason = "Can't move arm to {}: {} outside of bound min: {}, max: {}."\
                         .format(to_, xyz, arm_min_bounds, arm_max_bounds)
                     return False
                 return state
@@ -50,19 +50,19 @@ class HierarchicalTaskNetworkPlanner:
             distance = state.size['object_side_length']
 
             if distance < gripper_min_bounds or distance > gripper_max_bounds:
-                self.failure_reason = "can't close hand to distance {}".format(distance)
-                print(self.failure_reason)
+                self.failure_reason = "Can't close hand to width {}, outside of min: {}, max: {}."\
+                    .format(distance, gripper_min_bounds, gripper_max_bounds)
                 return False
 
             return state
 
         def open_hand(state):
-            gripper_min_bounds = state.min_bounds["object_side_length"]
             gripper_max_bounds = state.max_bounds["object_side_length"]
             distance = state.size['object_side_length']
 
-            if distance < gripper_min_bounds or distance > gripper_max_bounds:
-                self.failure_reason = "can't open hand to distance {}".format(distance)
+            if distance > gripper_max_bounds:
+                self.failure_reason = "Can't open hand to width {}, outside of max: {}."\
+                    .format(distance, gripper_max_bounds)
                 return False
 
             return state
@@ -117,7 +117,8 @@ class HierarchicalTaskNetworkPlanner:
                             ]
             return False
 
-        pyhop.declare_methods('transfer_target_object_to_container', full_transfer, put_grabbed, transfer)
+        # TODO: nesting of more than 2 levels deep
+        pyhop.declare_methods('transfer_target_object_to_container', transfer, put_grabbed, full_transfer)
 
     def get_plans(self, world_model, goal):
         """
@@ -143,37 +144,61 @@ if __name__ == '__main__':
     beliefs = WorldModel()  # B := B0; Initial Beliefs
 
     print()
+    print("GOAL:\n{}".format(end_goal))
+    print()
+    pyhop.print_operators()
+    print()
+
     beliefs.current_world_model.xyz["target_object"] = [-10, -10, 0]
+    beliefs.current_world_model.grabbed["target_object"] = True
     htn_plans = htn_planner.get_plans(beliefs.current_world_model, intentions)  # π := plan(B, I); MEANS_END REASONING
     if not htn_plans:
-        print("-- No valid plan. Failure_reason: {}".format(htn_planner.failure_reason))
+        print("== No valid plan. Failure_reason: {}".format(htn_planner.failure_reason))
     else:
         beliefs.current_world_model.plans = htn_plans
-        print("== Best current_world_model.plan: ", beliefs.current_world_model.plans[0])
+        print("== BEST PLAN:\n", beliefs.current_world_model.plans[0])
+        if len(beliefs.current_world_model.plans) > 1:
+            print("-- Alternative PLAN: ")
+            for action in beliefs.current_world_model.plans[1]:
+                print("{}, ".format(action))
 
     print()
     beliefs.current_world_model.xyz["target_object"] = [-510, -10, 0]
+    beliefs.current_world_model.grabbed["target_object"] = False
     htn_plans = htn_planner.get_plans(beliefs.current_world_model, intentions)  # π := plan(B, I); MEANS_END REASONING
     if not htn_plans:
-        print("-- No valid plan. Failure_reason: {}".format(htn_planner.failure_reason))
+        print("== No valid plan. Failure_reason:\n{}".format(htn_planner.failure_reason))
     else:
         beliefs.current_world_model.plans = htn_plans
         print("Best current_world_model.plan: ", beliefs.current_world_model.plans[0])
 
     print()
-    beliefs.current_world_model.xyz["container"] = [-510, -10, 0]
+    beliefs.current_world_model.xyz["target_object"] = [-10, -10, 0]
+    beliefs.current_world_model.xyz["container"] = [-310, -10, 0]
+    beliefs.current_world_model.grabbed["target_object"] = False
     htn_plans = htn_planner.get_plans(beliefs.current_world_model, intentions)  # π := plan(B, I); MEANS_END REASONING
     if not htn_plans:
-        print("-- No valid plan. Failure_reason: {}".format(htn_planner.failure_reason))
+        print("== No valid plan. Failure_reason:\n{}".format(htn_planner.failure_reason))
     else:
         beliefs.current_world_model.plans = htn_plans
         print("Best current_world_model.plan: ", beliefs.current_world_model.plans[0])
 
     print()
-    beliefs.current_world_model.size['object_side_length'] = 53.0
+    beliefs.current_world_model.xyz["container"] = [-10, -10, 0]
+    beliefs.current_world_model.xyz["target_object"] = [-10, -10, 0]
+    beliefs.current_world_model.size['object_side_length'] = 20.0
     htn_plans = htn_planner.get_plans(beliefs.current_world_model, intentions)  # π := plan(B, I); MEANS_END REASONING
     if not htn_plans:
-        print("-- No valid plan. Failure_reason: {}".format(htn_planner.failure_reason))
+        print("== No valid plan. Failure_reason:\n{}".format(htn_planner.failure_reason))
+    else:
+        beliefs.current_world_model.plans = htn_plans
+        print("Best current_world_model.plan: ", beliefs.current_world_model.plans[0])
+
+    print()
+    beliefs.current_world_model.size['object_side_length'] = 0.2
+    htn_plans = htn_planner.get_plans(beliefs.current_world_model, intentions)  # π := plan(B, I); MEANS_END REASONING
+    if not htn_plans:
+        print("== No valid plan. Failure_reason:\n{}".format(htn_planner.failure_reason))
     else:
         beliefs.current_world_model.plans = htn_plans
         print("Best current_world_model.plan: ", beliefs.current_world_model.plans[0])
