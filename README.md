@@ -61,14 +61,12 @@ moveTo, moveUp, moveAbove etc).
 - Events: From sensor percepts , to event firing.
 
 ### Real-Time Clock (RTC) & Multi-Agent support:
-BDI uses the Smart Python Agent Development Environment (SPADE)library:
+BDI uses the Smart Python Agent Development Environment (SPADE) library:
 
 - Real-time, behaviour-based agent model platform.
 - Multi-Agent Instant Messaging (IM) and presence notification via:
-
   - Extensible Messaging and Presence Protocol (XMPP).
-  - Foundation for Intelligent Physical Agents (FIPA) metadata and the Agent Communication Language (ACL).
-  
+  - Foundation for Intelligent Physical Agents (FIPA) metadata and the Agent Communication Language (ACL). 
 - Asynchronous IO.
 
 #### References
@@ -94,6 +92,8 @@ BDI uses the Smart Python Agent Development Environment (SPADE)library:
 [Wei] Gerhard Weiss. Multiagent systems.
 
 [Woo02] M. Wooldridge. Introduction to MultiAgent Systems. Information Retrieval, 2002.
+
+#### LICENSE
 
 Robotic Arm
 Copyright (c) 2018, Konstantinos Theodorakos (email: madks@hotmail.com).
