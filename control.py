@@ -15,7 +15,7 @@ class Control:
     Realization of continuous actions, from world model to desired world.
     """
 
-    def __init__(self, world_model):
+    def __init__(self, init_world_model):
         # TODO: use world model
         # self.closed_hand_distance_ratio = 0.8
         # self.opened_hand_distance_ratio = 1.5
@@ -67,109 +67,55 @@ class Control:
         # self.rotation2 = np.array([0, 0, 1])
         # self.rotation1 = np.array([0, 0, 1])
 
-        print("world_model.current_world_model.control: {}".format(world_model.current_world_model.control))
-        print('world_model.current_world_model.control["closed_hand_distance_ratio"]: {}'
-              .format(world_model.current_world_model.control["closed_hand_distance_ratio"]))
-        print('world_model.current_world_model.control["opened_hand_distance_ratio"]: {}'
-              .format(world_model.current_world_model.control["opened_hand_distance_ratio"]))
-        print('world_model.current_world_model.control["base_put_url"]: {}'
-              .format(world_model.current_world_model.control["base_put_url"]))
-        print('world_model.current_world_model.control["send_requests"]: {}'
-              .format(world_model.current_world_model.control["send_requests"]))
-        print('world_model.current_world_model.control["detect_last_position"]: {}'
-              .format(world_model.current_world_model.control["detect_last_position"]))
-        print('world_model.current_world_model.control["show_plots"]: {}'
-              .format(world_model.current_world_model.control["show_plots"]))
-        print('world_model.current_world_model.control["cm_to_servo_polynomial_fitter"]["file_path"]: {}'
-              .format(world_model.current_world_model.control["cm_to_servo_polynomial_fitter"]["file_path"]))
-        print('world_model.current_world_model.control["scale"]: {}'
-              .format(world_model.current_world_model.control["scale"]))
-        print('world_model.current_world_model.control["servo_count"]: {}'
-              .format(world_model.current_world_model.control["servo_count"]))
-        print('world_model.current_world_model.control["command_delay"]: {}'
-              .format(world_model.current_world_model.control["command_delay"]))
-        print('world_model.current_world_model.control["center_init"]: {}'
-              .format(world_model.current_world_model.control["center_init"]))
-        print('world_model.current_world_model.control["angle_degree_limit"]: {}'
-              .format(world_model.current_world_model.control["angle_degree_limit"]))
-        print('world_model.current_world_model.control["trajectory_steps"]: {}'
-              .format(world_model.current_world_model.control["trajectory_steps"]))
-        print('world_model.current_world_model.control["current_servo_monotony"]: {}'
-              .format(world_model.current_world_model.control["current_servo_monotony"]))
-        print('world_model.current_world_model.control["active_links_mask"]: {}'
-              .format(world_model.current_world_model.control["active_links_mask"]))
-        print('world_model.current_world_model.control["min_steps"]: {}'
-              .format(world_model.current_world_model.control["min_steps"]))
-        print('world_model.current_world_model.control["max_steps"]: {}'
-              .format(world_model.current_world_model.control["max_steps"]))
-        print('world_model.current_world_model.control["rotating_gripper_servo"]: {}'
-              .format(world_model.current_world_model.control["rotating_gripper_servo"]))
-        print('world_model.current_world_model.control["gripping_gripper_servo"]: {}'
-              .format(world_model.current_world_model.control["gripping_gripper_servo"]))
-        print('world_model.current_world_model.control["horizontal_gripper_position"]: {}'
-              .format(world_model.current_world_model.control["horizontal_gripper_position"]))
-        print('world_model.current_world_model.control["init_position"]: {}'
-              .format(world_model.current_world_model.control["init_position"]))
-        print('world_model.current_world_model.control["container_position"]: {}'
-              .format(world_model.current_world_model.control["container_position"]))
-        print('world_model.current_world_model.control["link_lengths"]: {}'
-              .format(world_model.current_world_model.control["link_lengths"]))
-        print('world_model.current_world_model.control["active_links_mask"]: {}'
-              .format(world_model.current_world_model.control["active_links_mask"]))
-        print('world_model.current_world_model.control["link_orientations"]: {}'
-              .format(world_model.current_world_model.control["link_orientations"]))
-        print('world_model.current_world_model.control["joint_rotation_axis"]: {}'
-              .format(world_model.current_world_model.control["joint_rotation_axis"]))
-
-        self.closed_hand_distance_ratio = world_model.current_world_model.control["closed_hand_distance_ratio"]
-        self.opened_hand_distance_ratio = world_model.current_world_model.control["opened_hand_distance_ratio"]
-        self.base_put_url = world_model.current_world_model.control["base_put_url"]  # TODO: use world model url
-        self.send_requests = world_model.current_world_model.control["send_requests"]  # TODO: make communicator class?
-        self.detect_last_position = world_model.current_world_model.control["detect_last_position"]
-        self.verbose = world_model.current_world_model.control["verbose"]
-        self.show_plots = world_model.current_world_model.control["show_plots"]
+        self.closed_hand_distance_ratio = init_world_model.current_world_model.control["closed_hand_distance_ratio"]
+        self.opened_hand_distance_ratio = init_world_model.current_world_model.control["opened_hand_distance_ratio"]
+        self.base_put_url = init_world_model.current_world_model.control["base_put_url"]  # TODO: use world model url
+        self.send_requests = init_world_model.current_world_model.control["send_requests"]  # TODO: make communicator class?
+        self.detect_last_position = init_world_model.current_world_model.control["detect_last_position"]
+        self.verbose = init_world_model.current_world_model.control["verbose"]
+        self.show_plots = init_world_model.current_world_model.control["show_plots"]
         self.cm_to_servo_polynomial_fitter = \
-            joblib.load(world_model.current_world_model.control["cm_to_servo_polynomial_fitter"]["file_path"])
-        self.scale = world_model.current_world_model.control["scale"]
-        self.servo_count = world_model.current_world_model.control["servo_count"]
-        self.command_delay = world_model.current_world_model.control["command_delay"]  # seconds
-        self.center_init = world_model.current_world_model.control["center_init"]
-        self.angle_degree_limit = world_model.current_world_model.control["angle_degree_limit"]  # degrees
-        self.trajectory_steps = world_model.current_world_model.control["trajectory_steps"]
-        self.current_servo_monotony = world_model.current_world_model.control["current_servo_monotony"]
-        self.active_links_mask = world_model.current_world_model.control["active_links_mask"]  # Enabled/disabled links
-        self.min_steps = world_model.current_world_model.control["min_steps"]
-        self.max_steps = world_model.current_world_model.control["max_steps"]
-        self.rotating_gripper_servo = world_model.current_world_model.control["rotating_gripper_servo"]
-        self.gripping_gripper_servo = world_model.current_world_model.control["gripping_gripper_servo"]
-        self.horizontal_gripper_position = world_model.current_world_model.control["horizontal_gripper_position"]
-        self.init_position = np.array(world_model.current_world_model.control["init_position"]) * self.scale
-        self.container_position = np.array(world_model.current_world_model.control["container_position"]) * self.scale
-        self.init_servo_values = world_model.current_world_model.location["init_servo_values"]  # TODO: Move 2 worldModel, get from instantiation
+            joblib.load(init_world_model.current_world_model.control["cm_to_servo_polynomial_fitter"]["file_path"])
+        self.scale = init_world_model.current_world_model.control["scale"]
+        self.servo_count = init_world_model.current_world_model.control["servo_count"]
+        self.command_delay = init_world_model.current_world_model.control["command_delay"]  # seconds
+        self.center_init = init_world_model.current_world_model.control["center_init"]
+        self.angle_degree_limit = init_world_model.current_world_model.control["angle_degree_limit"]  # degrees
+        self.trajectory_steps = init_world_model.current_world_model.control["trajectory_steps"]
+        self.current_servo_monotony = init_world_model.current_world_model.control["current_servo_monotony"]
+        self.active_links_mask = init_world_model.current_world_model.control["active_links_mask"]  # Enabled/disabled links
+        self.min_steps = init_world_model.current_world_model.control["min_steps"]
+        self.max_steps = init_world_model.current_world_model.control["max_steps"]
+        self.rotating_gripper_servo = init_world_model.current_world_model.control["rotating_gripper_servo"]
+        self.gripping_gripper_servo = init_world_model.current_world_model.control["gripping_gripper_servo"]
+        self.horizontal_gripper_position = init_world_model.current_world_model.control["horizontal_gripper_position"]
+        self.init_position = np.array(init_world_model.current_world_model.control["init_position"]) * self.scale
+        self.container_position = np.array(init_world_model.current_world_model.control["container_position"]) * self.scale
+        self.init_servo_values = init_world_model.current_world_model.location["init_servo_values"]  # TODO: Move 2 worldModel, get from instantiation
 
         # Link lengths in centimeters
-        self.link6 = world_model.current_world_model.control["link_lengths"]["link6"]
-        self.link5 = world_model.current_world_model.control["link_lengths"]["link5"]
-        self.link4 = world_model.current_world_model.control["link_lengths"]["link4"]
-        self.link3 = world_model.current_world_model.control["link_lengths"]["link3"]
-        self.link2 = world_model.current_world_model.control["link_lengths"]["link2"]
-        self.link1 = world_model.current_world_model.control["link_lengths"]["link1"]
+        self.link6 = init_world_model.current_world_model.control["link_lengths"]["link6"]
+        self.link5 = init_world_model.current_world_model.control["link_lengths"]["link5"]
+        self.link4 = init_world_model.current_world_model.control["link_lengths"]["link4"]
+        self.link3 = init_world_model.current_world_model.control["link_lengths"]["link3"]
+        self.link2 = init_world_model.current_world_model.control["link_lengths"]["link2"]
+        self.link1 = init_world_model.current_world_model.control["link_lengths"]["link1"]
 
         # Link orientation
-        self.orientation6 = world_model.current_world_model.control["link_orientations"]["link6"]
-        self.orientation5 = world_model.current_world_model.control["link_orientations"]["link5"]
-        self.orientation4 = world_model.current_world_model.control["link_orientations"]["link4"]
-        self.orientation3 = world_model.current_world_model.control["link_orientations"]["link3"]
-        self.orientation2 = world_model.current_world_model.control["link_orientations"]["link2"]
-        self.orientation1 = world_model.current_world_model.control["link_orientations"]["link1"]
+        self.orientation6 = init_world_model.current_world_model.control["link_orientations"]["link6"]
+        self.orientation5 = init_world_model.current_world_model.control["link_orientations"]["link5"]
+        self.orientation4 = init_world_model.current_world_model.control["link_orientations"]["link4"]
+        self.orientation3 = init_world_model.current_world_model.control["link_orientations"]["link3"]
+        self.orientation2 = init_world_model.current_world_model.control["link_orientations"]["link2"]
+        self.orientation1 = init_world_model.current_world_model.control["link_orientations"]["link1"]
 
         # Joint rotation axis
-        self.rotation6 = world_model.current_world_model.control["joint_rotation_axis"]["link6"]
-        self.rotation5 = world_model.current_world_model.control["joint_rotation_axis"]["link5"]
-        self.rotation4 = world_model.current_world_model.control["joint_rotation_axis"]["link4"]
-        self.rotation3 = world_model.current_world_model.control["joint_rotation_axis"]["link3"]
-        self.rotation2 = world_model.current_world_model.control["joint_rotation_axis"]["link2"]
-        self.rotation1 = world_model.current_world_model.control["joint_rotation_axis"]["link1"]
+        self.rotation6 = init_world_model.current_world_model.control["joint_rotation_axis"]["link6"]
+        self.rotation5 = init_world_model.current_world_model.control["joint_rotation_axis"]["link5"]
+        self.rotation4 = init_world_model.current_world_model.control["joint_rotation_axis"]["link4"]
+        self.rotation3 = init_world_model.current_world_model.control["joint_rotation_axis"]["link3"]
+        self.rotation2 = init_world_model.current_world_model.control["joint_rotation_axis"]["link2"]
+        self.rotation1 = init_world_model.current_world_model.control["joint_rotation_axis"]["link1"]
 
         # Link bounds (degrees)
         self.bounds6 = np.radians(np.array([-self.angle_degree_limit, self.angle_degree_limit]))
@@ -179,7 +125,7 @@ class Control:
         self.bounds2 = np.radians(np.array([-self.angle_degree_limit, self.angle_degree_limit]))
         self.bounds1 = np.radians(np.array([-self.angle_degree_limit, self.angle_degree_limit]))
 
-        self.chain_name = world_model.current_world_model.control["chain_name"]
+        self.chain_name = init_world_model.current_world_model.control["chain_name"]
 
         self.le_arm_chain = Chain(name=self.chain_name, active_links_mask=self.active_links_mask, links=[
             URDFLink(

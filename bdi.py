@@ -41,9 +41,9 @@ class BDIAgent(Agent):
             self.goal = [('transfer_target_object_to_container', 'arm', 'target_object', 'table', 'container')]
             self.intentions = self.goal  # I := I0; Initial Intentions
             self.beliefs = WorldModel()  # B := B0; Initial Beliefs
-            self.monitoring = Monitoring()
             self.perception = Perception(self.beliefs)
-            self.coordination = Coordination()
+            self.coordination = Coordination(self.beliefs)
+            self.monitoring = Monitoring()
 
             self.coordination.control.send_requests = True  # Note: Disable all 3 coordination switches for testing
             self.coordination.control.center_init = False

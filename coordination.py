@@ -6,8 +6,8 @@ class Coordination:
     Executes actions (discrete), by invoking control commands (continuous).
     """
 
-    def __init__(self):
-        self.control = Control()
+    def __init__(self, init_world_model):
+        self.control = Control(init_world_model)
         self.verbose = False
 
     def execute_action(self, action, world_model):
@@ -51,7 +51,7 @@ if __name__ == '__main__':
     # Sequence for testing
     from world_model import WorldModel
     current_world_model = WorldModel()
-    coordination = Coordination()
+    coordination = Coordination(current_world_model)
     coordination.control.send_requests = False
     coordination.control.center_init = False
     coordination.control.detect_last_position = False
