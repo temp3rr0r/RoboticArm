@@ -1,4 +1,3 @@
-import datetime
 from world_model import WorldModel
 from hierarchical_task_network_planner import HierarchicalTaskNetworkPlanner
 from collections import deque
@@ -7,14 +6,32 @@ from coordination import Coordination
 from monitoring import Monitoring
 import datetime
 from spade.agent import Agent
-from spade.behaviour import CyclicBehaviour, PeriodicBehaviour
-from spade.message import Message
+from spade.behaviour import PeriodicBehaviour
+# from spade.behaviour import CyclicBehaviour  # TODO: Need?
+# from spade.message import Message  # TODO: Need?
+
+"""
+
+Belief-Desire-Intention (BDI) - Practical Reasoning for resource bounded agents - Bratman 1988
+
+practical reasoning = deliberation + means-ends reasoning
+
+Base agent control loop
+while true
+  OBSERVE the world;
+  UPDATE internal world model;
+  DELIBERATE about what INTENTION to achieve next;
+  use MEANS-END REASONING to get a PLAN for the intention;
+  EXECUTE the plan;
+end while
+"""
 
 
 class BDIAgent(Agent):
-    class BDIBehaviour(PeriodicBehaviour):
-        async def on_start(self):
 
+    class BDIBehaviour(PeriodicBehaviour):
+
+        async def on_start(self):
             self.terminate = False
             self.SUCCESS = False
             self.verbose = False
@@ -28,8 +45,7 @@ class BDIAgent(Agent):
             self.perception = Perception()
             self.coordination = Coordination()
 
-            # Disable all 3 coordination switches for testing
-            self.coordination.control.send_requests = True
+            self.coordination.control.send_requests = True  # Note: Disable all 3 coordination switches for testing
             self.coordination.control.center_init = False
             self.coordination.control.detect_last_position = True
 
@@ -41,22 +57,51 @@ class BDIAgent(Agent):
             self.start_time = datetime.datetime.now()
 
         async def run(self):
+            """
+                Agent control loop version 7 (Intention Reconsideration)
+                I := I0; Initial Intentions
+                B := B0; Initial Beliefs
+                while true do
+                  get next percept ρ; #  OBSERVE the world
+                  B:= brf(B, ρ); #  Belief revision function
+                  D: = option(B, I);
+                  I := filter(B, D, I);
+                  π := plan(B, I); #  MEANS_END REASONING
+                  while not (empty(π) or succeeded(Ι, Β) or impossible(I, B)) do  # Drop impossible or succeeded intentions
+                      α := hd(π); #  Pop first action
+                      execute(α);
+                      π := tail(π);
+                      get next percept ρ;
+                      B:= brf(B, ρ);
+                      if reconsider(I, B) then  # Meta-level control: explicit decision, to avoid reconsideration cost
+                          D := options(B, I);
+                          I := filter(B, D, I);
+                      end-if
+                      if not sound(π, I, B) then  # Re-activity, re-plan
+                          π := plan(B, I);
+                      end-if
+                  end-while
+                end-while
+            """
 
-            # print(f"-- Sender Agent: PeriodicSenderBehaviour running at {datetime.datetime.now().time()}: {self.counter}")
+            if self.verbose:
+                print(f"-- arm_agent: PeriodicSenderBehaviour running at {datetime.datetime.now().time()}: {self.counter}")
 
+            # while true do
             if not self.SUCCESS and not self.terminate and self.beliefs.update_tick() < self.beliefs.current_world_model.max_ticks:
 
                 if len(self.selected_plan) == 0:
-                    # msg = Message(to="madks2@temp3rr0r-pc")  # Instantiate the message
+                    # msg = Message(to="madks2@temp3rr0r-pc")  # Instantiate the message  # TODO: place holder for IM
                     # msg.body = "Hello World: " + str(self.counter)  # Set the message content
                     # await self.send(msg)
 
+                    # TODO: engrave figures: arm IK, gripper
                     self.percept = self.perception.get_percept(text_engraving=(self.why_failed, self.how_well))  # get next percept ρ; OBSERVE the world
                     self.beliefs = self.perception.belief_revision(self.beliefs, self.percept)  # B:= brf(B, ρ);
                     self.beliefs = self.monitoring.fire_events(self.beliefs, self.percept)
                     self.intentions = self.deliberate(self.beliefs,
                                                       self.intentions)  # DELIBERATE about what INTENTION to achieve next
-                    SUCCESS = True if self.intentions == "" else False
+                    self.SUCCESS = True if self.intentions == "" else False
                     self.plans = self.htn_planner.get_plans(self.beliefs.current_world_model,
                                                   self.intentions)  # π := plan(B, I); MEANS_END REASONING
 
@@ -70,7 +115,6 @@ class BDIAgent(Agent):
                             self.why_failed = ""
                     else:
                         self.why_failed = self.htn_planner.failure_reason
-                        print("ok1")
                         if self.verbose:
                             print("Plan failure_reason: {}".format(self.why_failed), end=" ")
                         self.how_well = (
@@ -92,7 +136,7 @@ class BDIAgent(Agent):
                     self.how_well = (self.beliefs.current_world_model.tick, self.beliefs.current_world_model.max_ticks,
                                 int((datetime.datetime.now() - self.start_time).total_seconds() * 1000),  # milliseconds
                                 self.selected_plan)
-                    what_else = self.plans[1] if len(self.plans) > 1 else self.plans[0]
+                    self.what_else = self.plans[1] if len(self.plans) > 1 else self.plans[0]
                     if self.verbose:
                         self.print_answers(self.what, self.why, self.how_well, self.what_else)
 
@@ -138,7 +182,6 @@ class BDIAgent(Agent):
         #     pass
 
         def done(self):
-            # the done evaluation
             print("-- Sender Agent: Done")
 
             show_history = True
@@ -150,7 +193,7 @@ class BDIAgent(Agent):
             if show_history:
                 print()
                 print("World model History:")
-                for tick in range(len(self.world_model_history)):
+                for tick in range(len(self.beliefs.world_model_history)):
                     print("Tick {}:".format(tick))
                     print("-- initialized: {}".format(self.beliefs.world_model_history[tick].initialized))
                     print("-- location: {}".format(self.beliefs.world_model_history[tick].location))
@@ -198,24 +241,13 @@ class BDIAgent(Agent):
             return current_intentions
 
     async def setup(self):
-        print(f"-- Sender Agent: PeriodicSenderAgent started at {datetime.datetime.now().time()}")
-        start_at = datetime.datetime.now() + datetime.timedelta(seconds=5)
-        b = self.BDIBehaviour(period=5, start_at=start_at)
-        self.add_behaviour(b)
+        print(f"-- arm_agent: PeriodicSenderAgent started at {datetime.datetime.now().time()}")
+        init_world_model = WorldModel()
+        start_at = datetime.datetime.now() + datetime.timedelta(seconds=init_world_model.current_world_model.init_delay_seconds["arm"])
+        bdi_behaviour = self.BDIBehaviour(period=init_world_model.current_world_model.real_time_clock_period_seconds["arm"], start_at=start_at)
+        self.add_behaviour(bdi_behaviour)
 
 
 if __name__ == "__main__":
-    # receiveragent = ReceiverAgent("madks2@temp3rr0r-pc", "ma121284")
-    # future = receiveragent.start()
-    # future.result()  # wait for receiver agent to be prepared.
     arm_agent = BDIAgent("madks@temp3rr0r-pc", "ma121284")
     arm_agent.start()
-
-    # while receiveragent.is_alive():
-    #     try:
-    #         time.sleep(1)
-    #     except KeyboardInterrupt:
-    #         senderagent.stop()
-    #         receiveragent.stop()
-    #         break
-    print("Agents finished")

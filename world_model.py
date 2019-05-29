@@ -27,7 +27,8 @@ class WorldModel:
         self.current_world_model.grabbed = {'target_object': False}
         self.current_world_model.initialized = {'arm': False}
         self.current_world_model.url = {'arm': "ESP_02662E"}
-
+        self.current_world_model.real_time_clock_period_seconds = {'arm': 0.5}
+        self.current_world_model.init_delay_seconds = {'arm': 5}
         self.current_world_model.plans = []
         self.world_model_history = []
 
