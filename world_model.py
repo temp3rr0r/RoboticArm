@@ -8,27 +8,28 @@ class WorldModel:
     """
 
     def __init__(self):
-        self.current_world_model = pyhop.State('current_world_model')
+        self.current_world_model = pyhop.State("current_world_model")
         self.current_world_model.tick = 0
         self.current_world_model.max_ticks = 100
         self.current_world_model.timestamp = time.time()
         self.current_world_model.location = {
-            'target_object': 'table',
-            "servo_values": [1500, 1500, 1500, 1500, 1500, 1500]}  # TODO: Move 2 gremlin world model with init
-        self.current_world_model.xyz = {'target_object': [-30, -30, 0],
-                                        'container': [-0.1, 24.0, 12],
-                                        'end_effector': [-0.1, 24.0, 12]
+            "target_object": "table",
+            "servo_values": [1500, 1500, 1500, 1500, 1500, 1500],
+            "init_servo_values": [1500, 1500, 1500, 1500, 1500, 1500]}  # TODO: Move 2 gremlin world model with init
+        self.current_world_model.xyz = {"target_object": [-30, -30, 0],
+                                        "container": [-0.1, 24.0, 12],
+                                        "end_effector": [-0.1, 24.0, 12]
                                         }
-        self.current_world_model.size = {'object_side_length': 4.0}
-        self.current_world_model.min_bounds = {'xyz': [-25, -25, -25], 'object_side_length': 0.5}
-        self.current_world_model.max_bounds = {'xyz': [25, 25, 25], 'object_side_length': 6.0}
-        self.current_world_model.threshold = {'grabbing_distance': 4.5}  # cm
-        self.current_world_model.distance = {'distance_to_gripper': 11.2}  # cm
-        self.current_world_model.grabbed = {'target_object': False}
-        self.current_world_model.initialized = {'arm': False}
-        self.current_world_model.url = {'arm': "ESP_02662E"}
-        self.current_world_model.real_time_clock_period_seconds = {'arm': 0.5}
-        self.current_world_model.init_delay_seconds = {'arm': 5}
+        self.current_world_model.size = {"object_side_length": 4.0}
+        self.current_world_model.min_bounds = {"xyz": [-25, -25, -25], "object_side_length": 0.5}
+        self.current_world_model.max_bounds = {"xyz": [25, 25, 25], "object_side_length": 6.0}
+        self.current_world_model.threshold = {"grabbing_distance": 4.5}  # cm
+        self.current_world_model.distance = {"distance_to_gripper": 11.2}  # cm
+        self.current_world_model.grabbed = {"target_object": False}
+        self.current_world_model.initialized = {"arm": False}
+        self.current_world_model.url = {"arm": "ESP_02662E"}
+        self.current_world_model.real_time_clock_period_seconds = {"arm": 0.5}
+        self.current_world_model.init_delay_seconds = {"arm": 5}
         self.current_world_model.plans = []
 
         # Perception
@@ -116,4 +117,12 @@ if __name__ == '__main__':
           .format(world_model.current_world_model.perception["write_video"]))
     print('world_model.current_world_model.perception["display_output_frames"]: {}'
           .format(world_model.current_world_model.perception["display_output_frames"]))
+    print('world_model.current_world_model.url["arm"]: {}'
+          .format(world_model.current_world_model.url["arm"]))
 
+    # self.current_world_model.location = {
+    #     "target_object": "table",
+    #     "servo_values": [1500, 1500, 1500, 1500, 1500, 1500],
+    #     "init_servo_values": [1500, 1500, 1500, 1500, 1500, 1500]}  # TODO: Move 2 gremlin world model with init
+    print('world_model.current_world_model.location["init_servo_values"]: {}'
+          .format(world_model.current_world_model.location["init_servo_values"]))

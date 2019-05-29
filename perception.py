@@ -17,74 +17,6 @@ class Perception:
     def __init__(self, world_model):
         print("--- Initializing perception...")
 
-        # TODO: test read from init world model
-        # self.MAX_FEATURES = 900  # 900
-        # self.MIN_MATCHES = 30  # 15
-        # self.GOOD_MATCH_PERCENT = 0.3  # 0.3
-        # self.FLASH_EVERY_FRAMES = 40.0
-        # self.MIN_DESCRIPTOR_DISTANCE_SUM = 10000
-        # self.use_flann = True
-        # self.FLANN_INDEX_LSH = 6
-        # self.regressor_qr_to_arm_xyz = joblib.load('modelsQr/pixels_qr_RANSACRegressor_xyz.sav')
-        # self.class_logo = cv2.imread("picsQr/logoTarget.png", cv2.IMREAD_COLOR)
-        # self.model_reference = cv2.imread("picsQr/modelTarget.png", cv2.IMREAD_COLOR)
-        # self.video_frames_per_second = 15  # 15
-        # self.arm_xyz_offset = [0.0, 0.0, 0.0]
-        # self.use_local_camera = True
-        # self.camera_frame_width = 1920
-        # self.camera_frame_height = 1080
-        # self.auto_focus = True
-        # self.send_requests = True
-        # self.verbose = False
-        # self.percept_frames = 5
-        # self.write_video = False
-        # self.display_output_frames = True
-
-        # TODO: for testing printing
-        print("world_model.current_world_model.perception: {}".format(world_model.current_world_model.perception))
-        print('world_model.current_world_model.perception["MAX_FEATURES"]: {}'
-              .format(world_model.current_world_model.perception["MAX_FEATURES"]))
-        print('world_model.current_world_model.perception["MIN_MATCHES"]: {}'
-              .format(world_model.current_world_model.perception["MIN_MATCHES"]))
-        print('world_model.current_world_model.perception["GOOD_MATCH_PERCENT"]: {}'
-              .format(world_model.current_world_model.perception["GOOD_MATCH_PERCENT"]))
-        print('world_model.current_world_model.perception["FLASH_EVERY_FRAMES"]: {}'
-              .format(world_model.current_world_model.perception["FLASH_EVERY_FRAMES"]))
-        print('world_model.current_world_model.perception["MIN_DESCRIPTOR_DISTANCE_SUM"]: {}'
-              .format(world_model.current_world_model.perception["MIN_DESCRIPTOR_DISTANCE_SUM"]))
-        print('world_model.current_world_model.perception["use_flann"]: {}'
-              .format(world_model.current_world_model.perception["use_flann"]))
-        print('world_model.current_world_model.perception["FLANN_INDEX_LSH"]: {}'
-              .format(world_model.current_world_model.perception["FLANN_INDEX_LSH"]))
-        print('world_model.current_world_model.perception["regressor_qr_to_arm_xyz"]: {}'
-              .format(world_model.current_world_model.perception["regressor_qr_to_arm_xyz"]["file_path"]))
-        print('world_model.current_world_model.perception["class_logo"]: {}'
-              .format(world_model.current_world_model.perception["class_logo"]["file_path"]))
-        print('world_model.current_world_model.perception["model_reference"]: {}'
-              .format(world_model.current_world_model.perception["model_reference"]["file_path"]))
-        print('world_model.current_world_model.perception["video_frames_per_second"]: {}'
-              .format(world_model.current_world_model.perception["video_frames_per_second"]))
-        print('world_model.current_world_model.perception["arm_xyz_offset"]: {}'
-              .format(world_model.current_world_model.perception["arm_xyz_offset"]))
-        print('world_model.current_world_model.perception["use_local_camera"]: {}'
-              .format(world_model.current_world_model.perception["use_local_camera"]))
-        print('world_model.current_world_model.perception["camera_frame_width"]: {}'
-              .format(world_model.current_world_model.perception["camera_frame_width"]))
-        print('world_model.current_world_model.perception["camera_frame_height"]: {}'
-              .format(world_model.current_world_model.perception["camera_frame_height"]))
-        print('world_model.current_world_model.perception["auto_focus"]: {}'
-              .format(world_model.current_world_model.perception["auto_focus"]))
-        print('world_model.current_world_model.perception["send_requests"]: {}'
-              .format(world_model.current_world_model.perception["send_requests"]))
-        print('world_model.current_world_model.perception["verbose"]: {}'
-              .format(world_model.current_world_model.perception["verbose"]))
-        print('world_model.current_world_model.perception["percept_frames"]: {}'
-              .format(world_model.current_world_model.perception["percept_frames"]))
-        print('world_model.current_world_model.perception["write_video"]: {}'
-              .format(world_model.current_world_model.perception["write_video"]))
-        print('world_model.current_world_model.perception["display_output_frames"]: {}'
-              .format(world_model.current_world_model.perception["display_output_frames"]))
-
         self.MAX_FEATURES = world_model.current_world_model.perception["MAX_FEATURES"]
         self.MIN_MATCHES = world_model.current_world_model.perception["MIN_MATCHES"]
         self.GOOD_MATCH_PERCENT = world_model.current_world_model.perception["GOOD_MATCH_PERCENT"]
@@ -109,11 +41,12 @@ class Perception:
         self.percept_frames = world_model.current_world_model.perception["percept_frames"]
         self.write_video = world_model.current_world_model.perception["write_video"]
         self.display_output_frames = world_model.current_world_model.perception["display_output_frames"]
+        self.url = world_model.current_world_model.url["arm"]
+        self.init_servo_values = world_model.current_world_model.location["init_servo_values"]
 
         if self.use_local_camera:
             self.capture_device = cv2.VideoCapture(0)
         else:
-            # self.captureDevice = cv2.VideoCapture('picsQr/vids/good8.mp4')  # TODO: world model
             self.captureDevice = cv2.VideoCapture(
                 world_model.current_world_model.perception["input_video"]["file_path"])
 
@@ -125,8 +58,6 @@ class Perception:
 
         if self.write_video:  # Define the codec and create VideoWriter object
             self.fourcc = cv2.VideoWriter_fourcc(*'MJPG')
-            # self.out = cv2.VideoWriter('perception.avi', self.fourcc, self.video_frames_per_second,  # TODO: world model
-            #                            (self.camera_frame_width, self.camera_frame_height))
             self.out = cv2.VideoWriter(world_model.current_world_model.perception["output_video"]["file_path"],
                                        self.fourcc, self.video_frames_per_second,
                                        (self.camera_frame_width, self.camera_frame_height))
@@ -436,11 +367,11 @@ class Perception:
         Sends a GET request to the arm url and returns the latest servo positions.
         :return: List of the current arm servo positions.
         """
-        self.init_servo_values = [1500, 1500, 1500, 1500, 1500, 1500]  # TODO: Move 2 worldModel, get from instantiation
+        # self.init_servo_values = [1500, 1500, 1500, 1500, 1500, 1500]  # TODO: worldModel
         last_servo_values = self.init_servo_values
         try:
             if self.send_requests:
-                url = "http://ESP_02662E/"
+                url = "http://{}/".format(self.url)  # TODO: world model
                 r = requests.get(url, data="")
                 if r.status_code == 200:
                     result = r.json()["variables"]
@@ -491,7 +422,9 @@ class Perception:
 if __name__ == '__main__':
 
     # Sequence for testing
-    perception = Perception()
+    from world_model import WorldModel
+    world_model = WorldModel()
+    perception = Perception(world_model)
     perception.write_video = False
     import time
     from world_model import WorldModel
