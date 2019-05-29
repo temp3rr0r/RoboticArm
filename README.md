@@ -22,20 +22,24 @@ Q: What else could it have been doing instead? A: ALTERNATIVE PLANS
 
 ### Robotic arm
 LewanSoul LeArm (60 gram servos, serial I/O):
+
 - 6 degrees of freedom.
 - Primitive control: servo positions in [500, 2500].
 
 ### Communication
 Wi-Fi 2.4GHz with ESP32 (Arduino compatible micro-controller):
+
 - Restful API (GET/PUT) for servo position, speed and delay.
 - Average Round Trip Time (RTT):  1-2ms (warmed, after 2 packets).
 
 ### Perception
 Logitech C920 camera for computer vision:
+
 - 1920 x 1080 max resolution (3 MP), 30 max frames per second.
 
 ### Computer Vision
 Object position detection (centimeter-level 3D detection of QR code) with partial obscuring (Python library: OpenCV):
+
 - Oriented far and Rotated Brief (ORB) [RRKB11] feature detection.
 - Fast Library for Approximate Nearest Neighbors (FLANN) [MM11] feature matching and homography perspective transformation.
 - Pixels-to-XYZ: RANdom SAmple Consensus (RANSAC) [FB02].
@@ -58,10 +62,13 @@ moveTo, moveUp, moveAbove etc).
 
 ### Real-Time Clock (RTC) & Multi-Agent support:
 BDI uses the Smart Python Agent Development Environment (SPADE)library:
+
 - Real-time, behaviour-based agent model platform.
 - Multi-Agent Instant Messaging (IM) and presence notification via:
+
   - Extensible Messaging and Presence Protocol (XMPP).
   - Foundation for Intelligent Physical Agents (FIPA) metadata and the Agent Communication Language (ACL).
+  
 - Asynchronous IO.
 
 #### References
