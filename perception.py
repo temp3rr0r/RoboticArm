@@ -386,17 +386,17 @@ class Perception:
         return last_servo_values
 
     @staticmethod
-    def belief_revision(world_model, percept):
+    def belief_revision(input_world_model, percept):
         """
         Updates the current world model: B = beliefRevisionFunction(B, ρ)
-        :param world_model: World model, instance of the WorldModel class.
+        :param input_world_model: World model, instance of the WorldModel class.
         :param percept: Dictionary.
         :return: The updated world model, instance of the WorldModel class.
         """
 
         # TODO: state = "reachable" if object.centerXYZ <= arm radius
         if percept is not "":
-            world_model.world_model_history.append(copy.deepcopy(world_model.current_world_model))  # Store as history
+            input_world_model.world_model_history.append(copy.deepcopy(input_world_model.current_world_model))  # Store as history
 
             # TODO: don't update xyz, if the object is already grabbed, will get confused
             # print("-- world_model.current_world_model.location[\"servo_values\"]): {}"
@@ -405,17 +405,17 @@ class Perception:
 
             for key in percept.keys():
                 if key == "xyz":
-                    world_model.current_world_model.xyz["target_object"] = percept["xyz"]["target_object"]
+                    input_world_model.current_world_model.xyz["target_object"] = percept["xyz"]["target_object"]
                 elif key == "distance":
                     print("percept: ", percept)
-                    world_model.current_world_model.distance = percept["distance"]
+                    input_world_model.current_world_model.distance = percept["distance"]
                 elif key == "location":
                     for key2 in percept["location"]:
                         if key2 == "servo_values":
-                            world_model.current_world_model.location["servo_values"] = \
+                            input_world_model.current_world_model.location["servo_values"] = \
                                 percept["location"]["servo_values"]
 
-        return world_model
+        return input_world_model
 
 
 if __name__ == '__main__':
