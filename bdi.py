@@ -42,7 +42,7 @@ class BDIAgent(Agent):
             self.intentions = self.goal  # I := I0; Initial Intentions
             self.beliefs = WorldModel()  # B := B0; Initial Beliefs
             self.monitoring = Monitoring()
-            self.perception = Perception()
+            self.perception = Perception(self.beliefs)
             self.coordination = Coordination()
 
             self.coordination.control.send_requests = True  # Note: Disable all 3 coordination switches for testing
