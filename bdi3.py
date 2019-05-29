@@ -17,7 +17,8 @@ class BDIAgent(Agent):
 
             self.terminate = False
             self.SUCCESS = False
-            self.verbose = True
+            self.verbose = False
+
             # Initialization
             self.htn_planner = HierarchicalTaskNetworkPlanner()
             self.goal = [('transfer_target_object_to_container', 'arm', 'target_object', 'table', 'container')]
@@ -35,6 +36,8 @@ class BDIAgent(Agent):
             self.what, self.why, self.how_well, self.what_else, self.why_failed = "", "", "", "", ""
             self.plans = []
             self.selected_plan = []
+            self.percept = {}
+            self.action = ""
             self.start_time = datetime.datetime.now()
 
         async def run(self):
@@ -43,14 +46,14 @@ class BDIAgent(Agent):
 
             if not self.SUCCESS and not self.terminate and self.beliefs.update_tick() < self.beliefs.current_world_model.max_ticks:
 
-                if len(self.selected_plan) == 0 and self.beliefs.update_tick() < self.beliefs.current_world_model.max_ticks:
+                if len(self.selected_plan) == 0:
                     # msg = Message(to="madks2@temp3rr0r-pc")  # Instantiate the message
                     # msg.body = "Hello World: " + str(self.counter)  # Set the message content
                     # await self.send(msg)
 
-                    percept = self.perception.get_percept(text_engraving=(self.why_failed, self.how_well))  # get next percept ρ; OBSERVE the world
-                    self.beliefs = self.perception.belief_revision(self.beliefs, percept)  # B:= brf(B, ρ);
-                    self.beliefs = self.monitoring.fire_events(self.beliefs, percept)
+                    self.percept = self.perception.get_percept(text_engraving=(self.why_failed, self.how_well))  # get next percept ρ; OBSERVE the world
+                    self.beliefs = self.perception.belief_revision(self.beliefs, self.percept)  # B:= brf(B, ρ);
+                    self.beliefs = self.monitoring.fire_events(self.beliefs, self.percept)
                     self.intentions = self.deliberate(self.beliefs,
                                                       self.intentions)  # DELIBERATE about what INTENTION to achieve next
                     SUCCESS = True if self.intentions == "" else False
@@ -64,25 +67,62 @@ class BDIAgent(Agent):
                                 print("{}: Plan: {}".format(self.beliefs.current_world_model.tick, self.plans[0]))
                             self.selected_plan = deque(
                                 self.plans[0])  # TODO: Use a "cost function" to evaluate the best plan, not shortest
-                            why_failed = ""
+                            self.why_failed = ""
+                    else:
+                        self.why_failed = self.htn_planner.failure_reason
+                        print("ok1")
+                        if self.verbose:
+                            print("Plan failure_reason: {}".format(self.why_failed), end=" ")
+                        self.how_well = (
+                        self.beliefs.current_world_model.tick, self.beliefs.current_world_model.max_ticks,
+                        int((datetime.datetime.now() - self.start_time).total_seconds() * 1000),  # milliseconds
+                        self.plans)
+                        if self.verbose:
+                            print("how_well: {}".format(self.how_well))
 
                 else:  # while not (empty(π) or succeeded(Ι, Β) or impossible(I, B)) do
-                    if self.beliefs.update_tick() < self.beliefs.current_world_model.max_ticks:
-                        action, selected_plan = self.selected_plan.popleft(), self.selected_plan  # α := hd(π); π := tail(π);
+                    self.action, self.selected_plan = self.selected_plan.popleft(), self.selected_plan  # α := hd(π); π := tail(π);
 
-                        if self.verbose:
-                            print("{}: Action: {}".format(self.beliefs.current_world_model.tick, action))
+                    if self.verbose:
+                        print("{}: Action: {}".format(self.beliefs.current_world_model.tick, self.action))
 
+                    self.coordination.execute_action(self.action, self.beliefs.current_world_model)  # execute(α);
 
+                    self.what, self.why = self.action, self.intentions
+                    self.how_well = (self.beliefs.current_world_model.tick, self.beliefs.current_world_model.max_ticks,
+                                int((datetime.datetime.now() - self.start_time).total_seconds() * 1000),  # milliseconds
+                                self.selected_plan)
+                    what_else = self.plans[1] if len(self.plans) > 1 else self.plans[0]
+                    if self.verbose:
+                        self.print_answers(self.what, self.why, self.how_well, self.what_else)
+
+                    # get next percept ρ; OBSERVE the world
+                    self.percept = self.perception.get_percept(text_engraving=(self.what, self.why, self.how_well, self.what_else))
+                    self.beliefs = self.perception.belief_revision(self.beliefs, self.percept)
+                    self.beliefs = self.monitoring.fire_events(self.beliefs, self.percept)
+
+                    # TODO: trigger sound percept?
+
+                    if self.action == ('initialize', 'arm'):
+                        self.percept = {"initialized": {'arm': True}}  # TODO: post conditions or monitoring
+                        self.beliefs = self.perception.belief_revision(self.beliefs, self.percept)  # TODO: post conditions
+                        self.beliefs = self.monitoring.fire_events(self.beliefs, self.percept)
+                    elif self.action == ('move_arm', 'target_object'):
+                        self.current_percept = {"distance": {'distance_to_gripper': 2.2}}  # TODO: update with monitoring
+                        self.beliefs = self.perception.belief_revision(self.beliefs, self.percept)
+                        self.beliefs = self.monitoring.fire_events(self.beliefs, self.percept)
+                    elif self.action == ('move_arm_above', 'container'):
+                        self.percept = {"location": {"target_object": "container"}, "grabbed": {'target_object': False}}
+                        self.beliefs = self.perception.belief_revision(self.beliefs, self.percept)
+                        self.beliefs = self.monitoring.fire_events(self.beliefs, self.percept)
+
+                    # if reconsider(I, B) then
+                    #   D := options(B, I);
+                    #   I := filter(B, D, I);
+
+                    # if not sound(π, I, B) then
+                    #   π := plan(B, I)
             else:
-                why_failed = self.htn_planner.failure_reason
-                if self.verbose:
-                    print("Plan failure_reason: {}".format(why_failed), end=" ")
-                how_well = (self.beliefs.current_world_model.tick, self.beliefs.current_world_model.max_ticks,
-                            int((datetime.datetime.now() - self.start_time).total_seconds() * 1000),  # milliseconds
-                            self.plans)
-                if self.verbose:
-                    print("how_well: {}".format(how_well))
                 self.done()
                 self.kill()
 
@@ -100,6 +140,31 @@ class BDIAgent(Agent):
         def done(self):
             # the done evaluation
             print("-- Sender Agent: Done")
+
+            show_history = True
+            print("Final World model:")
+            print("-- Ticks: {}".format(self.beliefs.current_world_model.tick))
+            print("-- initialized: {}".format(self.beliefs.current_world_model.initialized))
+            print("-- location: {}".format(self.beliefs.current_world_model.location))
+            print("-- grabbed: {}".format(self.beliefs.current_world_model.grabbed))
+            if show_history:
+                print()
+                print("World model History:")
+                for tick in range(len(self.world_model_history)):
+                    print("Tick {}:".format(tick))
+                    print("-- initialized: {}".format(self.beliefs.world_model_history[tick].initialized))
+                    print("-- location: {}".format(self.beliefs.world_model_history[tick].location))
+                    print("-- grabbed: {}".format(self.beliefs.world_model_history[tick].grabbed))
+
+            print()
+            print("{}!".format("SUCCESS" if self.SUCCESS else "FAIL"))
+
+        def print_answers(self, what_answer, why_answer, how_well_answer, what_else_answer):
+            print("Q: What is the robot doing? A: {}\n"
+                  "Q: Why is it doing it? A: {}\n"
+                  "Q: How well is it doing it? A: {}\n"
+                  "Q: What else could it have been doing instead? A: {}"
+                  .format(what_answer, why_answer, how_well_answer, what_else_answer))
 
         def deliberate(self, current_beliefs, current_intentions):
             """
@@ -135,7 +200,7 @@ class BDIAgent(Agent):
     async def setup(self):
         print(f"-- Sender Agent: PeriodicSenderAgent started at {datetime.datetime.now().time()}")
         start_at = datetime.datetime.now() + datetime.timedelta(seconds=5)
-        b = self.BDIBehaviour(period=2, start_at=start_at)
+        b = self.BDIBehaviour(period=5, start_at=start_at)
         self.add_behaviour(b)
 
 
@@ -143,8 +208,8 @@ if __name__ == "__main__":
     # receiveragent = ReceiverAgent("madks2@temp3rr0r-pc", "ma121284")
     # future = receiveragent.start()
     # future.result()  # wait for receiver agent to be prepared.
-    senderagent = BDIAgent("madks@temp3rr0r-pc", "ma121284")
-    senderagent.start()
+    arm_agent = BDIAgent("madks@temp3rr0r-pc", "ma121284")
+    arm_agent.start()
 
     # while receiveragent.is_alive():
     #     try:
