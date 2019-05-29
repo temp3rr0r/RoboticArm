@@ -34,6 +34,7 @@ class BDIAgent(Agent):
 
             self.what, self.why, self.how_well, self.what_else, self.why_failed = "", "", "", "", ""
             self.plans = []
+            self.selected_plan = []
             self.start_time = datetime.datetime.now()
 
         async def run(self):
@@ -42,34 +43,36 @@ class BDIAgent(Agent):
 
             if not self.SUCCESS and not self.terminate and self.beliefs.update_tick() < self.beliefs.current_world_model.max_ticks:
 
-                # msg = Message(to="madks2@temp3rr0r-pc")  # Instantiate the message
-                # msg.body = "Hello World: " + str(self.counter)  # Set the message content
-                # await self.send(msg)
+                if len(self.selected_plan) == 0 and self.beliefs.update_tick() < self.beliefs.current_world_model.max_ticks:
+                    # msg = Message(to="madks2@temp3rr0r-pc")  # Instantiate the message
+                    # msg.body = "Hello World: " + str(self.counter)  # Set the message content
+                    # await self.send(msg)
 
-                percept = self.perception.get_percept(text_engraving=(self.why_failed, self.how_well))  # get next percept ρ; OBSERVE the world
-                self.beliefs = self.perception.belief_revision(self.beliefs, percept)  # B:= brf(B, ρ);
-                self.beliefs = self.monitoring.fire_events(self.beliefs, percept)
-                self.intentions = self.deliberate(self.beliefs,
-                                                  self.intentions)  # DELIBERATE about what INTENTION to achieve next
-                SUCCESS = True if self.intentions == "" else False
-                self.plans = self.htn_planner.get_plans(self.beliefs.current_world_model,
-                                              self.intentions)  # π := plan(B, I); MEANS_END REASONING
+                    percept = self.perception.get_percept(text_engraving=(self.why_failed, self.how_well))  # get next percept ρ; OBSERVE the world
+                    self.beliefs = self.perception.belief_revision(self.beliefs, percept)  # B:= brf(B, ρ);
+                    self.beliefs = self.monitoring.fire_events(self.beliefs, percept)
+                    self.intentions = self.deliberate(self.beliefs,
+                                                      self.intentions)  # DELIBERATE about what INTENTION to achieve next
+                    SUCCESS = True if self.intentions == "" else False
+                    self.plans = self.htn_planner.get_plans(self.beliefs.current_world_model,
+                                                  self.intentions)  # π := plan(B, I); MEANS_END REASONING
 
-                if self.plans != False:
-                    if len(self.plans) > 0:
-                        self.plans.sort(key=len)  # TODO: check why sorting doesn't work on "deeper" levels
-                        if self.verbose:
-                            print("{}: Plan: {}".format(self.beliefs.current_world_model.tick, self.plans[0]))
-                        selected_plan = deque(
-                            self.plans[0])  # TODO: Use a "cost function" to evaluate the best plan, not shortest
-                        why_failed = ""
-
-                        # while not (empty(π) or succeeded(Ι, Β) or impossible(I, B)) do
-                        while len(selected_plan) > 0 and self.beliefs.update_tick() < self.beliefs.current_world_model.max_ticks:
-                            action, selected_plan = selected_plan.popleft(), selected_plan  # α := hd(π); π := tail(π);
-
+                    if self.plans != False:
+                        if len(self.plans) > 0:
+                            self.plans.sort(key=len)  # TODO: check why sorting doesn't work on "deeper" levels
                             if self.verbose:
-                                print("{}: Action: {}".format(self.beliefs.current_world_model.tick, action))
+                                print("{}: Plan: {}".format(self.beliefs.current_world_model.tick, self.plans[0]))
+                            self.selected_plan = deque(
+                                self.plans[0])  # TODO: Use a "cost function" to evaluate the best plan, not shortest
+                            why_failed = ""
+
+                else:  # while not (empty(π) or succeeded(Ι, Β) or impossible(I, B)) do
+                    if self.beliefs.update_tick() < self.beliefs.current_world_model.max_ticks:
+                        action, selected_plan = self.selected_plan.popleft(), self.selected_plan  # α := hd(π); π := tail(π);
+
+                        if self.verbose:
+                            print("{}: Action: {}".format(self.beliefs.current_world_model.tick, action))
+
 
             else:
                 why_failed = self.htn_planner.failure_reason
