@@ -1,6 +1,7 @@
 # Robotics for arm manipulation:
 
 Means-end, practical reasoning using Belief-Desire-Intention (BDI) architecture.
+Demo: https://www.youtube.com/watch?v=lO22-RkgV2Y
 
 ## Goal
 Create a succeeding and a failing scenario, for a:
@@ -52,6 +53,13 @@ moveTo, moveUp, moveAbove etc).
 ### Monitoring
 - Events: From sensor percepts , to event firing.
 
+### Real-Time Clock (RTC) & Multi-Agent support:
+BDI uses the Smart Python Agent Development Environment (SPADE)library:
+- Real-time, behaviour-based agent model platform.
+- Multi-Agent Instant Messaging (IM) and presence notification via:
+  - Extensible Messaging and Presence Protocol (XMPP).
+  - Foundation for Intelligent Physical Agents (FIPA) metadata and the Agent Communication Language (ACL).
+- Asynchronous IO.
 
 #### References
 
