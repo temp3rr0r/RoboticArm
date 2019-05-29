@@ -46,7 +46,7 @@ class BDIAgent(Agent):
             self.monitoring = Monitoring()
 
             self.coordination.control.send_requests = True  # Note: Disable all 3 coordination switches for testing
-            self.coordination.control.center_init = False
+            self.coordination.control.center_init = False  # TODO: world model?
             self.coordination.control.detect_last_position = True
 
             self.what, self.why, self.how_well, self.what_else, self.why_failed = "", "", "", "", ""
@@ -167,6 +167,8 @@ class BDIAgent(Agent):
 
                     # if not sound(π, I, B) then
                     #   π := plan(B, I)
+
+                    # TODO: Backtracking of action?
             else:
                 self.done()
                 self.kill()

@@ -17,7 +17,13 @@ class Perception:
     def __init__(self, init_world_model):
         print("--- Initializing perception...")
 
+        self.perception_world_model = init_world_model.current_world_model.perception
+
+        self.perception_world_model["MAX_FEATURES"]
+
         self.MAX_FEATURES = init_world_model.current_world_model.perception["MAX_FEATURES"]
+        print(self.perception_world_model["MAX_FEATURES"], self.MAX_FEATURES)
+
         self.MIN_MATCHES = init_world_model.current_world_model.perception["MIN_MATCHES"]
         self.GOOD_MATCH_PERCENT = init_world_model.current_world_model.perception["GOOD_MATCH_PERCENT"]
         self.FLASH_EVERY_FRAMES = init_world_model.current_world_model.perception["FLASH_EVERY_FRAMES"]
