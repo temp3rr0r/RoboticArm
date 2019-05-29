@@ -85,7 +85,8 @@ class BDIAgent(Agent):
             """
 
             if self.verbose:
-                print(f"-- arm_agent: PeriodicSenderBehaviour running at {datetime.datetime.now().time()}: {self.counter}")
+                print(f"--- arm_agent: "
+                      f"PeriodicSenderBehaviour running at {datetime.datetime.now().time()}: {self.counter}")
 
             # while true do
             if not self.SUCCESS and not self.terminate and self.beliefs.update_tick() < self.beliefs.current_world_model.max_ticks:

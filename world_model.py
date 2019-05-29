@@ -56,7 +56,8 @@ class WorldModel:
                                                "verbose": False,
                                                "percept_frames": 5,
                                                "write_video": False,
-                                               "display_output_frames": True}
+                                               "display_output_frames": True,
+                                               "local_camera_id": 0}
 
         self.world_model_history = []
 
@@ -119,10 +120,9 @@ if __name__ == '__main__':
           .format(world_model.current_world_model.perception["display_output_frames"]))
     print('world_model.current_world_model.url["arm"]: {}'
           .format(world_model.current_world_model.url["arm"]))
-
-    # self.current_world_model.location = {
-    #     "target_object": "table",
-    #     "servo_values": [1500, 1500, 1500, 1500, 1500, 1500],
-    #     "init_servo_values": [1500, 1500, 1500, 1500, 1500, 1500]}  # TODO: Move 2 gremlin world model with init
     print('world_model.current_world_model.location["init_servo_values"]: {}'
           .format(world_model.current_world_model.location["init_servo_values"]))
+
+    # "local_camera_id": 0
+    print('world_model.current_world_model.location["local_camera_id"]: {}'
+          .format(world_model.current_world_model.perception["local_camera_id"]))

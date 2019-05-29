@@ -14,41 +14,41 @@ class Perception:
     an object in relation to the arm's frame of reference, in centimeters.
     """
 
-    def __init__(self, world_model):
+    def __init__(self, init_world_model):
         print("--- Initializing perception...")
 
-        self.MAX_FEATURES = world_model.current_world_model.perception["MAX_FEATURES"]
-        self.MIN_MATCHES = world_model.current_world_model.perception["MIN_MATCHES"]
-        self.GOOD_MATCH_PERCENT = world_model.current_world_model.perception["GOOD_MATCH_PERCENT"]
-        self.FLASH_EVERY_FRAMES = world_model.current_world_model.perception["FLASH_EVERY_FRAMES"]
-        self.MIN_DESCRIPTOR_DISTANCE_SUM = world_model.current_world_model.perception["MIN_DESCRIPTOR_DISTANCE_SUM"]
-        self.use_flann = world_model.current_world_model.perception["use_flann"]
-        self.FLANN_INDEX_LSH = world_model.current_world_model.perception["FLANN_INDEX_LSH"]
+        self.MAX_FEATURES = init_world_model.current_world_model.perception["MAX_FEATURES"]
+        self.MIN_MATCHES = init_world_model.current_world_model.perception["MIN_MATCHES"]
+        self.GOOD_MATCH_PERCENT = init_world_model.current_world_model.perception["GOOD_MATCH_PERCENT"]
+        self.FLASH_EVERY_FRAMES = init_world_model.current_world_model.perception["FLASH_EVERY_FRAMES"]
+        self.MIN_DESCRIPTOR_DISTANCE_SUM = init_world_model.current_world_model.perception["MIN_DESCRIPTOR_DISTANCE_SUM"]
+        self.use_flann = init_world_model.current_world_model.perception["use_flann"]
+        self.FLANN_INDEX_LSH = init_world_model.current_world_model.perception["FLANN_INDEX_LSH"]
         self.regressor_qr_to_arm_xyz = \
-            joblib.load(world_model.current_world_model.perception["regressor_qr_to_arm_xyz"]["file_path"])
-        self.class_logo = cv2.imread(world_model.current_world_model.perception["class_logo"]["file_path"],
+            joblib.load(init_world_model.current_world_model.perception["regressor_qr_to_arm_xyz"]["file_path"])
+        self.class_logo = cv2.imread(init_world_model.current_world_model.perception["class_logo"]["file_path"],
                                      cv2.IMREAD_COLOR)
         self.model_reference = \
-            cv2.imread(world_model.current_world_model.perception["model_reference"]["file_path"], cv2.IMREAD_COLOR)
-        self.video_frames_per_second = world_model.current_world_model.perception["video_frames_per_second"]
-        self.arm_xyz_offset = world_model.current_world_model.perception["arm_xyz_offset"]
-        self.use_local_camera = world_model.current_world_model.perception["use_local_camera"]
-        self.camera_frame_width = world_model.current_world_model.perception["camera_frame_width"]
-        self.camera_frame_height = world_model.current_world_model.perception["camera_frame_height"]
-        self.auto_focus = world_model.current_world_model.perception["auto_focus"]
-        self.send_requests = world_model.current_world_model.perception["send_requests"]
-        self.verbose = world_model.current_world_model.perception["verbose"]
-        self.percept_frames = world_model.current_world_model.perception["percept_frames"]
-        self.write_video = world_model.current_world_model.perception["write_video"]
-        self.display_output_frames = world_model.current_world_model.perception["display_output_frames"]
-        self.url = world_model.current_world_model.url["arm"]
-        self.init_servo_values = world_model.current_world_model.location["init_servo_values"]
+            cv2.imread(init_world_model.current_world_model.perception["model_reference"]["file_path"], cv2.IMREAD_COLOR)
+        self.video_frames_per_second = init_world_model.current_world_model.perception["video_frames_per_second"]
+        self.arm_xyz_offset = init_world_model.current_world_model.perception["arm_xyz_offset"]
+        self.use_local_camera = init_world_model.current_world_model.perception["use_local_camera"]
+        self.camera_frame_width = init_world_model.current_world_model.perception["camera_frame_width"]
+        self.camera_frame_height = init_world_model.current_world_model.perception["camera_frame_height"]
+        self.auto_focus = init_world_model.current_world_model.perception["auto_focus"]
+        self.send_requests = init_world_model.current_world_model.perception["send_requests"]
+        self.verbose = init_world_model.current_world_model.perception["verbose"]
+        self.percept_frames = init_world_model.current_world_model.perception["percept_frames"]
+        self.write_video = init_world_model.current_world_model.perception["write_video"]
+        self.display_output_frames = init_world_model.current_world_model.perception["display_output_frames"]
+        self.url = init_world_model.current_world_model.url["arm"]
+        self.init_servo_values = init_world_model.current_world_model.location["init_servo_values"]
 
         if self.use_local_camera:
-            self.capture_device = cv2.VideoCapture(0)
+            self.capture_device = cv2.VideoCapture(init_world_model.current_world_model.perception["local_camera_id"])
         else:
             self.captureDevice = cv2.VideoCapture(
-                world_model.current_world_model.perception["input_video"]["file_path"])
+                init_world_model.current_world_model.perception["input_video"]["file_path"])
 
         self.capture_device.set(cv2.CAP_PROP_FRAME_WIDTH, self.camera_frame_width)
         self.capture_device.set(cv2.CAP_PROP_FRAME_HEIGHT, self.camera_frame_height)
@@ -58,7 +58,7 @@ class Perception:
 
         if self.write_video:  # Define the codec and create VideoWriter object
             self.fourcc = cv2.VideoWriter_fourcc(*'MJPG')
-            self.out = cv2.VideoWriter(world_model.current_world_model.perception["output_video"]["file_path"],
+            self.out = cv2.VideoWriter(init_world_model.current_world_model.perception["output_video"]["file_path"],
                                        self.fourcc, self.video_frames_per_second,
                                        (self.camera_frame_width, self.camera_frame_height))
 
@@ -367,11 +367,10 @@ class Perception:
         Sends a GET request to the arm url and returns the latest servo positions.
         :return: List of the current arm servo positions.
         """
-        # self.init_servo_values = [1500, 1500, 1500, 1500, 1500, 1500]  # TODO: worldModel
         last_servo_values = self.init_servo_values
         try:
             if self.send_requests:
-                url = "http://{}/".format(self.url)  # TODO: world model
+                url = "http://{}/".format(self.url)
                 r = requests.get(url, data="")
                 if r.status_code == 200:
                     result = r.json()["variables"]
