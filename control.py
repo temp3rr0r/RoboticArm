@@ -18,7 +18,7 @@ class Control:
     def __init__(self):
         self.closed_hand_distance_ratio = 0.8
         self.opened_hand_distance_ratio = 1.5
-        self.base_put_url = "http://ESP32/set_servo{}?value={}"
+        self.base_put_url = "http://ESP_02662E/set_servo{}?value={}"
         self.send_requests = False  # TODO: make communicator class?
         self.detect_last_position = False
         self.verbose = False
@@ -381,7 +381,7 @@ class Control:
             last_servo_values = last_servo_locations
             try:
                 if self.send_requests:
-                    url = "http://ESP32/"
+                    url = "http://ESP_02662E/"
                     r = requests.get(url, data="")
                     if r.status_code == 200:
                         result = r.json()["variables"]

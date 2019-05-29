@@ -362,7 +362,7 @@ class Perception:
         last_servo_values = self.init_servo_values
         try:
             if self.send_requests:
-                url = "http://ESP32/"
+                url = "http://ESP_02662E/"
                 r = requests.get(url, data="")
                 if r.status_code == 200:
                     result = r.json()["variables"]
