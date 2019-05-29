@@ -1,7 +1,10 @@
 # Robotics for arm manipulation:
 
 Means-end, practical reasoning using Belief-Desire-Intention (BDI) architecture.
+
 Demo: https://www.youtube.com/watch?v=lO22-RkgV2Y
+
+Presentation: https://1drv.ms/b/s!AgM7aH_rFcPzgrdkwJNIGvczvEBOaQ
 
 ## Goal
 Create a succeeding and a failing scenario, for a:
