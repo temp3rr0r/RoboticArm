@@ -36,7 +36,7 @@ class WorldModel:  # TODO: Move 2 gremlin world model with init
         # Control  # TODO:
         self.current_world_model.control = {"closed_hand_distance_ratio": 0.8,
                                             "opened_hand_distance_ratio": 1.5,
-                                            "base_put_url": "http://ESP_02662E/set_servo{}?value={}",  # TODO: use world model URL
+                                            "base_put_url": "http://{}/set_servo{}?value={}",  # TODO: use world model URL
                                             "send_requests": False,
                                             "detect_last_position": False,
                                             "verbose": False,

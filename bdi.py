@@ -242,7 +242,7 @@ class BDIAgent(Agent):
             return current_intentions
 
     async def setup(self):
-        print(f"-- arm_agent: PeriodicSenderAgent started at {datetime.datetime.now().time()}")
+        print(f"--- arm_agent: PeriodicSenderAgent started at {datetime.datetime.now().time()}")
         init_world_model = WorldModel()
         start_at = datetime.datetime.now() + datetime.timedelta(seconds=init_world_model.current_world_model.init_delay_seconds["arm"])
         bdi_behaviour = self.BDIBehaviour(period=init_world_model.current_world_model.real_time_clock_period_seconds["arm"], start_at=start_at)

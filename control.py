@@ -16,61 +16,13 @@ class Control:
     """
 
     def __init__(self, init_world_model):
-        # TODO: use world model
-        # self.closed_hand_distance_ratio = 0.8
-        # self.opened_hand_distance_ratio = 1.5
-        # self.base_put_url = "http://ESP_02662E/set_servo{}?value={}"  # TODO: use world model url
-        # self.send_requests = False  # TODO: make communicator class?
-        # self.detect_last_position = False
-        # self.verbose = False
-        # self.show_plots = False  # TODO: engrave plots
-        # self.cm_to_servo_polynomial_fitter = joblib.load('modelsQr/cm_to_servo_polynomial_fitter.sav')
-        # # self.scale = 0.04  # For the plotting
-        # self.scale = 1.0
-        # self.servo_count = 6
-        # self.command_delay = 0.001  # seconds
-        # self.center_init = False
-        # self.angle_degree_limit = 75  # degrees
-        # self.trajectory_steps = 10
-        # self.current_servo_monotony = [-1.0, -1.0, 1.0, -1.0, -1.0, -1.0]
-        # self.active_links_mask = [True, True, True, True, False, False]  # Enabled/disabled links
-        # self.min_steps = 1
-        # self.max_steps = 5000
-        # self.rotating_gripper_servo = 2
-        # self.gripping_gripper_servo = 1
-        # self.horizontal_gripper_position = 600
-        # self.init_position = np.array([0, 0, 1]) * self.scale
-        # self.container_position = np.array([0, 18, 10]) * self.scale
-        # self.init_servo_values = [1500, 1500, 1500, 1500, 1500, 1500]  # TODO: Move 2 worldModel, get from instantiation
-        #
-        # # Link lengths in centimeters
-        # self.link6 = np.array([0, 0, 7.0])
-        # self.link5 = np.array([0, 0, 3.0])
-        # self.link4 = np.array([0, 0, 10.5])
-        # self.link3 = np.array([0, 0, 9.0])
-        # self.link2 = np.array([0, 0, 7.0])
-        # self.link1 = np.array([0, 0, 10.0])
-        #
-        # # Link orientation
-        # self.orientation6 = [0, 0, 0]
-        # self.orientation5 = [0, 0, 0]
-        # self.orientation4 = [0, 0, 0]
-        # self.orientation3 = [0, 0, 0]
-        # self.orientation2 = [0, 0, 0]
-        # self.orientation1 = [0, 0, 0]
-        #
-        # # Joint rotation axis
-        # self.rotation6 = np.array([0, 0, 1])
-        # self.rotation5 = np.array([0, 1, 0])
-        # self.rotation4 = np.array([0, 1, 0])
-        # self.rotation3 = np.array([0, 1, 0])
-        # self.rotation2 = np.array([0, 0, 1])
-        # self.rotation1 = np.array([0, 0, 1])
 
         self.closed_hand_distance_ratio = init_world_model.current_world_model.control["closed_hand_distance_ratio"]
         self.opened_hand_distance_ratio = init_world_model.current_world_model.control["opened_hand_distance_ratio"]
-        self.base_put_url = init_world_model.current_world_model.control["base_put_url"]  # TODO: use world model url
-        self.send_requests = init_world_model.current_world_model.control["send_requests"]  # TODO: make communicator class?
+        self.url = init_world_model.current_world_model.url["arm"]
+        self.base_put_url = init_world_model.current_world_model.control["base_put_url"]
+        self.send_requests = \
+            init_world_model.current_world_model.control["send_requests"]  # TODO: make communicator class?
         self.detect_last_position = init_world_model.current_world_model.control["detect_last_position"]
         self.verbose = init_world_model.current_world_model.control["verbose"]
         self.show_plots = init_world_model.current_world_model.control["show_plots"]
@@ -83,15 +35,16 @@ class Control:
         self.angle_degree_limit = init_world_model.current_world_model.control["angle_degree_limit"]  # degrees
         self.trajectory_steps = init_world_model.current_world_model.control["trajectory_steps"]
         self.current_servo_monotony = init_world_model.current_world_model.control["current_servo_monotony"]
-        self.active_links_mask = init_world_model.current_world_model.control["active_links_mask"]  # Enabled/disabled links
+        self.active_links_mask = init_world_model.current_world_model.control["active_links_mask"]
         self.min_steps = init_world_model.current_world_model.control["min_steps"]
         self.max_steps = init_world_model.current_world_model.control["max_steps"]
         self.rotating_gripper_servo = init_world_model.current_world_model.control["rotating_gripper_servo"]
         self.gripping_gripper_servo = init_world_model.current_world_model.control["gripping_gripper_servo"]
         self.horizontal_gripper_position = init_world_model.current_world_model.control["horizontal_gripper_position"]
         self.init_position = np.array(init_world_model.current_world_model.control["init_position"]) * self.scale
-        self.container_position = np.array(init_world_model.current_world_model.control["container_position"]) * self.scale
-        self.init_servo_values = init_world_model.current_world_model.location["init_servo_values"]  # TODO: Move 2 worldModel, get from instantiation
+        self.container_position = \
+            np.array(init_world_model.current_world_model.control["container_position"]) * self.scale
+        self.init_servo_values = init_world_model.current_world_model.location["init_servo_values"]
 
         # Link lengths in centimeters
         self.link6 = init_world_model.current_world_model.control["link_lengths"]["link6"]
@@ -387,7 +340,7 @@ class Control:
         :return: True if succeeded.
         """
         action_successful = False
-        url = self.base_put_url.format(servo, range)
+        url = self.base_put_url.format(self.url, servo, range)
         requests.put(url, data="")
         time.sleep(self.command_delay)
         action_successful = True
@@ -407,7 +360,7 @@ class Control:
                 if servo_mask[i]:
                     servo_value = step[i]
                     current_servo = self.servo_count - i
-                    url = self.base_put_url.format(current_servo, servo_value)
+                    url = self.base_put_url.format(self.url, current_servo, servo_value)
                     if self.verbose:
                         print(url)
                     try:
@@ -442,7 +395,7 @@ class Control:
             last_servo_values = last_servo_locations
             try:
                 if self.send_requests:
-                    url = "http://ESP_02662E/"  # TODO: world  model
+                    url = "http://{}/".format(self.url)  # TODO: world  model
                     r = requests.get(url, data="")
                     if r.status_code == 200:
                         result = r.json()["variables"]
