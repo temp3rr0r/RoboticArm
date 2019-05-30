@@ -37,9 +37,9 @@ class BDIAgent(Agent):
             self.verbose = False
 
             # Initialization
-            self.goal = [('transfer_target_object_to_container', 'arm', 'target_object', 'table', 'container')]
-            self.intentions = self.goal  # I := I0; Initial Intentions
             self.beliefs = WorldModel()  # B := B0; Initial Beliefs
+            self.goals = self.beliefs.current_world_model.goals
+            self.intentions = self.beliefs.current_world_model.goals  # I := I0; Initial Intentions
             self.htn_planner = HierarchicalTaskNetworkPlanner(self.beliefs)
             self.perception = Perception(self.beliefs)
             self.coordination = Coordination(self.beliefs)
@@ -141,9 +141,8 @@ class BDIAgent(Agent):
 
                     # get next percept ρ; OBSERVE the world
 
-                    # TODO: Target object location is off when arm is close to the object
+                    # TODO: Don't update target object location, when it is obscured
                     if self.action != ('move_arm_above', 'target_object') and self.action != ('move_arm', 'target_object'):
-                        print("self.percept: {}, self.action: {}".format(self.percept, self.action))
                         self.percept = self.perception.get_percept(text_engraving=(self.what, self.why, self.how_well,
                                                                                    self.what_else))
                         self.beliefs = self.perception.belief_revision(self.beliefs, self.percept)
@@ -239,9 +238,8 @@ class BDIAgent(Agent):
             :return: List of tuples, filtered intentions that the agent COMMITS to accomplish.
             """
             for current_intention in current_intentions:
-                if current_intention == (
-                'transfer_target_object_to_container', 'arm', 'target_object', 'table', 'container') \
-                        and current_beliefs.current_world_model.location["target_object"] == "container":
+                if current_intention == self.goals[0] and current_beliefs.current_world_model.location["target_object"] \
+                        == "container":
                     current_intentions = ""  # if goal(s) achieved, empty I
             return current_intentions
 

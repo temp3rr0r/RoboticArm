@@ -6,6 +6,10 @@ Demo: https://www.youtube.com/watch?v=lO22-RkgV2Y
 
 Presentation: https://1drv.ms/b/s!AgM7aH_rFcPzgrdkwJNIGvczvEBOaQ
 
+
+![arm_demo_pic.png][pics/arm_demo_pic.png]
+
+
 ## Goal
 Create a succeeding and a failing scenario, for a:
 - Robotic arm manipulator.

@@ -374,11 +374,6 @@ class Perception:
         if percept is not "":
             input_world_model.world_model_history.append(copy.deepcopy(input_world_model.current_world_model))  # Store as history
 
-            # TODO: don't update xyz, if the object is already grabbed, will get confused
-            # print("-- world_model.current_world_model.location[\"servo_values\"]): {}"
-            #       .format(world_model.current_world_model.location["servo_values"]))
-            # print("-- percept: {}".format(percept))
-
             for key in percept.keys():
                 if key == "xyz":
                     input_world_model.current_world_model.xyz["target_object"] = percept["xyz"]["target_object"]

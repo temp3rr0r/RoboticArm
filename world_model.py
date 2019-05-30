@@ -31,7 +31,11 @@ class WorldModel:  # TODO: Move 2 gremlin world model with init
         self.current_world_model.initialized = {"arm": False}
         self.current_world_model.url = {"arm": "ESP_02662E"}
         self.current_world_model.init_delay_seconds = {"arm": 5}
-        self.current_world_model.real_time_clock_period_seconds = {"arm": 1.5}
+        self.current_world_model.real_time_clock_period_seconds = {"arm": 0.5}
+
+        # Goals
+        self.current_world_model.goals = [
+            ('transfer_target_object_to_container', 'arm', 'target_object', 'table', 'container')]
 
         # Control
         self.current_world_model.control = {"closed_hand_distance_ratio": 0.8,
@@ -241,3 +245,5 @@ if __name__ == '__main__':
           .format(world_model.current_world_model.control["joint_rotation_axis"]["link6"]))
 
     print("world_model.current_world_model.planner: {}".format(world_model.current_world_model.planner))
+
+    print("world_model.current_world_model.goals: {}".format(world_model.current_world_model.goals))
