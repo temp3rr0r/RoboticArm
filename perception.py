@@ -89,7 +89,8 @@ class Perception:
 
             current_descriptor_matches.sort(key=lambda x_point: x_point.distance,
                                             reverse=False)  # Sort matches by score
-            num_good_matches = int(len(current_descriptor_matches) * self.perception_world_model["GOOD_MATCH_PERCENT"])  # Remove mediocre matches
+            num_good_matches = int(len(current_descriptor_matches)
+                                   * self.perception_world_model["GOOD_MATCH_PERCENT"])  # Remove mediocre matches
             current_descriptor_matches = current_descriptor_matches[:num_good_matches]
             total_descriptor_distance = 0
             for x in current_descriptor_matches:
@@ -140,8 +141,8 @@ class Perception:
             side_ratio_min = 0.6
             side_ratio_max = 1.2
             if max_x < (1 - roi_percent_max) * video_frame_gray.shape[1] and min_x > roi_percent_max * \
-                    video_frame_gray.shape[1] and max_y < (1 - roi_percent_max) * video_frame_gray.shape[
-                0] and min_y > roi_percent_max * video_frame_gray.shape[0]:
+                    video_frame_gray.shape[1] and max_y < (1 - roi_percent_max) * video_frame_gray.shape[0] \
+                    and min_y > roi_percent_max * video_frame_gray.shape[0]:
                 # Do not draw if rectangle sides too small
                 if abs(max_x - min_x) > roi_percent_min * video_frame_gray.shape[1] and abs(
                         max_y - min_y) > roi_percent_min * video_frame_gray.shape[0]:
@@ -307,7 +308,6 @@ class Perception:
         Returns the mean perceived position XYZ in cm, of the detected object.
         :return: List of 3 XYZ float values, centimeters of the object vs the arm frame of reference.
         """
-        percept = ""
         arm_object_xyz_list = []
         flash_frame = 0
         for _ in range(self.perception_world_model["percept_frames"]):
@@ -443,6 +443,6 @@ if __name__ == '__main__':
     steps = 500
     for j in range(steps):
         time.sleep(0.1)
-        xyz = perception.get_percept()
-        print("Percept({}, mean of {}): {} cm".format(j, perception.perception_world_model["percept_frames"], xyz))  # TODO: sliding window mean
+        xyz = perception.get_percept()    # TODO: sliding window mean
+        print("Percept({}, mean of {}): {} cm".format(j, perception.perception_world_model["percept_frames"], xyz))
     perception.destroy()
