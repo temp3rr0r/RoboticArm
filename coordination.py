@@ -6,8 +6,8 @@ class Coordination:
     Executes actions (discrete), by invoking control commands (continuous).
     """
 
-    def __init__(self, init_world_model):
-        self.control = Control(init_world_model)
+    def __init__(self, world_model):
+        self.control = Control(world_model)
         self.verbose = False
 
     def execute_action(self, action, world_model):
@@ -52,9 +52,9 @@ if __name__ == '__main__':
     from world_model import WorldModel
     current_world_model = WorldModel()
     coordination = Coordination(current_world_model)
-    coordination.control.send_requests = False
-    coordination.control.center_init = False
-    coordination.control.detect_last_position = False
+    coordination.control.control_world_model["send_requests"] = False
+    coordination.control.control_world_model["center_init"] = False
+    coordination.control.control_world_model["detect_last_position"] = False
     coordination.execute_action(('initialize', 'arm'), current_world_model.current_world_model)
     coordination.execute_action(('open_hand', ), current_world_model.current_world_model)
     coordination.execute_action(('move_arm_above', 'target_object'), current_world_model.current_world_model)
@@ -64,6 +64,6 @@ if __name__ == '__main__':
     coordination.execute_action(('move_arm_above', 'container'), current_world_model.current_world_model)
     coordination.execute_action(('open_hand', ), current_world_model.current_world_model)
     import numpy as np
-    target_position = np.array([20, -20.0, 20]) * coordination.control.scale
+    target_position = np.array([20, -20.0, 20]) * coordination.control.control_world_model["scale"]
     last_servo_values = current_world_model.current_world_model.location["servo_values"]
     action_successful_test = coordination.control.move_arm(np.array(target_position), last_servo_values)

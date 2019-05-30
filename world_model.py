@@ -17,7 +17,7 @@ class WorldModel:  # TODO: Move 2 gremlin world model with init
         self.current_world_model.location = {
             "target_object": "table",
             "servo_values": [1500, 1500, 1500, 1500, 1500, 1500],
-            "init_servo_values": [1500, 1500, 1500, 1500, 1500, 1500]}  # TODO: use in control
+            "init_servo_values": [1500, 1500, 1500, 1500, 1500, 1500]}
         self.current_world_model.xyz = {"target_object": [-30, -30, 0],
                                         "container": [-0.1, 24.0, 12],
                                         "end_effector": [-0.1, 24.0, 12]
@@ -33,12 +33,12 @@ class WorldModel:  # TODO: Move 2 gremlin world model with init
         self.current_world_model.real_time_clock_period_seconds = {"arm": 0.5}
         self.current_world_model.init_delay_seconds = {"arm": 5}
 
-        # Control  # TODO:
+        # Control
         self.current_world_model.control = {"closed_hand_distance_ratio": 0.8,
                                             "opened_hand_distance_ratio": 1.5,
-                                            "base_put_url": "http://{}/set_servo{}?value={}",  # TODO: use world model URL
-                                            "send_requests": False,
-                                            "detect_last_position": False,
+                                            "base_put_url": "http://{}/set_servo{}?value={}",
+                                            "send_requests": True,
+                                            "detect_last_position": True,
                                             "verbose": False,
                                             "show_plots": False,
                                             "cm_to_servo_polynomial_fitter":
@@ -50,7 +50,7 @@ class WorldModel:  # TODO: Move 2 gremlin world model with init
                                             "angle_degree_limit": 75,
                                             "trajectory_steps": 10,
                                             "current_servo_monotony": [-1.0, -1.0, 1.0, -1.0, -1.0, -1.0],
-                                            "active_links_mask": [True, True, True, True, False, False],  # Enabled/disabled links
+                                            "active_links_mask": [True, True, True, True, False, False],
                                             "min_steps": 1,
                                             "max_steps": 500,
                                             "rotating_gripper_servo": 2,
@@ -59,7 +59,7 @@ class WorldModel:  # TODO: Move 2 gremlin world model with init
                                             "init_position": [0, 0, 1],  # TODO: multiply with scale on arm
                                             "container_position": [0, 18, 10],  # TODO: multiply with scale on arm
                                             "chain_name": "le_arm",
-                                            "link_lengths": {
+                                            "link_lengths": {  # Link lengths in centimeters
                                                 "link6": np.array([0, 0, 7.0]),
                                                 "link5": np.array([0, 0, 3.0]),
                                                 "link4": np.array([0, 0, 10.5]),
