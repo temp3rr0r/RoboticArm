@@ -16,58 +16,28 @@ class Perception:
 
     def __init__(self, init_world_model):
         print("--- Initializing perception...")
-
         self.perception_world_model = init_world_model.current_world_model.perception
-
-        self.perception_world_model["MAX_FEATURES"]
-
-        self.MAX_FEATURES = init_world_model.current_world_model.perception["MAX_FEATURES"]
-        print(self.perception_world_model["MAX_FEATURES"], self.MAX_FEATURES)
-
-        self.MIN_MATCHES = init_world_model.current_world_model.perception["MIN_MATCHES"]
-        self.GOOD_MATCH_PERCENT = init_world_model.current_world_model.perception["GOOD_MATCH_PERCENT"]
-        self.FLASH_EVERY_FRAMES = init_world_model.current_world_model.perception["FLASH_EVERY_FRAMES"]
-        self.MIN_DESCRIPTOR_DISTANCE_SUM = init_world_model.current_world_model.perception["MIN_DESCRIPTOR_DISTANCE_SUM"]
-        self.use_flann = init_world_model.current_world_model.perception["use_flann"]
-        self.FLANN_INDEX_LSH = init_world_model.current_world_model.perception["FLANN_INDEX_LSH"]
-        self.regressor_qr_to_arm_xyz = \
-            joblib.load(init_world_model.current_world_model.perception["regressor_qr_to_arm_xyz"]["file_path"])
-        self.class_logo = cv2.imread(init_world_model.current_world_model.perception["class_logo"]["file_path"],
-                                     cv2.IMREAD_COLOR)
-        self.model_reference = \
-            cv2.imread(init_world_model.current_world_model.perception["model_reference"]["file_path"], cv2.IMREAD_COLOR)
-        self.video_frames_per_second = init_world_model.current_world_model.perception["video_frames_per_second"]
-        self.arm_xyz_offset = init_world_model.current_world_model.perception["arm_xyz_offset"]
-        self.use_local_camera = init_world_model.current_world_model.perception["use_local_camera"]
-        self.camera_frame_width = init_world_model.current_world_model.perception["camera_frame_width"]
-        self.camera_frame_height = init_world_model.current_world_model.perception["camera_frame_height"]
-        self.auto_focus = init_world_model.current_world_model.perception["auto_focus"]
-        self.send_requests = init_world_model.current_world_model.perception["send_requests"]
-        self.verbose = init_world_model.current_world_model.perception["verbose"]
-        self.percept_frames = init_world_model.current_world_model.perception["percept_frames"]
-        self.write_video = init_world_model.current_world_model.perception["write_video"]
-        self.display_output_frames = init_world_model.current_world_model.perception["display_output_frames"]
-        self.url = init_world_model.current_world_model.url["arm"]
+        self.arm_url = init_world_model.current_world_model.url["arm"]
         self.init_servo_values = init_world_model.current_world_model.location["init_servo_values"]
-
-        if self.use_local_camera:
-            self.capture_device = cv2.VideoCapture(init_world_model.current_world_model.perception["local_camera_id"])
+        self.regressor_qr_to_arm_xyz = \
+            joblib.load(self.perception_world_model["regressor_qr_to_arm_xyz"]["file_path"])
+        self.class_logo = cv2.imread(self.perception_world_model["class_logo"]["file_path"], cv2.IMREAD_COLOR)
+        self.model_reference = cv2.imread(self.perception_world_model["model_reference"]["file_path"], cv2.IMREAD_COLOR)
+        if self.perception_world_model["use_local_camera"]:
+            self.capture_device = cv2.VideoCapture(self.perception_world_model["local_camera_id"])
         else:
-            self.captureDevice = cv2.VideoCapture(
-                init_world_model.current_world_model.perception["input_video"]["file_path"])
-
-        self.capture_device.set(cv2.CAP_PROP_FRAME_WIDTH, self.camera_frame_width)
-        self.capture_device.set(cv2.CAP_PROP_FRAME_HEIGHT, self.camera_frame_height)
-        self.capture_device.set(cv2.CAP_PROP_FPS, self.percept_frames)
-        if not self.auto_focus:
+            self.capture_device = cv2.VideoCapture(self.perception_world_model["input_video"]["file_path"])
+        self.capture_device.set(cv2.CAP_PROP_FRAME_WIDTH, self.perception_world_model["camera_frame_width"])
+        self.capture_device.set(cv2.CAP_PROP_FRAME_HEIGHT, self.perception_world_model["camera_frame_height"])
+        self.capture_device.set(cv2.CAP_PROP_FPS, self.perception_world_model["percept_frames"])
+        if not self.perception_world_model["auto_focus"]:
             self.capture_device.set(cv2.CAP_PROP_AUTOFOCUS, 0)  # turn the auto-focus off
-
-        if self.write_video:  # Define the codec and create VideoWriter object
+        if self.perception_world_model["write_video"]:  # Define the codec and create VideoWriter object
             self.fourcc = cv2.VideoWriter_fourcc(*'MJPG')
-            self.out = cv2.VideoWriter(init_world_model.current_world_model.perception["output_video"]["file_path"],
-                                       self.fourcc, self.video_frames_per_second,
-                                       (self.camera_frame_width, self.camera_frame_height))
-
+            self.out = cv2.VideoWriter(self.perception_world_model["output_video"]["file_path"],
+                                       self.fourcc, self.perception_world_model["video_frames_per_second"],
+                                       (self.perception_world_model["camera_frame_width"],
+                                        self.perception_world_model["camera_frame_height"]))
         print("--- Perception initialized.")
 
     def align_images_get_xyz(self, video_frame, model_reference_in, flash_frame, text_engraving=""):
@@ -83,17 +53,17 @@ class Perception:
         Second: Predicted xyz position of the QR code.
         """
         object_xyz = [-25, -25, -25]
-        flash_logo_weight_ratio = flash_frame / float(self.FLASH_EVERY_FRAMES)
+        flash_logo_weight_ratio = flash_frame / float(self.perception_world_model["FLASH_EVERY_FRAMES"])
 
         video_frame_gray = cv2.cvtColor(video_frame, cv2.COLOR_BGR2GRAY)  # Convert images to gray-scale
         # video_frame_gray = cv2.medianBlur(video_frame_gray, 3)
 
-        orb_features = cv2.ORB_create(self.MAX_FEATURES)  # Detect ORB features and compute descriptors.
+        orb_features = cv2.ORB_create(self.perception_world_model["MAX_FEATURES"])  # Detect ORB features and compute descriptors.
         key_points1, descriptors1 = orb_features.detectAndCompute(video_frame_gray, None)
 
-        if self.use_flann:
+        if self.perception_world_model["use_flann"]:
             search_params = {}
-            flann_params = dict(algorithm=self.FLANN_INDEX_LSH)
+            flann_params = dict(algorithm=self.perception_world_model["FLANN_INDEX_LSH"])
             descriptor_matcher = cv2.FlannBasedMatcher(flann_params,
                                                        search_params)  # bug : need to pass empty dict (#1329)
         else:
@@ -119,7 +89,7 @@ class Perception:
 
             current_descriptor_matches.sort(key=lambda x_point: x_point.distance,
                                             reverse=False)  # Sort matches by score
-            num_good_matches = int(len(current_descriptor_matches) * self.GOOD_MATCH_PERCENT)  # Remove mediocre matches
+            num_good_matches = int(len(current_descriptor_matches) * self.perception_world_model["GOOD_MATCH_PERCENT"])  # Remove mediocre matches
             current_descriptor_matches = current_descriptor_matches[:num_good_matches]
             total_descriptor_distance = 0
             for x in current_descriptor_matches:
@@ -131,8 +101,8 @@ class Perception:
                 descriptor_matches = current_descriptor_matches
                 detected_model = i
 
-        if len(descriptor_matches) < self.MIN_MATCHES or min_total_descriptor_distance \
-                < self.MIN_DESCRIPTOR_DISTANCE_SUM:
+        if len(descriptor_matches) < self.perception_world_model["MIN_MATCHES"] or min_total_descriptor_distance \
+                < self.perception_world_model["MIN_DESCRIPTOR_DISTANCE_SUM"]:
             return video_frame  # Not good detection
         else:
             matched_points1 = np.zeros((len(descriptor_matches), 2),
@@ -195,7 +165,7 @@ class Perception:
                                      transformed_rectangle_points[2][0][0], transformed_rectangle_points[2][0][1],
                                      transformed_rectangle_points[3][0][0], transformed_rectangle_points[3][0][1]]]
                 regressor_predicted_arm_xyz = self.regressor_qr_to_arm_xyz.predict(last_qr_position)  # TODO: z pos
-                regressor_predicted_arm_xyz[0] += self.arm_xyz_offset
+                regressor_predicted_arm_xyz[0] += self.perception_world_model["arm_xyz_offset"]
                 regressor_predicted_arm_xyz = np.round(regressor_predicted_arm_xyz, 1)
 
                 object_xyz = [regressor_predicted_arm_xyz[0][0],
@@ -328,7 +298,7 @@ class Perception:
         :return:
         """
         self.capture_device.release()  # When everything done, release the capture
-        if self.write_video:
+        if self.perception_world_model["write_video"]:
             self.out.release()
         cv2.destroyAllWindows()
 
@@ -340,7 +310,7 @@ class Perception:
         percept = ""
         arm_object_xyz_list = []
         flash_frame = 0
-        for _ in range(self.percept_frames):
+        for _ in range(self.perception_world_model["percept_frames"]):
             _, video_frame = self.capture_device.read()  # Capture frame-by-frame
             try:
                 aligned_frame, arm_object_xyz = self.align_images_get_xyz(video_frame, self.model_reference,
@@ -348,15 +318,15 @@ class Perception:
                 arm_object_xyz_list.append(arm_object_xyz)
 
                 flash_frame += 1
-                if flash_frame >= self.FLASH_EVERY_FRAMES * 0.75:
+                if flash_frame >= self.perception_world_model["FLASH_EVERY_FRAMES"] * 0.75:
                     flash_frame = 0
-                if self.display_output_frames:
+                if self.perception_world_model["display_output_frames"]:
                     if aligned_frame is not None:
                         cv2.imshow('Video Frame', aligned_frame)  # Display the resulting frame
             except ValueError as e:
                 print("ValueError Exception: {}".format(str(e)))  # TODO: why too many values error?
 
-            if self.write_video:
+            if self.perception_world_model["write_video"]:
                 self.out.write(aligned_frame)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -375,8 +345,8 @@ class Perception:
         """
         last_servo_values = self.init_servo_values
         try:
-            if self.send_requests:
-                url = "http://{}/".format(self.url)
+            if self.perception_world_model["send_requests"]:
+                url = "http://{}/".format(self.arm_url)
                 r = requests.get(url, data="")
                 if r.status_code == 200:
                     result = r.json()["variables"]
@@ -384,7 +354,7 @@ class Perception:
                         [result["servo6"], result["servo5"], result["servo4"], result["servo3"],
                          result["servo2"], result["servo1"]])
 
-                    if self.verbose:
+                    if self.perception_world_model["verbose"]:
                         print("last_servo_values: ", last_servo_values)
 
         except Exception as e_pos:
@@ -430,7 +400,7 @@ if __name__ == '__main__':
     from world_model import WorldModel
     world_model = WorldModel()
     perception = Perception(world_model)
-    perception.write_video = False
+    perception.perception_world_model["write_video"] = False
     import time
     from world_model import WorldModel
     beliefs = WorldModel()
@@ -474,5 +444,5 @@ if __name__ == '__main__':
     for j in range(steps):
         time.sleep(0.1)
         xyz = perception.get_percept()
-        print("Percept({}, mean of {}): {} cm".format(j, perception.percept_frames, xyz))  # TODO: sliding window mean
+        print("Percept({}, mean of {}): {} cm".format(j, perception.perception_world_model["percept_frames"], xyz))  # TODO: sliding window mean
     perception.destroy()
