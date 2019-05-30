@@ -140,18 +140,22 @@ class BDIAgent(Agent):
                         self.print_answers(self.what, self.why, self.how_well, self.what_else)
 
                     # get next percept ρ; OBSERVE the world
-                    self.percept = self.perception.get_percept(text_engraving=(self.what, self.why, self.how_well, self.what_else))
-                    self.beliefs = self.perception.belief_revision(self.beliefs, self.percept)
-                    self.beliefs = self.monitoring.fire_events(self.beliefs, self.percept)
+
+                    # TODO: Target object location is off when arm is close to the object
+                    if self.action != ('move_arm_above', 'target_object') and self.action != ('move_arm', 'target_object'):
+                        print("self.percept: {}, self.action: {}".format(self.percept, self.action))
+                        self.percept = self.perception.get_percept(text_engraving=(self.what, self.why, self.how_well,
+                                                                                   self.what_else))
+                        self.beliefs = self.perception.belief_revision(self.beliefs, self.percept)
+                        self.beliefs = self.monitoring.fire_events(self.beliefs, self.percept)
 
                     # TODO: trigger sound percept?
-
                     if self.action == ('initialize', 'arm'):
                         self.percept = {"initialized": {'arm': True}}  # TODO: post conditions or monitoring
                         self.beliefs = self.perception.belief_revision(self.beliefs, self.percept)  # TODO: post conditions
                         self.beliefs = self.monitoring.fire_events(self.beliefs, self.percept)
                     elif self.action == ('move_arm', 'target_object'):
-                        self.current_percept = {"distance": {'distance_to_gripper': 2.2}}  # TODO: update with monitoring
+                        self.percept = {"distance": {'distance_to_gripper': 2.2}}  # TODO: update with monitoring
                         self.beliefs = self.perception.belief_revision(self.beliefs, self.percept)
                         self.beliefs = self.monitoring.fire_events(self.beliefs, self.percept)
                     elif self.action == ('move_arm_above', 'container'):

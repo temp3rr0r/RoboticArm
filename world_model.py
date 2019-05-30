@@ -30,8 +30,8 @@ class WorldModel:  # TODO: Move 2 gremlin world model with init
         self.current_world_model.grabbed = {"target_object": False}
         self.current_world_model.initialized = {"arm": False}
         self.current_world_model.url = {"arm": "ESP_02662E"}
-        self.current_world_model.real_time_clock_period_seconds = {"arm": 0.5}
         self.current_world_model.init_delay_seconds = {"arm": 5}
+        self.current_world_model.real_time_clock_period_seconds = {"arm": 1.5}
 
         # Control
         self.current_world_model.control = {"closed_hand_distance_ratio": 0.8,
