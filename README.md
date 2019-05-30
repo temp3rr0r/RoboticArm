@@ -6,7 +6,7 @@ Demo: https://www.youtube.com/watch?v=lO22-RkgV2Y
 
 Presentation: https://1drv.ms/b/s!AgM7aH_rFcPzgrdkwJNIGvczvEBOaQ
 
-![alternativetext](pics/arm_demo_pic.png)
+![Means-end, practical reasoning using Belief-Desire-Intention (BDI) architecture.](pics/arm_demo_pic.png)
 
 ## Goal
 Create a succeeding and a failing scenario, for a:
@@ -73,7 +73,7 @@ BDI uses the Smart Python Agent Development Environment (SPADE) library:
 
 #### References
 
-[BHW07] Rafael H. Bordini, Jomi Fred Hübner, and Michael Wooldridge. Programming Multi-Agent Systems in AgentSpeak using Jason. 2007.
+[BHW07] Rafael H. Bordini, Jomi Fred Hï¿½bner, and Michael Wooldridge. Programming Multi-Agent Systems in AgentSpeak using Jason. 2007.
 
 [BIP88] Michael E. Bratman, David J. Israel, and Martha E. Pollack. Plans and resource[U+2010]bounded practical reasoning. Computational Intelligence, 1988.
 
