@@ -10,9 +10,10 @@ class HierarchicalTaskNetworkPlanner:
     3. Helper methods.
     """
 
-    def __init__(self):
+    def __init__(self, init_world_model):
         self.failure_reason = ""
-        self.verbose = 0
+        self.planner_world_model = init_world_model.current_world_model.planner
+        self.verbose = self.planner_world_model["verbose"]
 
         # Helper methods
 
@@ -137,11 +138,11 @@ class HierarchicalTaskNetworkPlanner:
 
 if __name__ == '__main__':
 
-    htn_planner = HierarchicalTaskNetworkPlanner()
     end_goal = [('transfer_target_object_to_container', 'arm', 'target_object', 'table', 'container')]
     intentions = end_goal  # I := I0; Initial Intentions
     from world_model import WorldModel
     beliefs = WorldModel()  # B := B0; Initial Beliefs
+    htn_planner = HierarchicalTaskNetworkPlanner(beliefs)
 
     print()
     print("GOAL:\n{}".format(end_goal))

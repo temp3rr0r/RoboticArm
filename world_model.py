@@ -82,7 +82,8 @@ class WorldModel:  # TODO: Move 2 gremlin world model with init
                                                 "link1": np.array([0, 0, 1])}}
 
         # Planner
-        self.current_world_model.plans = []
+        self.current_world_model.planner = {"verbose": 0,
+                                            "plans": []}  # TODO: do store plans here?
 
         # Perception
         self.current_world_model.perception = {"MAX_FEATURES": 900,  # 900
@@ -96,8 +97,8 @@ class WorldModel:  # TODO: Move 2 gremlin world model with init
                                                    {"file_path": "modelsQr/pixels_qr_RANSACRegressor_xyz.sav"},
                                                "class_logo": {"file_path": "picsQr/logoTarget.png"},
                                                "model_reference": {"file_path": "picsQr/modelTarget.png"},
-                                               "input_video": {"file_path": "picsQr/vids/good8.mp4"},  # TODO: use
-                                               "output_video": {"file_path": "perception.avi"},  # TODO: use
+                                               "input_video": {"file_path": "picsQr/vids/good8.mp4"},  # TODO: test
+                                               "output_video": {"file_path": "perception.avi"},  # TODO: test
                                                "video_frames_per_second": 15,  # 15
                                                "arm_xyz_offset": [0.0, 0.0, 0.0],
                                                "use_local_camera": True,
@@ -239,3 +240,4 @@ if __name__ == '__main__':
     print('world_model.current_world_model.control["joint_rotation_axis"]["link6"]: {}'
           .format(world_model.current_world_model.control["joint_rotation_axis"]["link6"]))
 
+    print("world_model.current_world_model.planner: {}".format(world_model.current_world_model.planner))

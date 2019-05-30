@@ -37,10 +37,10 @@ class BDIAgent(Agent):
             self.verbose = False
 
             # Initialization
-            self.htn_planner = HierarchicalTaskNetworkPlanner()
             self.goal = [('transfer_target_object_to_container', 'arm', 'target_object', 'table', 'container')]
             self.intentions = self.goal  # I := I0; Initial Intentions
             self.beliefs = WorldModel()  # B := B0; Initial Beliefs
+            self.htn_planner = HierarchicalTaskNetworkPlanner(self.beliefs)
             self.perception = Perception(self.beliefs)
             self.coordination = Coordination(self.beliefs)
             self.monitoring = Monitoring()

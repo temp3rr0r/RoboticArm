@@ -70,7 +70,7 @@ class Perception:
             descriptor_matcher = cv2.DescriptorMatcher_create(
                 cv2.DESCRIPTOR_MATCHER_BRUTEFORCE_HAMMING)  # Match features
 
-        model_references = ["picsQr/modelTarget.png"]
+        model_references_file_paths = [self.perception_world_model["model_reference"]["file_path"]]  # TODO: world_model
 
         min_total_descriptor_distance = sys.maxsize
         detected_model = -1
@@ -79,8 +79,8 @@ class Perception:
         key_points2 = None
         transformed_rectangle_points2 = None
 
-        for i in range(len(model_references)):
-            current_model_reference = cv2.imread(model_references[i], cv2.IMREAD_COLOR)  # Reference Image
+        for i in range(len(model_references_file_paths)):
+            current_model_reference = cv2.imread(model_references_file_paths[i], cv2.IMREAD_COLOR)  # Reference Image
             model_reference_gray = cv2.cvtColor(current_model_reference, cv2.COLOR_BGR2GRAY)
             # model_reference_gray = cv2.medianBlur(model_reference_gray, 3)
 
