@@ -1,8 +1,8 @@
 import pyhop
 import time
-import numpy as np
 import json
 import os
+
 
 class WorldModel:  # TODO: Move 2 gremlin world model with init
     """

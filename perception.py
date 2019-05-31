@@ -124,7 +124,7 @@ class Perception:
             # Draw rectangle only if within a specific ROI %
             roi_percent_min = 0.0002  # 0.1
             roi_percent_max = 0.001  # 0.25
-            transformed_rectangle_points2 = np.int32(transformed_rectangle_points)
+            transformed_rectangle_points2 = transformed_rectangle_points
             min_x = sys.maxsize
             max_x = 0
             min_y = sys.maxsize
