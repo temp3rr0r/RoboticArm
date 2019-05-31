@@ -1,7 +1,8 @@
 import pyhop
 import time
 import numpy as np
-
+import json
+import os
 
 class WorldModel:  # TODO: Move 2 gremlin world model with init
     """
@@ -38,83 +39,19 @@ class WorldModel:  # TODO: Move 2 gremlin world model with init
             ('transfer_target_object_to_container', 'arm', 'target_object', 'table', 'container')]
 
         # Control
-        self.current_world_model.control = {"closed_hand_distance_ratio": 0.8,
-                                            "opened_hand_distance_ratio": 1.5,
-                                            "base_put_url": "http://{}/set_servo{}?value={}",
-                                            "send_requests": True,
-                                            "detect_last_position": True,
-                                            "verbose": False,
-                                            "show_plots": False,
-                                            "cm_to_servo_polynomial_fitter":
-                                                {"file_path": "modelsQr/cm_to_servo_polynomial_fitter.sav"},
-                                            "scale": 1.0,  # 0.04  # For plotting
-                                            "servo_count": 6,
-                                            "command_delay": 0.001,  # seconds
-                                            "center_init": False,
-                                            "angle_degree_limit": 75,
-                                            "trajectory_steps": 10,
-                                            "current_servo_monotony": [-1.0, -1.0, 1.0, -1.0, -1.0, -1.0],
-                                            "active_links_mask": [True, True, True, True, False, False],
-                                            "min_steps": 1,
-                                            "max_steps": 500,
-                                            "rotating_gripper_servo": 2,
-                                            "gripping_gripper_servo": 1,
-                                            "horizontal_gripper_position": 2,
-                                            "init_position": [0, 0, 1],  # TODO: multiply with scale on arm
-                                            "container_position": [0, 18, 10],  # TODO: multiply with scale on arm
-                                            "chain_name": "le_arm",
-                                            "link_lengths": {  # Link lengths in centimeters
-                                                "link6": np.array([0, 0, 7.0]),
-                                                "link5": np.array([0, 0, 3.0]),
-                                                "link4": np.array([0, 0, 10.5]),
-                                                "link3": np.array([0, 0, 9.0]),
-                                                "link2": np.array([0, 0, 7.0]),
-                                                "link1": np.array([0, 0, 10.0])},
-                                            "link_orientations": {
-                                                "link6": [0, 0, 0],
-                                                "link5": [0, 0, 0],
-                                                "link4": [0, 0, 0],
-                                                "link3": [0, 0, 0],
-                                                "link2": [0, 0, 0],
-                                                "link1": [0, 0, 0]},
-                                            "joint_rotation_axis": {
-                                                "link6": np.array([0, 0, 1]),
-                                                "link5": np.array([0, 1, 0]),
-                                                "link4": np.array([0, 1, 0]),
-                                                "link3": np.array([0, 1, 0]),
-                                                "link2": np.array([0, 0, 1]),
-                                                "link1": np.array([0, 0, 1])}}
+        if os.path.isfile('json/control.json'):
+            with open('json/control.json') as f:
+                self.current_world_model.control = json.load(f)
 
         # Planner
-        self.current_world_model.planner = {"verbose": 0,
-                                            "plans": []}  # TODO: do store plans here?
+        if os.path.isfile('json/planner.json'):
+            with open('json/planner.json') as f:
+                self.current_world_model.planner = json.load(f)
 
         # Perception
-        self.current_world_model.perception = {"MAX_FEATURES": 900,  # 900
-                                               "MIN_MATCHES": 30,  # 15
-                                               "GOOD_MATCH_PERCENT": 0.3,  # 0.3
-                                               "FLASH_EVERY_FRAMES": 40.0,
-                                               "MIN_DESCRIPTOR_DISTANCE_SUM": 10000,
-                                               "use_flann": True,
-                                               "FLANN_INDEX_LSH": 6,
-                                               "regressor_qr_to_arm_xyz":
-                                                   {"file_path": "modelsQr/pixels_qr_RANSACRegressor_xyz.sav"},
-                                               "class_logo": {"file_path": "picsQr/logoTarget.png"},
-                                               "model_reference": {"file_path": "picsQr/modelTarget.png"},
-                                               "input_video": {"file_path": "picsQr/vids/good8.mp4"},  # TODO: test
-                                               "output_video": {"file_path": "perception.avi"},  # TODO: test
-                                               "video_frames_per_second": 15,  # 15
-                                               "arm_xyz_offset": [0.0, 0.0, 0.0],
-                                               "use_local_camera": True,
-                                               "camera_frame_width": 1920,
-                                               "camera_frame_height": 1080,
-                                               "auto_focus": True,
-                                               "send_requests": True,
-                                               "verbose": False,
-                                               "percept_frames": 5,
-                                               "write_video": False,
-                                               "display_output_frames": True,
-                                               "local_camera_id": 0}
+        if os.path.isfile('json/perception.json'):
+            with open('json/perception.json') as f:
+                self.current_world_model.perception = json.load(f)
 
         self.world_model_history = []
 

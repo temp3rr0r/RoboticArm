@@ -1,0 +1,146 @@
+{
+  "closed_hand_distance_ratio": 0.8,
+  "opened_hand_distance_ratio": 1.5,
+  "base_put_url": "http://{}/set_servo{}?value={}",
+  "send_requests": true,
+  "detect_last_position": true,
+  "verbose": false,
+  "show_plots": false,
+  "cm_to_servo_polynomial_fitter": {
+    "file_path": "modelsQr/cm_to_servo_polynomial_fitter.sav"
+  },
+  "scale": 1.0,
+  "servo_count": 6,
+  "command_delay": 0.001,
+  "center_init": false,
+  "angle_degree_limit": 75,
+  "trajectory_steps": 10,
+  "current_servo_monotony": [
+    -1.0,
+    -1.0,
+    1.0,
+    -1.0,
+    -1.0,
+    -1.0
+  ],
+  "active_links_mask": [
+    true,
+    true,
+    true,
+    true,
+    false,
+    false
+  ],
+  "min_steps": 1,
+  "max_steps": 500,
+  "rotating_gripper_servo": 2,
+  "gripping_gripper_servo": 1,
+  "horizontal_gripper_position": 2,
+  "init_position": [
+    0,
+    0,
+    1
+  ],
+  "container_position": [
+    0,
+    18,
+    10
+  ],
+  "chain_name": "le_arm",
+  "link_lengths": {
+    "link6": [
+      0,
+      0,
+      7.0
+    ],
+    "link5": [
+      0,
+      0,
+      3.0
+    ],
+    "link4": [
+      0,
+      0,
+      10.5
+    ],
+    "link3": [
+      0,
+      0,
+      9.0
+    ],
+    "link2": [
+      0,
+      0,
+      7.0
+    ],
+    "link1": [
+      0,
+      0,
+      10.0
+    ]
+  },
+  "link_orientations": {
+    "link6": [
+      0,
+      0,
+      0
+    ],
+    "link5": [
+      0,
+      0,
+      0
+    ],
+    "link4": [
+      0,
+      0,
+      0
+    ],
+    "link3": [
+      0,
+      0,
+      0
+    ],
+    "link2": [
+      0,
+      0,
+      0
+    ],
+    "link1": [
+      0,
+      0,
+      0
+    ]
+  },
+  "joint_rotation_axis": {
+    "link6": [
+      0,
+      0,
+      1
+    ],
+    "link5": [
+      0,
+      1,
+      0
+    ],
+    "link4": [
+      0,
+      1,
+      0
+    ],
+    "link3": [
+      0,
+      1,
+      0
+    ],
+    "link2": [
+      0,
+      0,
+      1
+    ],
+    "link1": [
+      0,
+      0,
+      1
+    ]
+  }
+}

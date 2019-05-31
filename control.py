@@ -28,50 +28,50 @@ class Control:
             links=[
                 URDFLink(
                     name="link6",
-                    translation_vector=self.control_world_model["link_lengths"]["link6"]
+                    translation_vector=np.array(self.control_world_model["link_lengths"]["link6"])
                     * self.control_world_model["scale"],
                     orientation=self.control_world_model["link_orientations"]["link6"],
-                    rotation=self.control_world_model["joint_rotation_axis"]["link6"],
+                    rotation=np.array(self.control_world_model["joint_rotation_axis"]["link6"]),
                     bounds=self.link_bounds
                 ),
                 URDFLink(
                     name="link5",
-                    translation_vector=self.control_world_model["link_lengths"]["link5"]
+                    translation_vector=np.array(self.control_world_model["link_lengths"]["link5"])
                     * self.control_world_model["scale"],
                     orientation=self.control_world_model["link_orientations"]["link5"],
-                    rotation=self.control_world_model["joint_rotation_axis"]["link5"],
+                    rotation=np.array(self.control_world_model["joint_rotation_axis"]["link5"]),
                     bounds=self.link_bounds
                 ),
                 URDFLink(
                     name="link4",
-                    translation_vector=self.control_world_model["link_lengths"]["link4"]
+                    translation_vector=np.array(self.control_world_model["link_lengths"]["link4"])
                     * self.control_world_model["scale"],
                     orientation=self.control_world_model["link_orientations"]["link4"],
-                    rotation=self.control_world_model["joint_rotation_axis"]["link4"],
+                    rotation=np.array(self.control_world_model["joint_rotation_axis"]["link4"]),
                     bounds=self.link_bounds
                 ),
                 URDFLink(
                     name="link3",
-                    translation_vector=self.control_world_model["link_lengths"]["link3"]
+                    translation_vector=np.array(self.control_world_model["link_lengths"]["link3"])
                     * self.control_world_model["scale"],
                     orientation=self.control_world_model["link_orientations"]["link3"],
-                    rotation=self.control_world_model["joint_rotation_axis"]["link3"],
+                    rotation=np.array(self.control_world_model["joint_rotation_axis"]["link3"]),
                     bounds=self.link_bounds
                 ),
                 URDFLink(
                     name="link2",
-                    translation_vector=self.control_world_model["link_lengths"]["link2"]
+                    translation_vector=np.array(self.control_world_model["link_lengths"]["link2"])
                     * self.control_world_model["scale"],
                     orientation=self.control_world_model["link_orientations"]["link2"],
-                    rotation=self.control_world_model["joint_rotation_axis"]["link2"],
+                    rotation=np.array(self.control_world_model["joint_rotation_axis"]["link2"]),
                     bounds=self.link_bounds
                 ),
                 URDFLink(
                     name="link1",
-                    translation_vector=self.control_world_model["link_lengths"]["link1"]
+                    translation_vector=np.array(self.control_world_model["link_lengths"]["link1"])
                     * self.control_world_model["scale"],
                     orientation=self.control_world_model["link_orientations"]["link1"],
-                    rotation=self.control_world_model["joint_rotation_axis"]["link1"],
+                    rotation=np.array(self.control_world_model["joint_rotation_axis"]["link1"]),
                     bounds=self.link_bounds
                 )
             ])

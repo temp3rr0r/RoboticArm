@@ -1,0 +1,40 @@
+{
+  "MAX_FEATURES": 900,
+  "MIN_MATCHES": 30,
+  "GOOD_MATCH_PERCENT": 0.3,
+  "FLASH_EVERY_FRAMES": 40.0,
+  "MIN_DESCRIPTOR_DISTANCE_SUM": 10000,
+  "use_flann": true,
+  "FLANN_INDEX_LSH": 6,
+  "regressor_qr_to_arm_xyz": {
+    "file_path": "modelsQr/pixels_qr_RANSACRegressor_xyz.sav"
+  },
+  "class_logo": {
+    "file_path": "picsQr/logoTarget.png"
+  },
+  "model_reference": {
+    "file_path": "picsQr/modelTarget.png"
+  },
+  "input_video": {
+    "file_path": "picsQr/vids/good8.mp4"
+  },
+  "output_video": {
+    "file_path": "perception.avi"
+  },
+  "video_frames_per_second": 15,
+  "arm_xyz_offset": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "use_local_camera": true,
+  "camera_frame_width": 1920,
+  "camera_frame_height": 1080,
+  "auto_focus": true,
+  "send_requests": true,
+  "verbose": false,
+  "percept_frames": 5,
+  "write_video": false,
+  "display_output_frames": true,
+  "local_camera_id": 0
+}
