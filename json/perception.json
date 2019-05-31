@@ -2,7 +2,7 @@
   "@id": "ArmPerception",
   "@actorId": "le_arm",
   "@type": [ "QUDT", "Euclidean_space", "Coordinates" ],
-  "description": "Monitor continuous perception information.",
+  "description": "Data provided by the sensors, processed into information that update the world model. From actual world, to world model.  Acquires percepts via computer vision and arm controller invocation. Percept is the sensed XYZ position of an object in relation to the arm's frame of reference, in centimeters.",
   "MAX_FEATURES": 900,
   "MIN_MATCHES": 30,
   "GOOD_MATCH_PERCENT": 0.3,

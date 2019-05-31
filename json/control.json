@@ -2,7 +2,7 @@
   "@id": "ArmControl",
   "@type": "https://en.wikipedia.org/wiki/Belief%E2%80%93desire%E2%80%93intention_software_model",
   "@context": "https://schema.org/algorithm",
-  "description": "The belief–desire–intention software model is a software model developed for programming intelligent agents.",
+  "description": "Realization of continuous actions, from world model to desired world.",
   "closed_hand_distance_ratio": 0.8,
   "opened_hand_distance_ratio": 1.5,
   "base_put_url": "http://{}/set_servo{}?value={}",

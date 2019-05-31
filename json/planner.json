@@ -1,6 +1,7 @@
 {
   "@id": "HtnPlan",
   "@context": "HierarchicalTaskNetworkPlan",
+  "description": "Automated planner for hierarchical tasks (with pre-conditions, sub-tasks and effects). Deterministic, with backtracking search.",
   "@type": [
     "Plan",
     "https://schema.org/PlanAction"
