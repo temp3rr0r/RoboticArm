@@ -1,4 +1,8 @@
 {
+  "@id": "ArmControl",
+  "@type": "https://en.wikipedia.org/wiki/Belief%E2%80%93desire%E2%80%93intention_software_model",
+  "@context": "https://schema.org/algorithm",
+  "description": "The belief–desire–intention software model is a software model developed for programming intelligent agents.",
   "closed_hand_distance_ratio": 0.8,
   "opened_hand_distance_ratio": 1.5,
   "base_put_url": "http://{}/set_servo{}?value={}",
@@ -7,7 +11,9 @@
   "verbose": false,
   "show_plots": false,
   "cm_to_servo_polynomial_fitter": {
-    "file_path": "modelsQr/cm_to_servo_polynomial_fitter.sav"
+    "file_path": "modelsQr/cm_to_servo_polynomial_fitter.sav",
+    "@type": "sklearn.externals.joblib",
+    "description": "Scikit-learn model."
   },
   "scale": 1.0,
   "servo_count": 6,

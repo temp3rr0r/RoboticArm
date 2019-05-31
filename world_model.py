@@ -34,10 +34,6 @@ class WorldModel:  # TODO: Move 2 gremlin world model with init
         self.current_world_model.init_delay_seconds = {"arm": 5}
         self.current_world_model.real_time_clock_period_seconds = {"arm": 0.5}
 
-        # Goals
-        self.current_world_model.goals = [
-            ('transfer_target_object_to_container', 'arm', 'target_object', 'table', 'container')]
-
         # Control
         if os.path.isfile('json/control.json'):
             with open('json/control.json') as f:
@@ -47,6 +43,9 @@ class WorldModel:  # TODO: Move 2 gremlin world model with init
         if os.path.isfile('json/planner.json'):
             with open('json/planner.json') as f:
                 self.current_world_model.planner = json.load(f)
+
+        # Goals
+        self.current_world_model.goals = [tuple(self.current_world_model.planner["goals"])]
 
         # Perception
         if os.path.isfile('json/perception.json'):

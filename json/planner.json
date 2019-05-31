@@ -1,6 +1,18 @@
 {
+  "@id": "HtnPlan",
+  "@context": "HierarchicalTaskNetworkPlan",
+  "@type": [
+    "Plan",
+    "https://schema.org/PlanAction"
+  ],
+  "dataType": "Sequence",
   "verbose": 0,
+  "goals": ["transfer_target_object_to_container",
+    "arm",
+    "target_object",
+    "table",
+    "container"],
   "plans": [
-    
+
   ]
 }

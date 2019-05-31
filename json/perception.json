@@ -1,4 +1,8 @@
 {
+  "@id": "ArmPerception",
+  "@actorId": "le_arm",
+  "@type": [ "QUDT", "Euclidean_space", "Coordinates" ],
+  "description": "Monitor continuous perception information.",
   "MAX_FEATURES": 900,
   "MIN_MATCHES": 30,
   "GOOD_MATCH_PERCENT": 0.3,
@@ -7,7 +11,9 @@
   "use_flann": true,
   "FLANN_INDEX_LSH": 6,
   "regressor_qr_to_arm_xyz": {
-    "file_path": "modelsQr/pixels_qr_RANSACRegressor_xyz.sav"
+    "file_path": "modelsQr/pixels_qr_RANSACRegressor_xyz.sav",
+    "@type": "sklearn.externals.joblib",
+    "description": "Scikit-learn model."
   },
   "class_logo": {
     "file_path": "picsQr/logoTarget.png"
