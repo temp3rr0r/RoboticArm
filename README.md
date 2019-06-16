@@ -2,7 +2,7 @@
 
 Means-end, practical reasoning using Belief-Desire-Intention (BDI) architecture.
 
-Demo: https://www.youtube.com/watch?v=lO22-RkgV2Y
+Demo: https://youtu.be/lO22-RkgV2Y
 
 Presentation: https://1drv.ms/b/s!AgM7aH_rFcPzgrdkwJNIGvczvEBOaQ
 
@@ -77,7 +77,7 @@ BDI uses the Smart Python Agent Development Environment (SPADE) library:
 
 [BHW07] Rafael H. Bordini, Jomi Fred Hubner, and Michael Wooldridge. Programming Multi-Agent Systems in AgentSpeak using Jason. 2007.
 
-[BIP88] Michael E. Bratman, David J. Israel, and Martha E. Pollack. Plans and resource[U+2010]bounded practical reasoning. Computational Intelligence, 1988.
+[BIP88] Michael E. Bratman, David J. Israel, and Martha E. Pollack. Plans and resource and bounded practical reasoning. Computational Intelligence, 1988.
 
 [BSSL19] Herman Bruyninckx, Christian Schlegel, Dennis Stampfer, and Alex Lotz. Composable, explainable and verifiable robotics and cyber-physical systems-of-systems: best practices and knowledge-based meta models for resilient holonic architectures. 2019.
 
