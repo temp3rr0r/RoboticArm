@@ -62,6 +62,8 @@ moveTo, moveUp, moveAbove etc).
 ### Monitoring
 - Events: From sensor percepts , to event firing.
 
+### Task Model [BSSL19]
+
 ### Real-Time Clock (RTC) & Multi-Agent support:
 BDI uses the Smart Python Agent Development Environment (SPADE) library:
 
@@ -73,9 +75,11 @@ BDI uses the Smart Python Agent Development Environment (SPADE) library:
 
 #### References
 
-[BHW07] Rafael H. Bordini, Jomi Fred H�bner, and Michael Wooldridge. Programming Multi-Agent Systems in AgentSpeak using Jason. 2007.
+[BHW07] Rafael H. Bordini, Jomi Fred Hubner, and Michael Wooldridge. Programming Multi-Agent Systems in AgentSpeak using Jason. 2007.
 
 [BIP88] Michael E. Bratman, David J. Israel, and Martha E. Pollack. Plans and resource[U+2010]bounded practical reasoning. Computational Intelligence, 1988.
+
+[BSSL19] Herman Bruyninckx, Christian Schlegel, Dennis Stampfer, and Alex Lotz. Composable, explainable and verifiable robotics and cyber-physical systems-of-systems: best practices and knowledge-based meta models for resilient holonic architectures. 2019.
 
 [EHN94] Kutluhan Erol, James Hendler, and Dana S. Nau. Semantics for Hierarchical Task-Network Planning. Technical report, 1994.
 
