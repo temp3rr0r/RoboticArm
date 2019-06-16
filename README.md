@@ -1,4 +1,4 @@
-# Robotics for arm manipulation:
+# Robotics project: 6 DOF arm manipulation, utilizing knowledge-based reasoning, BDI and HTN planning
 
 Means-end, practical reasoning using Belief-Desire-Intention (BDI) architecture.
 
